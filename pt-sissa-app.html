@@ -181,12 +181,14 @@ input{font-family:inherit;}
 }
 .ex-name-btn .info-ico{color:var(--accent);flex-shrink:0;}
 .ex-name-btn .info-ico svg{width:14px;height:14px;}
+.ex-name-plain{font-weight:700;font-size:14.5px;line-height:1.3;color:var(--text-muted);}
 .ex-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
 .ex-badge{
   font-family:var(--mono);font-size:10.5px;color:var(--accent);background:var(--accent-dim);
   padding:3px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;font-weight:600;
 }
 .ex-badge.rpe{color:var(--teal);background:var(--teal-dim);}
+.ex-badge.removed{color:var(--text-faint);background:var(--bg-elev);}
 .ex-note{font-size:11.5px;color:var(--text-faint);margin-top:5px;font-style:italic;}
 .rec-row{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
@@ -504,147 +506,151 @@ window.storage = {
     }catch(e){ return { keys: [] }; }
   }
 };
-/* ============== DATI — Scheda Settembre 2026 (Silvana) ============== */
+/* ============== DATI — Scheda Settembre 2026 (Silvana) ==============
+   Ogni giorno e ogni esercizio ha un "id" stabile e permanente.
+   I dati salvati fanno riferimento a questi id, MAI alla posizione nella lista:
+   così puoi aggiungere, togliere o riordinare esercizi in futuro senza
+   perdere o mescolare i dati storici di cronologia e statistiche. */
 const SCHEDA = {
   id:'set2026', nome:'Ciclo Settembre 2026', sub:'4 giorni · upper / lower',
   giorni:[
-    { label:'Giorno 1', meta:'Lower A', sub:'Quadricipiti e gluteo massimo',
+    { id:'g1', label:'Giorno 1', meta:'Lower A', sub:'Quadricipiti e gluteo massimo',
       esercizi:[
-        {n:'Hack squat', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
+        {id:'hack-squat', n:'Hack squat', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
           info:{setup:"Piedi in appoggio sulla pedana, leggermente più larghi delle spalle, schiena e spalle premute contro lo schienale imbottito.",
                 esec:"Fase eccentrica (discesa): pieghi le ginocchia portando i cuscinetti verso il basso in modo controllato, senza staccare i talloni. Fase concentrica (spinta): spingi con i talloni per tornare su, senza bloccare del tutto le ginocchia in cima.",
                 muscolo:"Lavora soprattutto il quadricipite. Sensazione corretta: bruciore sulla parte frontale della coscia. Errore comune: spingere sulle punte dei piedi, che scarica il lavoro sui polpacci e stressa le ginocchia.",
                 resp:"Inspira durante la discesa, espira spingendo verso l'alto."}},
-        {n:'Leg press 45°', s:3, sc:'3×12-15', rpe:'7-8', rec:120, recLabel:'2 min',
+        {id:'leg-press-45', n:'Leg press 45°', s:3, sc:'3×12-15', rpe:'7-8', rec:120, recLabel:'2 min',
           info:{setup:"Seduta con schiena e bacino ben aderenti al sedile, piedi sulla pedana all'altezza delle spalle, leggermente in avanti rispetto alle ginocchia.",
                 esec:"Discesa (eccentrica): sblocca i fermi e piega le ginocchia verso il petto in modo controllato, senza che il bacino si stacchi dal sedile. Spinta (concentrica): spingi con tutta la pianta del piede fino quasi alla distensione.",
                 muscolo:"Quadricipiti principalmente, con contributo dei glutei. Errore comune: staccare il bacino dal sedile in fondo alla discesa, che scarica sulla schiena bassa.",
                 resp:"Inspira in discesa, espira in spinta."}},
-        {n:'Hip thrust con bilanciere', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min',
+        {id:'hip-thrust-bilanciere', n:'Hip thrust con bilanciere', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min',
           info:{setup:"Schiena appoggiata a una panca all'altezza delle scapole, bilanciere sui fianchi (meglio con un cuscinetto), piedi piatti a terra larghezza spalle.",
                 esec:"Parti con i fianchi bassi vicino a terra. Concentrica: spingi con i talloni e contrai i glutei portando i fianchi verso l'alto fino ad allineare spalle-bacino-ginocchia. Eccentrica: scendi controllata senza far rimbalzare il bilanciere.",
                 muscolo:"Target principale: il gluteo massimo. Sensazione corretta: contrazione forte del gluteo in cima, non nella schiena bassa. Errore comune: inarcare troppo la schiena invece di spingere con i glutei.",
                 resp:"Inspira scendendo, espira spingendo in alto."}},
-        {n:'Affondi bulgari con manubri', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'per gamba',
+        {id:'affondi-bulgari', n:'Affondi bulgari con manubri', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'per gamba',
           info:{setup:"Piede posteriore appoggiato con il collo del piede su una panca dietro di te, gamba anteriore avanti, un manubrio per mano.",
                 esec:"Discesa: piega il ginocchio anteriore scendendo dritto verso il basso. Risalita: spingi con il tallone della gamba anteriore per tornare su.",
                 muscolo:"Quadricipite e gluteo della gamba anteriore, lavorati singolarmente — utile per correggere squilibri tra le due gambe. Errore comune: portare il ginocchio anteriore troppo oltre la punta del piede.",
                 resp:"Inspira in discesa, espira in risalita."}},
-        {n:'Leg extension', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec',
+        {id:'leg-extension', n:'Leg extension', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec',
           info:{setup:"Seduta con schiena aderente allo schienale, caviglie dietro il rullo imbottito, ginocchia allineate al perno della macchina.",
                 esec:"Concentrica: estendi le gambe fino quasi alla distensione completa. Eccentrica: torna giù controllata senza far sbattere i pesi.",
                 muscolo:"Isola il quadricipite. Errore comune: usare lo slancio per partire invece di un movimento controllato.",
                 resp:"Espira estendendo, inspira tornando giù."}},
-        {n:'Calf raises in piedi', s:3, sc:'3×15-20', rpe:'8', rec:60, recLabel:'60 sec',
+        {id:'calf-raises-piedi', n:'Calf raises in piedi', s:3, sc:'3×15-20', rpe:'8', rec:60, recLabel:'60 sec',
           info:{setup:"In piedi sulla pedana o su un rialzo, punte dei piedi appoggiate e talloni fuori dal bordo, ginocchia leggermente morbide.",
                 esec:"Concentrica: sali sulle punte il più in alto possibile. Eccentrica: scendi lasciando i talloni andare sotto il livello della pedana per un buon allungamento.",
                 muscolo:"Polpacci. Errore comune: movimento troppo veloce senza scendere completamente, perdendo la parte più efficace dell'esercizio.",
                 resp:"Espira salendo, inspira scendendo."}},
       ]},
-    { label:'Giorno 2', meta:'Upper A', sub:'Spinta e correzione posturale',
+    { id:'g2', label:'Giorno 2', meta:'Upper A', sub:'Spinta e correzione posturale',
       esercizi:[
-        {n:'Lat machine presa larga', s:4, sc:'4×10-12', rpe:'7-8', rec:120, recLabel:'2 min',
+        {id:'lat-machine-larga', n:'Lat machine presa larga', s:4, sc:'4×10-12', rpe:'7-8', rec:120, recLabel:'2 min',
           info:{setup:"Seduta con le cosce bloccate sotto il cuscinetto, presa sulla barra più larga delle spalle, busto leggermente inclinato indietro.",
                 esec:"Concentrica: tira la barra verso la parte alta del petto portando indietro i gomiti e avvicinando le scapole. Eccentrica: torna su controllata fino a braccia quasi distese.",
                 muscolo:"Dorsali (gran dorsale). Sensazione corretta: tirare 'con i gomiti', non con le braccia. Errore comune: usare lo slancio del busto o tirare solo con i bicipiti.",
                 resp:"Espira tirando la barra giù, inspira tornando su."}},
-        {n:'Chest press (macchina)', s:3, sc:'3×10-12', rpe:'7-8', rec:105, recLabel:'90-120 sec',
+        {id:'chest-press-macchina', n:'Chest press (macchina)', s:3, sc:'3×10-12', rpe:'7-8', rec:105, recLabel:'90-120 sec',
           info:{setup:"Seduta con schiena aderente allo schienale, impugnature all'altezza del petto, piedi ben piantati a terra.",
                 esec:"Concentrica: spingi le impugnature in avanti fino quasi alla distensione. Eccentrica: torna indietro controllata senza far sbattere i pesi.",
                 muscolo:"Petto (grande pettorale) con contributo di tricipiti e spalle. Errore comune: sollevare le spalle verso le orecchie durante la spinta.",
                 resp:"Espira spingendo in avanti, inspira tornando indietro."}},
-        {n:'Rematore al cavo basso seduto', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
+        {id:'rematore-cavo-basso', n:'Rematore al cavo basso seduto', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
           info:{setup:"Seduta con ginocchia leggermente flesse, busto dritto, presa sulla maniglia con braccia distese in avanti.",
                 esec:"Concentrica: tira la maniglia verso l'addome portando indietro i gomiti e avvicinando le scapole. Eccentrica: torna avanti controllata senza incurvare la schiena.",
                 muscolo:"Dorsali e romboidi (centro schiena). Sensazione corretta: le scapole si avvicinano a fine tirata. Errore comune: dondolare il busto invece di far lavorare la schiena.",
                 resp:"Espira tirando, inspira tornando avanti."}},
-        {n:'Alzate laterali con manubri', s:3, sc:'3×12-15', rpe:'8', rec:60, recLabel:'60 sec',
+        {id:'alzate-laterali-manubri', n:'Alzate laterali con manubri', s:3, sc:'3×12-15', rpe:'8', rec:60, recLabel:'60 sec',
           info:{setup:"In piedi, un manubrio per mano lungo i fianchi, gomiti leggermente piegati.",
                 esec:"Concentrica: alza le braccia lateralmente fino all'altezza delle spalle, guidando con i gomiti. Eccentrica: scendi controllata.",
                 muscolo:"Deltoide laterale (parte centrale della spalla). Errore comune: alzare le spalle verso le orecchie o usare lo slancio.",
                 resp:"Espira alzando le braccia, inspira scendendo."}},
-        {n:'Face pull al cavo con corda', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
+        {id:'face-pull-corda', n:'Face pull al cavo con corda', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
           info:{setup:"In piedi davanti al cavo alto, corda impugnata con i pollici verso di te, busto leggermente indietro.",
                 esec:"Concentrica: tira la corda verso il viso separando le mani, gomiti alti. Eccentrica: torna avanti controllata.",
                 muscolo:"Deltoide posteriore e muscoli tra le scapole, utili per la postura. Errore comune: tirare con i gomiti bassi invece che all'altezza delle spalle.",
                 resp:"Espira tirando, inspira tornando avanti."}},
-        {n:'Pushdown tricipiti', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'Superset con hammer curl · 60″ tra i due, 90″ dopo il giro',
+        {id:'pushdown-tricipiti', n:'Pushdown tricipiti', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'Superset con hammer curl · 60″ tra i due, 90″ dopo il giro',
           info:{setup:"In piedi davanti al cavo alto, presa sulla barra o corda, gomiti fissi ai lati del busto.",
                 esec:"Concentrica: estendi gli avambracci verso il basso senza muovere i gomiti. Eccentrica: torna su controllata.",
                 muscolo:"Tricipite. Errore comune: allontanare i gomiti dal busto durante la discesa.",
                 resp:"Espira estendendo verso il basso, inspira tornando su."}},
-        {n:'Hammer curl con manubri', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'Superset con pushdown · 60″ tra i due, 90″ dopo il giro',
+        {id:'hammer-curl-manubri', n:'Hammer curl con manubri', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'Superset con pushdown · 60″ tra i due, 90″ dopo il giro',
           info:{setup:"In piedi, un manubrio per mano con presa neutra (palmi rivolti l'uno verso l'altro), gomiti vicini al busto.",
                 esec:"Concentrica: piega i gomiti portando i manubri verso le spalle. Eccentrica: scendi controllata senza oscillare il busto.",
                 muscolo:"Bicipite e brachiale (parte esterna del braccio). Errore comune: usare lo slancio della schiena.",
                 resp:"Espira salendo, inspira scendendo."}},
       ]},
-    { label:'Giorno 3', meta:'Lower B', sub:'Femorali e gluteo medio/piccolo',
+    { id:'g3', label:'Giorno 3', meta:'Lower B', sub:'Femorali e gluteo medio/piccolo',
       esercizi:[
-        {n:'Stacco rumeno (RDL) con bilanciere', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
+        {id:'stacco-rumeno-rdl', n:'Stacco rumeno (RDL) con bilanciere', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
           info:{setup:"In piedi, bilanciere davanti alle cosce, presa poco più larga dei fianchi, ginocchia leggermente flesse e fisse per tutto il movimento.",
                 esec:"Eccentrica: spingi i fianchi indietro (non piegare le ginocchia) facendo scorrere il bilanciere lungo le gambe, schiena dritta, finché senti tensione sui femorali. Concentrica: torna su spingendo i fianchi in avanti e contraendo i glutei.",
                 muscolo:"Femorali e gluteo. Sensazione corretta: forte tensione dietro la coscia in fondo al movimento. Errore comune: arrotondare la schiena bassa o piegare troppo le ginocchia trasformandolo in uno squat.",
                 resp:"Inspira scendendo, espira tornando su."}},
-        {n:'Hyperextension focus glutei', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:"discesa lenta in 3″",
+        {id:'hyperextension-glutei', n:'Hyperextension focus glutei', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:"discesa lenta in 3″",
           info:{setup:"Su panca per iperestensioni, bacino appoggiato sul cuscinetto, caviglie bloccate, busto piegato in avanti a 90°.",
                 esec:"Discesa lenta in 3 secondi: scendi controllata piegandoti sui fianchi. Concentrica: risali contraendo i glutei fino ad allineare il busto con le gambe, senza andare oltre la linea retta.",
                 muscolo:"Gluteo. La discesa lenta aumenta il tempo sotto tensione, cioè quanto il muscolo resta sotto sforzo durante la serie. Errore comune: iperestendere la schiena in cima invece di fermarsi in linea retta.",
                 resp:"Inspira scendendo, espira risalendo."}},
-        {n:'Abductor machine', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec',
+        {id:'abductor-machine', n:'Abductor machine', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec',
           info:{setup:"Seduta con schiena aderente allo schienale, esterno coscia contro i cuscinetti, ginocchia leggermente flesse.",
                 esec:"Concentrica: apri le gambe verso l'esterno. Eccentrica: richiudi controllata senza far sbattere i pesi.",
                 muscolo:"Gluteo medio (parte esterna del gluteo, importante per la stabilità del bacino). Errore comune: slancio invece di movimento lento e controllato.",
                 resp:"Espira aprendo le gambe, inspira richiudendo."}},
-        {n:'Cable kickback', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'per gamba',
+        {id:'cable-kickback', n:'Cable kickback', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'per gamba',
           info:{setup:"In piedi davanti al cavo basso, cavigliera al piede da lavorare, busto leggermente inclinato in avanti con supporto per equilibrio.",
                 esec:"Concentrica: spingi la gamba indietro contraendo il gluteo, senza inarcare la schiena. Eccentrica: torna avanti controllata.",
                 muscolo:"Gluteo massimo, isolato su una gamba per volta. Errore comune: usare la schiena per generare slancio.",
                 resp:"Espira spingendo indietro, inspira tornando avanti."}},
-        {n:'Monster walk con fascia elastica', s:3, sc:'3×10 passi', rpe:'-', rec:60, recLabel:'60 sec', note:'per lato',
+        {id:'monster-walk-fascia', n:'Monster walk con fascia elastica', s:3, sc:'3×10 passi', rpe:'-', rec:60, recLabel:'60 sec', note:'per lato',
           info:{setup:"Fascia elastica sopra le caviglie o sopra le ginocchia, leggera flessione di ginocchia e fianchi, busto dritto.",
                 esec:"Cammina lateralmente a piccoli passi mantenendo tensione costante sulla fascia, senza far toccare i piedi tra loro.",
                 muscolo:"Gluteo medio, utile per la stabilità dell'anca in camminata e corsa. Errore comune: raddrizzare troppo le ginocchia perdendo tensione sulla fascia.",
                 resp:"Respira in modo naturale e continuo durante il movimento."}},
-        {n:'Leg curl sdraiato', s:3, sc:'3×12-15', rpe:'8', rec:75, recLabel:'60-90 sec',
+        {id:'leg-curl-sdraiato', n:'Leg curl sdraiato', s:3, sc:'3×12-15', rpe:'8', rec:75, recLabel:'60-90 sec',
           info:{setup:"Sdraiata a pancia in giù, caviglie sotto il rullo imbottito, ginocchia appena fuori dal bordo della panca.",
                 esec:"Concentrica: piega le ginocchia portando i talloni verso i glutei. Eccentrica: torna giù controllata senza far sbattere i pesi.",
                 muscolo:"Femorali (parte posteriore della coscia). Errore comune: sollevare il bacino dalla panca per aiutarsi con lo slancio.",
                 resp:"Espira piegando le ginocchia, inspira tornando giù."}},
       ]},
-    { label:'Giorno 4', meta:'Upper B', sub:'Tirata e spalle/postura',
+    { id:'g4', label:'Giorno 4', meta:'Upper B', sub:'Tirata e spalle/postura',
       esercizi:[
-        {n:'Trazioni assistite presa neutra', s:4, sc:'4×8-10', rpe:'7-8', rec:120, recLabel:'2 min',
+        {id:'trazioni-assistite-neutra', n:'Trazioni assistite presa neutra', s:4, sc:'4×8-10', rpe:'7-8', rec:120, recLabel:'2 min',
           info:{setup:"In ginocchio o seduta sulla pedana della macchina assistita, presa sulle maniglie parallele (palmi l'uno verso l'altro), peso di assistenza impostato in base al livello.",
                 esec:"Concentrica: tira il corpo verso l'alto fino a portare il mento sopra le mani. Eccentrica: scendi controllata fino a braccia quasi distese.",
                 muscolo:"Dorsali e bicipiti. Sensazione corretta: percepire il lavoro soprattutto nella schiena, non solo nelle braccia. Errore comune: usare tutto lo slancio delle gambe sulla pedana.",
                 resp:"Espira tirando su, inspira scendendo."}},
-        {n:'Pulley / seated row presa larga', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
+        {id:'seated-row-larga', n:'Pulley / seated row presa larga', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
           info:{setup:"Seduta con ginocchia leggermente flesse, presa larga sulla barra, busto dritto e leggermente inclinato in avanti a inizio movimento.",
                 esec:"Concentrica: tira la barra verso l'addome aprendo i gomiti verso l'esterno e avvicinando le scapole. Eccentrica: torna avanti controllata.",
                 muscolo:"Dorsali e parte alta della schiena. Errore comune: dondolare il busto avanti e indietro invece di lasciar lavorare solo braccia e schiena.",
                 resp:"Espira tirando, inspira tornando avanti."}},
-        {n:'Shoulder press con manubri da seduta', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec',
+        {id:'shoulder-press-manubri', n:'Shoulder press con manubri da seduta', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec',
           info:{setup:"Seduta con schiena appoggiata, un manubrio per mano all'altezza delle spalle, palmi rivolti in avanti.",
                 esec:"Concentrica: spingi i manubri verso l'alto fino quasi a distendere le braccia sopra la testa. Eccentrica: scendi controllata fino all'altezza delle spalle.",
                 muscolo:"Deltoidi (spalle) con contributo di tricipiti. Errore comune: inarcare troppo la schiena bassa durante la spinta.",
                 resp:"Espira spingendo in alto, inspira scendendo."}},
-        {n:'Rear delt fly', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
+        {id:'rear-delt-fly', n:'Rear delt fly', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
           info:{setup:"Seduta con busto inclinato in avanti (o su macchina dedicata), un manubrio per mano, braccia leggermente piegate.",
                 esec:"Concentrica: apri le braccia lateralmente all'indietro portando le scapole verso il centro. Eccentrica: torna avanti controllata.",
                 muscolo:"Deltoide posteriore. Errore comune: usare slancio del busto invece di isolare il movimento delle braccia.",
                 resp:"Espira aprendo le braccia, inspira tornando avanti."}},
-        {n:'Alzate laterali su panca 30°', s:3, sc:'3×12', rpe:'8', rec:60, recLabel:'60 sec',
+        {id:'alzate-laterali-panca-30', n:'Alzate laterali su panca 30°', s:3, sc:'3×12', rpe:'8', rec:60, recLabel:'60 sec',
           info:{setup:"Sdraiata su un fianco su una panca inclinata a 30°, un manubrio nella mano superiore, braccio leggermente piegato.",
                 esec:"Concentrica: alza il braccio lateralmente fino all'altezza della spalla. Eccentrica: scendi controllata.",
                 muscolo:"Deltoide laterale, con maggiore isolamento rispetto alla versione in piedi grazie all'appoggio. Errore comune: ruotare il busto per aiutarsi con lo slancio.",
                 resp:"Espira alzando il braccio, inspira scendendo."}},
-        {n:'French press con manubri', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60-90 sec', note:'Superset con biceps curl · 60-90″ dopo il giro',
+        {id:'french-press-manubri', n:'French press con manubri', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60-90 sec', note:'Superset con biceps curl · 60-90″ dopo il giro',
           info:{setup:"Sdraiata su panca (o seduta), manubri tenuti sopra la testa con gomiti puntati verso l'alto e vicini tra loro.",
                 esec:"Eccentrica: piega i gomiti abbassando i manubri dietro la testa. Concentrica: estendi i gomiti tornando su.",
                 muscolo:"Tricipite (capo lungo). Errore comune: allargare i gomiti durante il movimento, che toglie lavoro al tricipite.",
                 resp:"Inspira scendendo, espira estendendo verso l'alto."}},
-        {n:'Biceps curl panca 45°', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', note:'Superset con french press · 60-90″ dopo il giro',
+        {id:'biceps-curl-panca-45', n:'Biceps curl panca 45°', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', note:'Superset con french press · 60-90″ dopo il giro',
           info:{setup:"Sdraiata a pancia in giù su una panca inclinata a 45°, braccia pendenti con un manubrio per mano.",
                 esec:"Concentrica: piega i gomiti portando i manubri verso le spalle. Eccentrica: scendi controllata fino a braccia quasi distese.",
                 muscolo:"Bicipite, con isolamento maggiore grazie alla panca che impedisce di usare slancio. Errore comune: sollevare le spalle o staccarle dalla panca.",
@@ -652,8 +658,13 @@ const SCHEDA = {
       ]},
   ]
 };
+/* Lookup rapido esercizio per id, e giorno per id — sempre riflette la SCHEDA attuale */
+const EXBYID = {};
+SCHEDA.giorni.forEach(g=> g.esercizi.forEach(ex=> EXBYID[ex.id] = ex));
+function giornoById(id){ return SCHEDA.giorni.find(g=>g.id===id); }
+function giornoOfExercise(exId){ return SCHEDA.giorni.find(g=>g.esercizi.some(e=>e.id===exId)); }
 /* ============== STATE ============== */
-let state = { screen:'home', giornoIdx:null, date: new Date().toISOString().slice(0,10), log: null, returnTo:'cicli' };
+let state = { screen:'home', giornoId:null, sessionId:null, log: null, returnTo:'cicli' };
 let timer = { total:90, remaining:90, running:false, intervalId:null };
 let saveTimeout = null;
 const app = document.getElementById('app');
@@ -694,12 +705,12 @@ function openExerciseInfo(ex){
 }
 document.getElementById('infoClose').onclick = ()=>document.getElementById('infoSheet').classList.remove('open');
 document.getElementById('infoSheet').addEventListener('click',(e)=>{ if(e.target.id==='infoSheet') e.currentTarget.classList.remove('open'); });
-/* ============== STORAGE HELPERS ============== */
-function logKey(giornoIdx,sessionId){ return `log-${SCHEDA.id}-${giornoIdx}-${sessionId}`; }
+/* ============== STORAGE HELPERS ==============
+   Chiave di salvataggio basata sull'id stabile del giorno (mai sulla posizione). */
+function logKey(giornoId,sessionId){ return `log-v2-${giornoId}-${sessionId}`; }
 function generateSessionId(){ return 's'+Date.now()+'_'+Math.random().toString(36).slice(2,8); }
-function isLegacyDateId(id){ return /^\d{4}-\d{2}-\d{2}$/.test(id); }
 function sessionTimeLabel(sessionId){
-  if(!sessionId || !sessionId.startsWith('s') || isLegacyDateId(sessionId)) return '';
+  if(!sessionId || !sessionId.startsWith('s')) return '';
   try{
     const ts = parseInt(sessionId.split('_')[0].slice(1));
     if(isNaN(ts)) return '';
@@ -707,23 +718,28 @@ function sessionTimeLabel(sessionId){
     return label === 'Invalid Date' ? '' : label;
   }catch(e){ return ''; }
 }
-function blankLog(esercizi){
-  const log = { date:new Date().toISOString().slice(0,10), esercizi:{} };
-  esercizi.forEach((ex,i)=>{ log.esercizi[i] = Array.from({length:ex.s},()=>({kg:'',reps:'',done:false})); });
+/* Costruisce una sessione vuota per un giorno, facendo uno "snapshot" di nome e
+   schema serie di ogni esercizio così com'è ORA — anche se in futuro la scheda
+   cambia, questa sessione ricorderà per sempre cos'era stato effettivamente svolto. */
+function blankLog(giorno){
+  const log = { date:new Date().toISOString().slice(0,10), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, esercizi:{} };
+  giorno.esercizi.forEach(ex=>{
+    log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets: Array.from({length:ex.s},()=>({kg:'',reps:'',done:false})) };
+  });
   return log;
 }
 async function saveLog(){
   if(!state.log) return;
   try{
-    await window.storage.set(logKey(state.giornoIdx,state.sessionId), JSON.stringify(state.log), false);
+    await window.storage.set(logKey(state.giornoId,state.sessionId), JSON.stringify(state.log), false);
     showToast('Sessione salvata ✓');
   }catch(e){ showToast('Errore salvataggio'); }
 }
 function queueSave(){ clearTimeout(saveTimeout); saveTimeout = setTimeout(saveLog, 700); }
-/* Returns [{sessionId, date, log}] for a giorno, most recent first */
-async function listSessionsDetailed(giornoIdx){
+/* Returns [{sessionId, date, log}] for a giorno (by id), most recent first */
+async function listSessionsDetailed(giornoId){
   try{
-    const prefix = `log-${SCHEDA.id}-${giornoIdx}-`;
+    const prefix = `log-v2-${giornoId}-`;
     const res = await window.storage.list(prefix, false);
     if(!res || !res.keys) return [];
     const items = [];
@@ -733,8 +749,7 @@ async function listSessionsDetailed(giornoIdx){
         const r = await window.storage.get(k, false);
         if(r && r.value){
           const log = JSON.parse(r.value);
-          let date = log.date;
-          if(!date) date = isLegacyDateId(sessionId) ? sessionId : new Date().toISOString().slice(0,10);
+          const date = log.date || new Date().toISOString().slice(0,10);
           items.push({ sessionId, date, log });
         }
       }catch(e){}
@@ -743,12 +758,12 @@ async function listSessionsDetailed(giornoIdx){
     return items;
   }catch(e){ return []; }
 }
-async function lastSessionDate(giornoIdx){
-  const list = await listSessionsDetailed(giornoIdx);
+async function lastSessionDate(giornoId){
+  const list = await listSessionsDetailed(giornoId);
   return list.length ? list[0].date : null;
 }
-async function deleteSession(giornoIdx, sessionId){
-  try{ await window.storage.delete(logKey(giornoIdx,sessionId), false); return true; }catch(e){ return false; }
+async function deleteSession(giornoId, sessionId){
+  try{ await window.storage.delete(logKey(giornoId,sessionId), false); return true; }catch(e){ return false; }
 }
 /* ============== ICONS ============== */
 const ICO = {
@@ -847,13 +862,13 @@ async function renderGiorni(){
       </div>
       <div class="section-label">Seleziona il giorno</div>
       <div class="giorno-grid">
-        ${SCHEDA.giorni.map((g,i)=>`
-          <button class="giorno-card" data-i="${i}">
+        ${SCHEDA.giorni.map(g=>`
+          <button class="giorno-card" data-gid="${g.id}">
             <div class="gnum">${g.label.toUpperCase()}</div>
             <div class="glabel">${g.meta}</div>
             <div class="gsub">${g.sub}</div>
             <div class="gmeta">${g.esercizi.length} esercizi</div>
-            <div class="glast" data-last="${i}">Caricamento…</div>
+            <div class="glast" data-last="${g.id}">Caricamento…</div>
           </button>
         `).join('')}
       </div>
@@ -866,12 +881,12 @@ async function renderGiorni(){
   };
   app.querySelectorAll('.giorno-card').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
-      await startNewWorkout(parseInt(btn.dataset.i));
+      await startNewWorkout(btn.dataset.gid);
     });
   });
-  SCHEDA.giorni.forEach(async (g,i)=>{
-    const last = await lastSessionDate(i);
-    const el = app.querySelector(`[data-last="${i}"]`);
+  SCHEDA.giorni.forEach(async (g)=>{
+    const last = await lastSessionDate(g.id);
+    const el = app.querySelector(`[data-last="${g.id}"]`);
     if(el) el.innerHTML = last ? `Ultima sessione: <b>${fmtDate(last)}</b>` : `Nessuna sessione registrata`;
   });
 }
@@ -884,38 +899,47 @@ function fmtDayMonth(iso){
   return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
 }
 /* ============== WORKOUT ============== */
-async function startNewWorkout(giornoIdx){
-  const giorno = SCHEDA.giorni[giornoIdx];
-  state.giornoIdx = giornoIdx;
+async function startNewWorkout(giornoId){
+  const giorno = giornoById(giornoId);
+  state.giornoId = giornoId;
   state.sessionId = generateSessionId();
   state.returnTo = 'cicli';
-  state.log = blankLog(giorno.esercizi);
+  state.log = blankLog(giorno);
   state.screen = 'workout';
   renderWorkout();
 }
-async function openExistingSession(giornoIdx, sessionId){
-  const giorno = SCHEDA.giorni[giornoIdx];
-  state.giornoIdx = giornoIdx;
+async function openExistingSession(giornoId, sessionId){
+  state.giornoId = giornoId;
   state.sessionId = sessionId;
   state.returnTo = 'cronologia';
   try{
-    const res = await window.storage.get(logKey(giornoIdx, sessionId), false);
-    state.log = (res && res.value) ? JSON.parse(res.value) : blankLog(giorno.esercizi);
-  }catch(e){ state.log = blankLog(giorno.esercizi); }
-  if(!state.log.date) state.log.date = isLegacyDateId(sessionId) ? sessionId : new Date().toISOString().slice(0,10);
-  giorno.esercizi.forEach((ex,i)=>{
-    if(!state.log.esercizi[i]) state.log.esercizi[i] = Array.from({length:ex.s},()=>({kg:'',reps:'',done:false}));
-  });
+    const res = await window.storage.get(logKey(giornoId, sessionId), false);
+    state.log = (res && res.value) ? JSON.parse(res.value) : null;
+  }catch(e){ state.log = null; }
+  if(!state.log){
+    const giorno = giornoById(giornoId);
+    state.log = giorno ? blankLog(giorno) : { date:new Date().toISOString().slice(0,10), giornoId, giornoLabel:'', giornoMeta:'', esercizi:{} };
+  }
   state.screen = 'workout';
   renderWorkout();
 }
+/* Lista di esercizi da mostrare per la sessione corrente: sempre derivata dagli id
+   effettivamente presenti nel log (non dalla scheda "live"), così una sessione
+   passata mostra sempre esattamente ciò che era stato registrato quel giorno. */
+function buildDisplayList(){
+  return Object.keys(state.log.esercizi).map(id=>({ id, live: EXBYID[id] || null }));
+}
 function renderWorkout(){
-  const giorno = SCHEDA.giorni[state.giornoIdx];
+  const giorno = giornoById(state.giornoId);
+  const headerLabel = (giorno && giorno.label) || state.log.giornoLabel || '';
+  const headerMeta = (giorno && giorno.meta) || state.log.giornoMeta || '';
+  const headerSub = giorno ? giorno.sub : '';
   setTimerBarVisible(true);
+  const displayList = buildDisplayList();
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><div class="eyebrow">${giorno.label}</div><h1>${giorno.meta}</h1></div>
+      <div class="titles"><div class="eyebrow">${headerLabel}</div><h1>${headerMeta}</h1></div>
     </div>
     <div class="wrap">
       <div class="date-bar">
@@ -923,8 +947,8 @@ function renderWorkout(){
         <span class="save-pill" id="savePill">salvato</span>
       </div>
       <div class="warmup-note">${ICO.timerIco}<span>Riscaldamento con mobilità 8-10 minuti prima di iniziare (non incluso qui sotto).</span></div>
-      <div class="section-label">${giorno.sub}</div>
-      ${giorno.esercizi.map((ex,i)=>renderExercise(ex,i)).join('')}
+      ${headerSub ? `<div class="section-label">${headerSub}</div>` : ''}
+      ${displayList.map(entry=>renderExercise(entry)).join('')}
       <button class="cta" id="btnSaveManual">Salva sessione</button>
     </div>
     <div class="timer-bar">
@@ -962,37 +986,47 @@ function renderWorkout(){
     renderHome();
   };
   document.getElementById('dateInput').onchange = (e)=>{ state.log.date = e.target.value; queueSave(); };
-  wireExerciseEvents(giorno);
+  wireExerciseEvents();
   wireTimer();
 }
-function renderExercise(ex, i){
-  const rows = state.log ? state.log.esercizi[i] : Array.from({length:ex.s},()=>({kg:'',reps:'',done:false}));
+function renderExercise(entry){
+  const id = entry.id;
+  const ex = entry.live;
+  const snap = state.log.esercizi[id];
+  const name = ex ? ex.n : snap.name;
+  const sc = ex ? ex.sc : snap.sc;
+  const rows = snap.sets;
   return `
-    <div class="ex-card" data-ex="${i}">
+    <div class="ex-card" data-ex="${id}">
       <div class="ex-head">
         <div class="ex-title-row">
-          <button class="ex-name-btn" data-info="${i}">
-            <span class="ex-name">${ex.n}</span>
+          ${ex ? `
+          <button class="ex-name-btn" data-info="${id}">
+            <span class="ex-name">${name}</span>
             <span class="info-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg></span>
           </button>
+          ` : `<span class="ex-name-plain">${name}</span>`}
           <div class="ex-badges">
-            ${ex.sc ? `<div class="ex-badge">${ex.sc}</div>` : ''}
-            ${ex.rpe && ex.rpe !== '-' ? `<div class="ex-badge rpe">RPE ${ex.rpe}</div>` : ''}
+            ${sc ? `<div class="ex-badge">${sc}</div>` : ''}
+            ${ex && ex.rpe && ex.rpe !== '-' ? `<div class="ex-badge rpe">RPE ${ex.rpe}</div>` : ''}
+            ${!ex ? `<div class="ex-badge removed">non più in scheda</div>` : ''}
           </div>
         </div>
-        ${ex.note ? `<div class="ex-note">${ex.note}</div>` : ''}
+        ${ex && ex.note ? `<div class="ex-note">${ex.note}</div>` : ''}
       </div>
+      ${ex ? `
       <div class="rec-row">
         <span class="rlabel">Recupero consigliato: <b>${ex.recLabel}</b></span>
         <button class="rec-start" data-rec="${ex.rec}" data-name="${ex.n}">${ICO.play} avvia</button>
       </div>
+      ` : ''}
       <div class="set-table">
         <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span></span></div>
         <div class="rows-container">${rows.map((r,si)=>renderSetRow(r,si)).join('')}</div>
       </div>
       <div class="ex-actions">
-        <button class="set-btn" data-act="add" data-ex="${i}">+ Aggiungi serie</button>
-        <button class="set-btn" data-act="remove" data-ex="${i}">− Rimuovi ultima</button>
+        <button class="set-btn" data-act="add" data-ex="${id}">+ Aggiungi serie</button>
+        <button class="set-btn" data-act="remove" data-ex="${id}">− Rimuovi ultima</button>
       </div>
     </div>
   `;
@@ -1007,28 +1041,28 @@ function renderSetRow(r, si){
     </div>
   `;
 }
-function wireExerciseEvents(giorno){
+function wireExerciseEvents(){
   app.querySelectorAll('.ex-name-btn').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      const idx = parseInt(btn.dataset.info);
-      openExerciseInfo(giorno.esercizi[idx]);
+      const id = btn.dataset.info;
+      if(EXBYID[id]) openExerciseInfo(EXBYID[id]);
     });
   });
   app.querySelectorAll('.ex-card').forEach(card=>{
-    const exIdx = parseInt(card.dataset.ex);
+    const exId = card.dataset.ex;
     const rowsContainer = card.querySelector('.rows-container');
     function bindRows(){
       rowsContainer.querySelectorAll('.set-row').forEach(row=>{
         const si = parseInt(row.dataset.si);
         row.querySelectorAll('input').forEach(inp=>{
           inp.addEventListener('input', ()=>{
-            state.log.esercizi[exIdx][si][inp.dataset.f] = inp.value;
+            state.log.esercizi[exId].sets[si][inp.dataset.f] = inp.value;
             queueSave();
           });
         });
         const doneBtn = row.querySelector('.set-done');
         doneBtn.addEventListener('click', ()=>{
-          state.log.esercizi[exIdx][si].done = !state.log.esercizi[exIdx][si].done;
+          state.log.esercizi[exId].sets[si].done = !state.log.esercizi[exId].sets[si].done;
           doneBtn.classList.toggle('on');
           queueSave();
         });
@@ -1037,7 +1071,7 @@ function wireExerciseEvents(giorno){
     bindRows();
     card.querySelectorAll('.set-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
-        const arr = state.log.esercizi[exIdx];
+        const arr = state.log.esercizi[exId].sets;
         if(btn.dataset.act === 'add') arr.push({kg:'',reps:'',done:false});
         else if(btn.dataset.act === 'remove' && arr.length > 1) arr.pop();
         rowsContainer.innerHTML = arr.map((r,si)=>renderSetRow(r,si)).join('');
@@ -1046,7 +1080,7 @@ function wireExerciseEvents(giorno){
       });
     });
     const recBtn = card.querySelector('.rec-start');
-    recBtn.addEventListener('click', ()=> startTimerWithDuration(parseInt(recBtn.dataset.rec), recBtn.dataset.name));
+    if(recBtn) recBtn.addEventListener('click', ()=> startTimerWithDuration(parseInt(recBtn.dataset.rec), recBtn.dataset.name));
   });
 }
 /* ============== REST TIMER ============== */
@@ -1136,22 +1170,41 @@ function updateRing(){
   timeEl.textContent = `${m}:${s}`;
 }
 /* ============== STATISTICHE ============== */
-let statsSel = { giornoIdx: 0, exIdx: 0 };
+let statsSel = { exId: SCHEDA.giorni[0].esercizi[0].id, exName: SCHEDA.giorni[0].esercizi[0].n, giornoLabel: SCHEDA.giorni[0].label, giornoMeta: SCHEDA.giorni[0].meta, sc: SCHEDA.giorni[0].esercizi[0].sc };
 let statsAllPoints = [];
 let statsRange = { from:null, to:null };
-async function getExerciseHistory(giornoIdx, exIdx){
-  const sessions = (await listSessionsDetailed(giornoIdx)).slice().sort((a,b)=> a.date.localeCompare(b.date) || a.sessionId.localeCompare(b.sessionId));
-  const points = [];
-  sessions.forEach(s=>{
-    const rows = s.log.esercizi && s.log.esercizi[exIdx];
-    if(!rows) return;
-    let best = null;
-    rows.forEach(r=>{
-      const kg = parseFloat(r.kg);
-      if(!isNaN(kg) && (best === null || kg > best.kg)) best = {kg, reps:r.reps};
+/* Trova negli storici salvati eventuali esercizi che non esistono più nella scheda
+   attuale, così le loro statistiche restano comunque consultabili. */
+async function discoverOrphanExercises(){
+  const orphans = {};
+  for(const g of SCHEDA.giorni){
+    const sessions = await listSessionsDetailed(g.id);
+    sessions.forEach(s=>{
+      Object.keys(s.log.esercizi||{}).forEach(exId=>{
+        if(!EXBYID[exId] && !orphans[exId]){
+          orphans[exId] = { id:exId, name: s.log.esercizi[exId].name || exId, sc: s.log.esercizi[exId].sc || '' };
+        }
+      });
     });
-    if(best) points.push({date:s.date, kg:best.kg, reps:best.reps, sessionId:s.sessionId});
-  });
+  }
+  return orphans;
+}
+async function getExerciseHistory(exId){
+  const points = [];
+  for(const g of SCHEDA.giorni){
+    const sessions = await listSessionsDetailed(g.id);
+    sessions.forEach(s=>{
+      const entry = s.log.esercizi && s.log.esercizi[exId];
+      if(!entry) return;
+      let best = null;
+      (entry.sets||[]).forEach(r=>{
+        const kg = parseFloat(r.kg);
+        if(!isNaN(kg) && (best === null || kg > best.kg)) best = {kg, reps:r.reps};
+      });
+      if(best) points.push({date:s.date, kg:best.kg, reps:best.reps, sessionId:s.sessionId});
+    });
+  }
+  points.sort((a,b)=> a.date.localeCompare(b.date));
   return points;
 }
 function niceStep(range){
@@ -1204,7 +1257,6 @@ function lineChartSVG(points){
     </svg>
   `;
 }
-function currentExercise(){ return SCHEDA.giorni[statsSel.giornoIdx].esercizi[statsSel.exIdx]; }
 function filteredPoints(){
   return statsAllPoints.filter(p => (!statsRange.from || p.date >= statsRange.from) && (!statsRange.to || p.date <= statsRange.to));
 }
@@ -1253,8 +1305,7 @@ function setQuickRange(days){
 async function renderStats(){
   state.screen = 'stats';
   setTimerBarVisible(false);
-  const ex = currentExercise();
-  const giorno = SCHEDA.giorni[statsSel.giornoIdx];
+  const orphans = await discoverOrphanExercises();
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
@@ -1267,8 +1318,8 @@ async function renderStats(){
       </div>
       <button class="picker-btn" id="pickerBtn">
         <div class="pb-left">
-          <div class="pb-eyebrow">${giorno.label} · ${giorno.meta}</div>
-          <div class="pb-name">${ex.n}</div>
+          <div class="pb-eyebrow">${statsSel.giornoLabel} · ${statsSel.giornoMeta}</div>
+          <div class="pb-name">${statsSel.exName}</div>
         </div>
         <div class="pb-chev">${ICO.chevDown}</div>
       </button>
@@ -1284,7 +1335,7 @@ async function renderStats(){
       </div>
       <div class="chart-card">
         <div class="chart-card-head">
-          <div><div class="name">${ex.n}</div><div class="sub">${giorno.label} · ${giorno.meta} · schema ${ex.sc||'—'}</div></div>
+          <div><div class="name">${statsSel.exName}</div><div class="sub">${statsSel.giornoLabel} · ${statsSel.giornoMeta} · schema ${statsSel.sc||'—'}</div></div>
           <span class="stat-pr" id="prBadge" style="display:none;"></span>
         </div>
         <div class="chart-svg-wrap" id="chartWrap"><div class="stat-empty">Caricamento…</div></div>
@@ -1295,16 +1346,26 @@ async function renderStats(){
       <div class="picker-sheet-inner">
         <div class="picker-head"><h3>Scegli esercizio</h3><button id="pickerClose">${ICO.close}</button></div>
         <div class="picker-scroll">
-          ${SCHEDA.giorni.map((g,gi)=>`
+          ${SCHEDA.giorni.map((g)=>`
             <div class="picker-group">
               <div class="picker-group-label">${g.label} · ${g.meta}</div>
-              ${g.esercizi.map((e,ei)=>`
-                <button class="picker-item ${gi===statsSel.giornoIdx && ei===statsSel.exIdx?'sel':''}" data-gi="${gi}" data-ei="${ei}">
-                  <span>${e.n}</span>${gi===statsSel.giornoIdx && ei===statsSel.exIdx ? ICO.check : ''}
+              ${g.esercizi.map((e)=>`
+                <button class="picker-item ${statsSel.exId===e.id?'sel':''}" data-exid="${e.id}" data-name="${e.n}" data-gl="${g.label}" data-gm="${g.meta}" data-sc="${e.sc||''}">
+                  <span>${e.n}</span>${statsSel.exId===e.id ? ICO.check : ''}
                 </button>
               `).join('')}
             </div>
           `).join('')}
+          ${Object.keys(orphans).length ? `
+            <div class="picker-group">
+              <div class="picker-group-label">Esercizi non più in scheda</div>
+              ${Object.values(orphans).map(o=>`
+                <button class="picker-item ${statsSel.exId===o.id?'sel':''}" data-exid="${o.id}" data-name="${o.name}" data-gl="Storico" data-gm="" data-sc="${o.sc||''}">
+                  <span>${o.name}</span>${statsSel.exId===o.id ? ICO.check : ''}
+                </button>
+              `).join('')}
+            </div>
+          ` : ''}
         </div>
       </div>
     </div>
@@ -1315,21 +1376,21 @@ async function renderStats(){
   document.getElementById('pickerSheet').addEventListener('click', (e)=>{ if(e.target.id === 'pickerSheet') e.currentTarget.classList.remove('open'); });
   document.querySelectorAll('.picker-item').forEach(btn=>{
     btn.addEventListener('click', ()=>{
-      statsSel = { giornoIdx: parseInt(btn.dataset.gi), exIdx: parseInt(btn.dataset.ei) };
+      statsSel = { exId: btn.dataset.exid, exName: btn.dataset.name, giornoLabel: btn.dataset.gl, giornoMeta: btn.dataset.gm, sc: btn.dataset.sc };
       renderStats();
     });
   });
   (async ()=>{
     let total = 0, mostRecent = null;
-    for(let gi=0; gi<SCHEDA.giorni.length; gi++){
-      const sessions = await listSessionsDetailed(gi);
+    for(const g of SCHEDA.giorni){
+      const sessions = await listSessionsDetailed(g.id);
       total += sessions.length;
       sessions.forEach(s=>{ if(!mostRecent || s.date > mostRecent) mostRecent = s.date; });
     }
     document.getElementById('totSessions').textContent = total;
     document.getElementById('lastSessionVal').textContent = mostRecent ? fmtDate(mostRecent) : '—';
   })();
-  statsAllPoints = await getExerciseHistory(statsSel.giornoIdx, statsSel.exIdx);
+  statsAllPoints = await getExerciseHistory(statsSel.exId);
   if(statsAllPoints.length){
     statsRange.from = statsAllPoints[0].date;
     statsRange.to = statsAllPoints[statsAllPoints.length-1].date;
@@ -1350,9 +1411,15 @@ async function renderStats(){
 const MESI_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 async function getAllSessionsFlat(){
   const out = [];
-  for(let gi=0; gi<SCHEDA.giorni.length; gi++){
-    const sessions = await listSessionsDetailed(gi);
-    sessions.forEach(s=> out.push({ giornoIdx:gi, giornoLabel:SCHEDA.giorni[gi].label, meta:SCHEDA.giorni[gi].meta, date:s.date, sessionId:s.sessionId }));
+  for(const g of SCHEDA.giorni){
+    const sessions = await listSessionsDetailed(g.id);
+    sessions.forEach(s=> out.push({
+      giornoId: g.id,
+      giornoLabel: s.log.giornoLabel || g.label,
+      meta: s.log.giornoMeta || g.meta,
+      date:s.date,
+      sessionId:s.sessionId
+    }));
   }
   out.sort((a,b)=> b.date.localeCompare(a.date) || b.sessionId.localeCompare(a.sessionId));
   return out;
@@ -1394,7 +1461,7 @@ async function refreshCronologia(){
       const d = new Date(s.date+'T00:00:00');
       const showTime = dateCounts[s.date] > 1;
       return `
-        <div class="session-row" data-gi="${s.giornoIdx}" data-session="${s.sessionId}">
+        <div class="session-row" data-gid="${s.giornoId}" data-session="${s.sessionId}">
           <div class="sr-left">
             <div class="sr-date">${d.getDate()}</div>
             <div class="sr-info">
@@ -1404,7 +1471,7 @@ async function refreshCronologia(){
           </div>
           <div style="display:flex;align-items:center;gap:6px;">
             <span style="color:var(--text-faint);display:flex;">${ICO.chev}</span>
-            <button class="sr-del" data-gi="${s.giornoIdx}" data-session="${s.sessionId}">${ICO.trash}</button>
+            <button class="sr-del" data-gid="${s.giornoId}" data-session="${s.sessionId}">${ICO.trash}</button>
           </div>
         </div>
       `;
@@ -1413,17 +1480,17 @@ async function refreshCronologia(){
   }).join('');
   wrap.querySelectorAll('.session-row').forEach(row=>{
     row.addEventListener('click', async ()=>{
-      await openExistingSession(parseInt(row.dataset.gi), row.dataset.session);
+      await openExistingSession(row.dataset.gid, row.dataset.session);
     });
   });
   wrap.querySelectorAll('.sr-del').forEach(btn=>{
     btn.addEventListener('click', (e)=>{
       e.stopPropagation();
-      const gi = parseInt(btn.dataset.gi);
+      const gid = btn.dataset.gid;
       const sessionId = btn.dataset.session;
       const rowDate = btn.closest('.session-row').querySelector('.sr-meta').textContent;
       showConfirm(`Eliminare questo allenamento (${rowDate})? L'operazione non può essere annullata e i dati spariranno anche dalle statistiche.`, async ()=>{
-        await deleteSession(gi, sessionId);
+        await deleteSession(gid, sessionId);
         showToast('Sessione eliminata');
         await refreshCronologia();
       });
