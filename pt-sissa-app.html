@@ -1,0 +1,1437 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Cowork - App PT Sissa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme: light;
+  --bg:#101314;
+  --bg-elev:#181c1e;
+  --bg-card:#1e2325;
+  --bg-card-hover:#242a2c;
+  --border:rgba(255,255,255,0.08);
+  --border-strong:rgba(255,255,255,0.16);
+  --text:#f2efe9;
+  --text-muted:#8b9296;
+  --text-faint:#5c6366;
+  --accent:#ff5c39;
+  --accent-dim:rgba(255,92,57,0.14);
+  --teal:#3fc7b8;
+  --teal-dim:rgba(63,199,184,0.14);
+  --success:#7ed957;
+  --success-dim:rgba(126,217,87,0.14);
+  --danger:#ff6b6b;
+  --danger-dim:rgba(255,107,107,0.14);
+  --radius:14px;
+  --disp:'Bebas Neue', sans-serif;
+  --mono:'JetBrains Mono', monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html{color-scheme: light;}
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse 900px 500px at 50% -10%, rgba(255,92,57,0.08), transparent),
+    var(--bg);
+  color:var(--text);
+  font-family:'Inter',sans-serif;
+  min-height:100vh;
+  padding-bottom:24px;
+}
+body.has-timerbar{padding-bottom:110px;}
+::selection{background:var(--accent);color:#101314;}
+button{font-family:inherit;cursor:pointer;}
+input{font-family:inherit;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px;}
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:rgba(16,19,20,0.88);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+  padding:14px 18px;
+  display:flex;align-items:center;gap:12px;
+}
+.topbar .back{
+  width:34px;height:34px;border-radius:50%;
+  border:1px solid var(--border-strong);background:var(--bg-card);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text);flex-shrink:0;
+}
+.topbar .back svg{width:16px;height:16px;}
+.topbar .titles{flex:1;min-width:0;}
+.topbar .eyebrow{
+  font-family:var(--mono);font-size:10px;letter-spacing:0.14em;
+  color:var(--accent);text-transform:uppercase;font-weight:700;
+}
+.topbar h1{
+  font-family:var(--disp);font-size:22px;letter-spacing:0.03em;text-transform:uppercase;
+  margin:0;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.wrap{max-width:640px;margin:0 auto;padding:20px 18px 0;}
+.hero{padding:34px 18px 10px;text-align:left;max-width:640px;margin:0 auto;}
+.hero .eyebrow{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.16em;color:var(--accent);
+  text-transform:uppercase;font-weight:700;margin-bottom:8px;
+}
+.hero h1{
+  font-family:var(--disp);font-size:50px;line-height:0.92;letter-spacing:0.01em;
+  margin:0 0 10px;
+}
+.hero p{color:var(--text-muted);font-size:15px;line-height:1.5;max-width:46ch;margin:0 0 6px;}
+.hero .rpe-note{
+  margin-top:16px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+  padding:12px 14px;font-size:12.5px;color:var(--text-muted);line-height:1.5;
+}
+.hero .rpe-note b{color:var(--teal);}
+.section-label{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--text-faint);margin:28px 0 12px;display:flex;align-items:center;gap:10px;
+}
+.section-label::after{content:"";flex:1;height:1px;background:var(--border);}
+/* HOME */
+.home-grid{display:flex;flex-direction:column;gap:12px;}
+.home-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;display:flex;align-items:center;gap:16px;text-align:left;color:var(--text);
+}
+.home-card:active{transform:scale(0.98);}
+.home-card .hc-ico{
+  width:48px;height:48px;border-radius:12px;background:var(--accent-dim);color:var(--accent);
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.home-card .hc-ico svg{width:22px;height:22px;}
+.home-card .hc-info{flex:1;min-width:0;}
+.home-card .hc-title{font-weight:700;font-size:16px;margin-bottom:2px;}
+.home-card .hc-sub{font-size:12.5px;color:var(--text-muted);}
+.home-card .hc-arrow{color:var(--text-faint);flex-shrink:0;}
+.home-card .hc-arrow svg{width:18px;height:18px;}
+/* GIORNO GRID */
+.giorno-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-bottom:10px;}
+@media (max-width:420px){.giorno-grid{grid-template-columns:1fr;}}
+.giorno-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px;text-align:left;color:var(--text);position:relative;overflow:hidden;
+}
+.giorno-card:active{transform:scale(0.98);}
+.giorno-card .gnum{font-family:var(--disp);font-size:15px;color:var(--accent);letter-spacing:.08em;}
+.giorno-card .glabel{font-weight:700;font-size:16px;margin:4px 0 2px;}
+.giorno-card .gsub{font-size:11.5px;color:var(--text-muted);margin-bottom:8px;}
+.giorno-card .gmeta{font-size:11px;color:var(--text-faint);font-family:var(--mono);}
+.giorno-card .glast{
+  margin-top:10px;padding-top:10px;border-top:1px solid var(--border);
+  font-size:11px;color:var(--text-faint);font-family:var(--mono);
+}
+.giorno-card .glast b{color:var(--teal);font-weight:600;}
+.date-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:12px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:12px 16px;margin-bottom:18px;
+}
+.date-bar label{font-size:11px;color:var(--text-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px;}
+.date-bar input[type=date]{
+  background:transparent;border:none;color:var(--text);font-size:15px;font-weight:600;
+  font-family:var(--mono);
+}
+.date-bar input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.8);}
+.save-pill{
+  font-family:var(--mono);font-size:11px;padding:6px 12px;border-radius:20px;
+  background:var(--success-dim);color:var(--success);border:1px solid transparent;
+  white-space:nowrap;opacity:0;transition:opacity .3s;
+}
+.save-pill.show{opacity:1;}
+.warmup-note{
+  display:flex;align-items:center;gap:10px;background:var(--teal-dim);border:1px solid rgba(63,199,184,0.25);
+  border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12.5px;color:var(--teal);
+}
+.warmup-note svg{width:16px;height:16px;flex-shrink:0;}
+.info-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden;}
+.info-panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px;cursor:pointer;gap:10px;}
+.info-panel-head .iph-title{font-weight:700;font-size:14px;}
+.info-panel-head .iph-sub{font-size:12px;color:var(--text-muted);margin-top:3px;}
+.info-panel-chev{color:var(--text-faint);transition:transform .2s;flex-shrink:0;}
+.info-panel-chev svg{width:16px;height:16px;}
+.info-panel-chev.open{transform:rotate(180deg);}
+.info-panel-body{max-height:0;overflow:hidden;transition:max-height .35s ease;padding:0 16px;}
+.info-panel-body.open{max-height:2400px;padding:0 16px 18px;}
+.info-panel-body p{font-size:13px;line-height:1.65;color:var(--text-muted);margin:0 0 13px;}
+.info-panel-body p:last-child{margin-bottom:0;}
+.info-panel-body b{color:var(--teal);font-weight:600;}
+.info-panel-body ul{margin:0 0 13px;padding-left:18px;}
+.info-panel-body ul li{font-size:13px;line-height:1.6;color:var(--text-muted);margin-bottom:6px;}
+.info-panel-body ul li:last-child{margin-bottom:0;}
+.ex-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  margin-bottom:12px;overflow:hidden;
+}
+.ex-head{padding:14px 16px 12px;border-bottom:1px solid var(--border);}
+.ex-title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;}
+.ex-name-btn{
+  background:none;border:none;padding:0;text-align:left;color:var(--text);cursor:pointer;
+  display:flex;align-items:center;gap:6px;
+}
+.ex-name-btn .ex-name{
+  font-weight:700;font-size:14.5px;line-height:1.3;
+  text-decoration:underline;text-decoration-style:dotted;text-decoration-color:var(--text-faint);
+  text-underline-offset:3px;
+}
+.ex-name-btn .info-ico{color:var(--accent);flex-shrink:0;}
+.ex-name-btn .info-ico svg{width:14px;height:14px;}
+.ex-badges{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.ex-badge{
+  font-family:var(--mono);font-size:10.5px;color:var(--accent);background:var(--accent-dim);
+  padding:3px 8px;border-radius:6px;white-space:nowrap;flex-shrink:0;font-weight:600;
+}
+.ex-badge.rpe{color:var(--teal);background:var(--teal-dim);}
+.ex-note{font-size:11.5px;color:var(--text-faint);margin-top:5px;font-style:italic;}
+.rec-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 16px;background:var(--bg-elev);font-size:12px;color:var(--text-muted);
+}
+.rec-row .rlabel{font-family:var(--mono);}
+.rec-row .rlabel b{color:var(--text);}
+.rec-start{
+  display:flex;align-items:center;gap:6px;background:var(--accent-dim);color:var(--accent);
+  border:none;border-radius:8px;padding:6px 10px;font-family:var(--mono);font-size:11px;font-weight:700;
+}
+.rec-start svg{width:11px;height:11px;}
+.set-table{padding:6px 16px 12px;}
+.set-row{
+  display:grid;grid-template-columns:26px 1fr 1fr 34px;gap:8px;align-items:center;
+  padding:6px 0;
+}
+.set-row .set-idx{
+  font-family:var(--mono);font-size:12px;color:var(--text-faint);text-align:center;
+}
+.set-row input{
+  width:100%;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;
+  padding:8px 6px;color:var(--text);font-family:var(--mono);font-size:14px;text-align:center;
+}
+.set-row input:focus{outline:none;border-color:var(--accent);}
+.set-row .set-done{
+  width:30px;height:30px;border-radius:8px;border:1.5px solid var(--border-strong);
+  display:flex;align-items:center;justify-content:center;background:var(--bg-elev);
+}
+.set-row .set-done.on{background:var(--success);border-color:var(--success);}
+.set-row .set-done svg{width:15px;height:15px;color:#101314;opacity:0;}
+.set-row .set-done.on svg{opacity:1;}
+.col-labels{
+  display:grid;grid-template-columns:26px 1fr 1fr 34px;gap:8px;
+  font-family:var(--mono);font-size:9.5px;color:var(--text-faint);text-transform:uppercase;
+  letter-spacing:.06em;padding:8px 0 4px;
+}
+.ex-actions{display:flex;gap:8px;padding:0 16px 14px;}
+.set-btn{
+  flex:1;border:1px dashed var(--border-strong);background:transparent;color:var(--text-muted);
+  border-radius:8px;padding:7px;font-size:12px;font-family:var(--mono);
+}
+.set-btn:active{background:var(--bg-elev);}
+.cta{
+  display:block;width:100%;background:var(--accent);color:#101314;border:none;
+  border-radius:12px;padding:16px;font-weight:800;text-align:center;
+  font-family:var(--disp);letter-spacing:.04em;font-size:16px;margin-top:6px;margin-bottom:20px;
+}
+.cta:active{opacity:.85;}
+.toast{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%) translateY(-60px);
+  background:var(--success);color:#0e1210;font-family:var(--mono);font-size:12.5px;font-weight:700;
+  padding:10px 18px;border-radius:20px;z-index:200;transition:transform .3s ease;
+}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.hidden{display:none !important;}
+/* STATS */
+.stat-summary{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px;}
+.stat-summary-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:16px;text-align:left;
+}
+.stat-summary-card .val{font-family:var(--disp);font-size:32px;color:var(--accent);line-height:1;}
+.stat-summary-card .lbl{font-size:11px;color:var(--text-muted);margin-top:4px;font-family:var(--mono);}
+.stat-empty{font-size:12px;color:var(--text-faint);font-family:var(--mono);padding:6px 0;}
+.stat-meta-row{
+  display:flex;justify-content:space-between;font-size:11px;color:var(--text-muted);
+  font-family:var(--mono);margin-top:6px;
+}
+.stat-meta-row b{color:var(--text);}
+.picker-btn{
+  width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--bg-card);border:1px solid var(--border-strong);border-radius:var(--radius);
+  padding:15px 16px;color:var(--text);margin-bottom:16px;
+}
+.picker-btn .pb-left{text-align:left;min-width:0;}
+.picker-btn .pb-eyebrow{font-family:var(--mono);font-size:10px;color:var(--accent);text-transform:uppercase;letter-spacing:.08em;margin-bottom:3px;}
+.picker-btn .pb-name{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.picker-btn .pb-chev{color:var(--text-faint);flex-shrink:0;}
+.picker-btn .pb-chev svg{width:16px;height:16px;}
+.picker-sheet{
+  position:fixed;inset:0;z-index:110;background:rgba(8,10,10,0.75);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.picker-sheet.open{display:flex;}
+.picker-sheet-inner{
+  width:100%;max-width:640px;max-height:78vh;background:var(--bg-elev);
+  border-radius:24px 24px 0 0;border:1px solid var(--border-strong);border-bottom:none;
+  display:flex;flex-direction:column;animation:slideup .25s ease;
+}
+@keyframes slideup{from{transform:translateY(100%);}to{transform:translateY(0);}}
+.picker-head{
+  display:flex;align-items:center;justify-content:space-between;padding:18px 20px 12px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.picker-head h3{margin:0;font-family:var(--disp);font-size:20px;letter-spacing:.02em;}
+.picker-head button{background:none;border:none;color:var(--text-faint);}
+.picker-head button svg{width:20px;height:20px;}
+.picker-scroll{overflow-y:auto;padding:8px 8px 20px;}
+.picker-group{margin-top:10px;}
+.picker-group-label{
+  font-family:var(--mono);font-size:10.5px;color:var(--text-faint);text-transform:uppercase;
+  letter-spacing:.1em;padding:8px 12px 6px;
+}
+.picker-item{
+  width:100%;text-align:left;background:none;border:none;color:var(--text-muted);
+  padding:12px;border-radius:10px;font-size:14px;display:flex;align-items:center;justify-content:space-between;
+}
+.picker-item:active{background:var(--bg-card);}
+.picker-item.sel{color:var(--accent);background:var(--accent-dim);font-weight:700;}
+.picker-item svg{width:15px;height:15px;}
+.chart-card{
+  background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 16px 8px;margin-bottom:16px;
+}
+.chart-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:10px;}
+.chart-card-head .name{font-weight:700;font-size:15.5px;}
+.chart-card-head .sub{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
+.chart-svg-wrap{width:100%;}
+.chart-svg-wrap svg{width:100%;height:auto;display:block;}
+.chart-axis-line{stroke:var(--border-strong);stroke-width:1;}
+.chart-grid-line{stroke:var(--border);stroke-width:1;stroke-dasharray:3,4;}
+.chart-tick-label{font-family:var(--mono);fill:var(--text-faint);font-size:9px;}
+.chart-point-label{font-family:var(--mono);fill:var(--text-muted);font-size:9px;}
+.range-row{display:flex;gap:10px;margin-bottom:10px;}
+.range-field{
+  flex:1;background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:9px 10px;
+}
+.range-field label{display:block;font-size:9.5px;color:var(--text-faint);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px;}
+.range-field input[type=date]{background:none;border:none;color:var(--text);font-family:var(--mono);font-size:12.5px;width:100%;}
+.range-field input[type=date]::-webkit-calendar-picker-indicator{filter:invert(0.8);}
+.range-chips{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;}
+.range-chip{
+  font-family:var(--mono);font-size:11px;padding:6px 11px;border-radius:16px;
+  border:1px solid var(--border-strong);background:var(--bg-elev);color:var(--text-muted);
+}
+.range-chip.active{background:var(--accent);color:#101314;border-color:var(--accent);font-weight:700;}
+/* CRONOLOGIA */
+.month-group{margin-bottom:22px;}
+.month-title{
+  font-family:var(--disp);font-size:20px;letter-spacing:.02em;color:var(--text);margin-bottom:10px;
+}
+.session-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+  padding:13px 14px;margin-bottom:8px;cursor:pointer;
+}
+.session-row:active{background:var(--bg-card-hover);}
+.session-row .sr-left{display:flex;align-items:center;gap:12px;min-width:0;}
+.session-row .sr-date{
+  font-family:var(--disp);font-size:22px;color:var(--accent);width:40px;text-align:center;line-height:1;flex-shrink:0;
+}
+.session-row .sr-info{min-width:0;}
+.session-row .sr-giorno{font-weight:700;font-size:13.5px;}
+.session-row .sr-meta{font-size:11px;color:var(--text-muted);font-family:var(--mono);}
+.session-row .sr-del{
+  width:34px;height:34px;border-radius:8px;flex-shrink:0;border:1px solid var(--border-strong);
+  background:var(--bg-elev);color:var(--text-faint);display:flex;align-items:center;justify-content:center;
+}
+.session-row .sr-del svg{width:15px;height:15px;}
+.cron-empty{text-align:center;padding:60px 20px;color:var(--text-faint);font-size:13.5px;}
+/* INFO SHEET (technique popup) */
+.info-sheet{
+  position:fixed;inset:0;z-index:120;background:rgba(8,10,10,0.75);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.info-sheet.open{display:flex;}
+.info-sheet-inner{
+  width:100%;max-width:640px;max-height:85vh;background:var(--bg-elev);
+  border-radius:24px 24px 0 0;border:1px solid var(--border-strong);border-bottom:none;
+  display:flex;flex-direction:column;animation:slideup .25s ease;
+}
+.info-head{
+  display:flex;align-items:flex-start;justify-content:space-between;padding:20px 20px 14px;
+  border-bottom:1px solid var(--border);flex-shrink:0;
+}
+.info-head h3{margin:0;font-family:var(--disp);font-size:24px;letter-spacing:.02em;line-height:1;}
+.info-head button{background:none;border:none;color:var(--text-faint);flex-shrink:0;margin-left:10px;}
+.info-head button svg{width:20px;height:20px;}
+.info-scroll{overflow-y:auto;padding:16px 20px 28px;}
+.info-block{margin-bottom:18px;}
+.info-block:last-child{margin-bottom:0;}
+.info-block-label{
+  display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--accent);
+  text-transform:uppercase;letter-spacing:.1em;font-weight:700;margin-bottom:6px;
+}
+.info-block-label svg{width:14px;height:14px;}
+.info-block p{margin:0;font-size:13.5px;line-height:1.6;color:var(--text-muted);}
+/* CONFIRM MODAL */
+.confirm-overlay{
+  position:fixed;inset:0;z-index:200;background:rgba(8,10,10,0.8);
+  display:none;align-items:center;justify-content:center;padding:24px;
+}
+.confirm-overlay.open{display:flex;}
+.confirm-box{
+  background:var(--bg-elev);border:1px solid var(--border-strong);border-radius:16px;
+  padding:22px;max-width:340px;width:100%;text-align:center;
+}
+.confirm-box p{font-size:14px;color:var(--text);margin:0 0 18px;line-height:1.5;}
+.confirm-actions{display:flex;gap:10px;}
+.confirm-actions button{
+  flex:1;padding:11px;border-radius:10px;font-family:var(--mono);font-size:13px;font-weight:700;border:none;
+}
+.confirm-cancel{background:var(--bg-card);color:var(--text-muted);border:1px solid var(--border-strong) !important;}
+.confirm-ok{background:var(--danger);color:#1a0a0a;}
+/* TIMER BAR */
+.timer-bar{
+  position:fixed;left:0;right:0;bottom:0;z-index:50;
+  background:rgba(24,28,30,0.95);backdrop-filter:blur(14px);
+  border-top:1px solid var(--border-strong);
+  padding:12px 16px calc(12px + env(safe-area-inset-bottom));
+}
+.timer-bar-inner{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:10px;}
+.timer-label{
+  font-family:var(--mono);font-size:10px;color:var(--text-faint);text-transform:uppercase;
+  letter-spacing:.1em;margin-right:2px;
+}
+.chip{
+  font-family:var(--mono);font-size:12.5px;padding:9px 12px;border-radius:20px;
+  border:1px solid var(--border-strong);background:var(--bg-elev);color:var(--text-muted);
+  flex-shrink:0;
+}
+.chip.active{background:var(--accent);color:#101314;border-color:var(--accent);font-weight:700;}
+.timer-start{
+  margin-left:auto;flex-shrink:0;width:44px;height:44px;border-radius:50%;
+  background:var(--accent);border:none;display:flex;align-items:center;justify-content:center;
+  color:#101314;
+}
+.timer-start svg{width:18px;height:18px;}
+.timer-sheet{
+  position:fixed;inset:0;z-index:130;background:rgba(8,10,10,0.7);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.timer-sheet.open{display:flex;}
+.timer-sheet-inner{
+  width:100%;max-width:640px;background:var(--bg-elev);
+  border-radius:24px 24px 0 0;border:1px solid var(--border-strong);border-bottom:none;
+  padding:28px 24px calc(28px + env(safe-area-inset-bottom));
+  display:flex;flex-direction:column;align-items:center;
+  animation:slideup .25s ease;
+}
+.timer-sheet-close{align-self:flex-end;color:var(--text-faint);background:none;border:none;padding:0 0 10px;}
+.timer-sheet-close svg{width:20px;height:20px;}
+.timer-source{font-family:var(--mono);font-size:11px;color:var(--text-faint);margin-bottom:4px;text-align:center;}
+.ring-wrap{position:relative;width:230px;height:230px;margin:6px 0 20px;}
+.ring-wrap svg{transform:rotate(-90deg);}
+.ring-bg{fill:none;stroke:var(--border);stroke-width:12;}
+.ring-fg{fill:none;stroke:var(--accent);stroke-width:12;stroke-linecap:round;transition:stroke .3s;}
+.ring-fg.done{stroke:var(--success);}
+.ring-center{
+  position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.ring-time{font-family:var(--mono);font-size:44px;font-weight:700;letter-spacing:-0.02em;}
+.ring-status{font-family:var(--mono);font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;margin-top:4px;}
+.timer-controls{display:flex;align-items:center;gap:14px;}
+.tc-btn{
+  width:52px;height:52px;border-radius:50%;border:1px solid var(--border-strong);
+  background:var(--bg-card);color:var(--text);display:flex;align-items:center;justify-content:center;
+}
+.tc-btn svg{width:18px;height:18px;}
+.tc-main{
+  width:64px;height:64px;background:var(--accent);border:none;color:#101314;
+}
+.tc-main svg{width:24px;height:24px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast">Salvato</div>
+<div class="info-sheet" id="infoSheet">
+  <div class="info-sheet-inner">
+    <div class="info-head">
+      <h3 id="infoTitle">Esercizio</h3>
+      <button id="infoClose">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </button>
+    </div>
+    <div class="info-scroll" id="infoScroll"></div>
+  </div>
+</div>
+<div class="confirm-overlay" id="confirmOverlay">
+  <div class="confirm-box">
+    <p id="confirmMsg">Sei sicura?</p>
+    <div class="confirm-actions">
+      <button class="confirm-cancel" id="confirmCancel">Annulla</button>
+      <button class="confirm-ok" id="confirmOk">Elimina</button>
+    </div>
+  </div>
+</div>
+<script>
+/* ============== STORAGE ADAPTER (localStorage-backed, mimics original async window.storage API) ============== */
+window.storage = {
+  _prefixKey(k){ return 'ptsissa::' + k; },
+  async set(key, value, _unused){
+    try{ localStorage.setItem(this._prefixKey(key), value); return true; }catch(e){ return false; }
+  },
+  async get(key, _unused){
+    try{
+      const v = localStorage.getItem(this._prefixKey(key));
+      return v === null ? null : { value: v };
+    }catch(e){ return null; }
+  },
+  async delete(key, _unused){
+    try{ localStorage.removeItem(this._prefixKey(key)); return true; }catch(e){ return false; }
+  },
+  async list(prefix, _unused){
+    try{
+      const full = this._prefixKey(prefix);
+      const keys = [];
+      for(let i=0;i<localStorage.length;i++){
+        const k = localStorage.key(i);
+        if(k && k.startsWith(full)) keys.push(k.slice('ptsissa::'.length));
+      }
+      return { keys };
+    }catch(e){ return { keys: [] }; }
+  }
+};
+/* ============== DATI — Scheda Settembre 2026 (Silvana) ============== */
+const SCHEDA = {
+  id:'set2026', nome:'Ciclo Settembre 2026', sub:'4 giorni · upper / lower',
+  giorni:[
+    { label:'Giorno 1', meta:'Lower A', sub:'Quadricipiti e gluteo massimo',
+      esercizi:[
+        {n:'Hack squat', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
+          info:{setup:"Piedi in appoggio sulla pedana, leggermente più larghi delle spalle, schiena e spalle premute contro lo schienale imbottito.",
+                esec:"Fase eccentrica (discesa): pieghi le ginocchia portando i cuscinetti verso il basso in modo controllato, senza staccare i talloni. Fase concentrica (spinta): spingi con i talloni per tornare su, senza bloccare del tutto le ginocchia in cima.",
+                muscolo:"Lavora soprattutto il quadricipite. Sensazione corretta: bruciore sulla parte frontale della coscia. Errore comune: spingere sulle punte dei piedi, che scarica il lavoro sui polpacci e stressa le ginocchia.",
+                resp:"Inspira durante la discesa, espira spingendo verso l'alto."}},
+        {n:'Leg press 45°', s:3, sc:'3×12-15', rpe:'7-8', rec:120, recLabel:'2 min',
+          info:{setup:"Seduta con schiena e bacino ben aderenti al sedile, piedi sulla pedana all'altezza delle spalle, leggermente in avanti rispetto alle ginocchia.",
+                esec:"Discesa (eccentrica): sblocca i fermi e piega le ginocchia verso il petto in modo controllato, senza che il bacino si stacchi dal sedile. Spinta (concentrica): spingi con tutta la pianta del piede fino quasi alla distensione.",
+                muscolo:"Quadricipiti principalmente, con contributo dei glutei. Errore comune: staccare il bacino dal sedile in fondo alla discesa, che scarica sulla schiena bassa.",
+                resp:"Inspira in discesa, espira in spinta."}},
+        {n:'Hip thrust con bilanciere', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min',
+          info:{setup:"Schiena appoggiata a una panca all'altezza delle scapole, bilanciere sui fianchi (meglio con un cuscinetto), piedi piatti a terra larghezza spalle.",
+                esec:"Parti con i fianchi bassi vicino a terra. Concentrica: spingi con i talloni e contrai i glutei portando i fianchi verso l'alto fino ad allineare spalle-bacino-ginocchia. Eccentrica: scendi controllata senza far rimbalzare il bilanciere.",
+                muscolo:"Target principale: il gluteo massimo. Sensazione corretta: contrazione forte del gluteo in cima, non nella schiena bassa. Errore comune: inarcare troppo la schiena invece di spingere con i glutei.",
+                resp:"Inspira scendendo, espira spingendo in alto."}},
+        {n:'Affondi bulgari con manubri', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'per gamba',
+          info:{setup:"Piede posteriore appoggiato con il collo del piede su una panca dietro di te, gamba anteriore avanti, un manubrio per mano.",
+                esec:"Discesa: piega il ginocchio anteriore scendendo dritto verso il basso. Risalita: spingi con il tallone della gamba anteriore per tornare su.",
+                muscolo:"Quadricipite e gluteo della gamba anteriore, lavorati singolarmente — utile per correggere squilibri tra le due gambe. Errore comune: portare il ginocchio anteriore troppo oltre la punta del piede.",
+                resp:"Inspira in discesa, espira in risalita."}},
+        {n:'Leg extension', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec',
+          info:{setup:"Seduta con schiena aderente allo schienale, caviglie dietro il rullo imbottito, ginocchia allineate al perno della macchina.",
+                esec:"Concentrica: estendi le gambe fino quasi alla distensione completa. Eccentrica: torna giù controllata senza far sbattere i pesi.",
+                muscolo:"Isola il quadricipite. Errore comune: usare lo slancio per partire invece di un movimento controllato.",
+                resp:"Espira estendendo, inspira tornando giù."}},
+        {n:'Calf raises in piedi', s:3, sc:'3×15-20', rpe:'8', rec:60, recLabel:'60 sec',
+          info:{setup:"In piedi sulla pedana o su un rialzo, punte dei piedi appoggiate e talloni fuori dal bordo, ginocchia leggermente morbide.",
+                esec:"Concentrica: sali sulle punte il più in alto possibile. Eccentrica: scendi lasciando i talloni andare sotto il livello della pedana per un buon allungamento.",
+                muscolo:"Polpacci. Errore comune: movimento troppo veloce senza scendere completamente, perdendo la parte più efficace dell'esercizio.",
+                resp:"Espira salendo, inspira scendendo."}},
+      ]},
+    { label:'Giorno 2', meta:'Upper A', sub:'Spinta e correzione posturale',
+      esercizi:[
+        {n:'Lat machine presa larga', s:4, sc:'4×10-12', rpe:'7-8', rec:120, recLabel:'2 min',
+          info:{setup:"Seduta con le cosce bloccate sotto il cuscinetto, presa sulla barra più larga delle spalle, busto leggermente inclinato indietro.",
+                esec:"Concentrica: tira la barra verso la parte alta del petto portando indietro i gomiti e avvicinando le scapole. Eccentrica: torna su controllata fino a braccia quasi distese.",
+                muscolo:"Dorsali (gran dorsale). Sensazione corretta: tirare 'con i gomiti', non con le braccia. Errore comune: usare lo slancio del busto o tirare solo con i bicipiti.",
+                resp:"Espira tirando la barra giù, inspira tornando su."}},
+        {n:'Chest press (macchina)', s:3, sc:'3×10-12', rpe:'7-8', rec:105, recLabel:'90-120 sec',
+          info:{setup:"Seduta con schiena aderente allo schienale, impugnature all'altezza del petto, piedi ben piantati a terra.",
+                esec:"Concentrica: spingi le impugnature in avanti fino quasi alla distensione. Eccentrica: torna indietro controllata senza far sbattere i pesi.",
+                muscolo:"Petto (grande pettorale) con contributo di tricipiti e spalle. Errore comune: sollevare le spalle verso le orecchie durante la spinta.",
+                resp:"Espira spingendo in avanti, inspira tornando indietro."}},
+        {n:'Rematore al cavo basso seduto', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
+          info:{setup:"Seduta con ginocchia leggermente flesse, busto dritto, presa sulla maniglia con braccia distese in avanti.",
+                esec:"Concentrica: tira la maniglia verso l'addome portando indietro i gomiti e avvicinando le scapole. Eccentrica: torna avanti controllata senza incurvare la schiena.",
+                muscolo:"Dorsali e romboidi (centro schiena). Sensazione corretta: le scapole si avvicinano a fine tirata. Errore comune: dondolare il busto invece di far lavorare la schiena.",
+                resp:"Espira tirando, inspira tornando avanti."}},
+        {n:'Alzate laterali con manubri', s:3, sc:'3×12-15', rpe:'8', rec:60, recLabel:'60 sec',
+          info:{setup:"In piedi, un manubrio per mano lungo i fianchi, gomiti leggermente piegati.",
+                esec:"Concentrica: alza le braccia lateralmente fino all'altezza delle spalle, guidando con i gomiti. Eccentrica: scendi controllata.",
+                muscolo:"Deltoide laterale (parte centrale della spalla). Errore comune: alzare le spalle verso le orecchie o usare lo slancio.",
+                resp:"Espira alzando le braccia, inspira scendendo."}},
+        {n:'Face pull al cavo con corda', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
+          info:{setup:"In piedi davanti al cavo alto, corda impugnata con i pollici verso di te, busto leggermente indietro.",
+                esec:"Concentrica: tira la corda verso il viso separando le mani, gomiti alti. Eccentrica: torna avanti controllata.",
+                muscolo:"Deltoide posteriore e muscoli tra le scapole, utili per la postura. Errore comune: tirare con i gomiti bassi invece che all'altezza delle spalle.",
+                resp:"Espira tirando, inspira tornando avanti."}},
+        {n:'Pushdown tricipiti', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'Superset con hammer curl · 60″ tra i due, 90″ dopo il giro',
+          info:{setup:"In piedi davanti al cavo alto, presa sulla barra o corda, gomiti fissi ai lati del busto.",
+                esec:"Concentrica: estendi gli avambracci verso il basso senza muovere i gomiti. Eccentrica: torna su controllata.",
+                muscolo:"Tricipite. Errore comune: allontanare i gomiti dal busto durante la discesa.",
+                resp:"Espira estendendo verso il basso, inspira tornando su."}},
+        {n:'Hammer curl con manubri', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'Superset con pushdown · 60″ tra i due, 90″ dopo il giro',
+          info:{setup:"In piedi, un manubrio per mano con presa neutra (palmi rivolti l'uno verso l'altro), gomiti vicini al busto.",
+                esec:"Concentrica: piega i gomiti portando i manubri verso le spalle. Eccentrica: scendi controllata senza oscillare il busto.",
+                muscolo:"Bicipite e brachiale (parte esterna del braccio). Errore comune: usare lo slancio della schiena.",
+                resp:"Espira salendo, inspira scendendo."}},
+      ]},
+    { label:'Giorno 3', meta:'Lower B', sub:'Femorali e gluteo medio/piccolo',
+      esercizi:[
+        {n:'Stacco rumeno (RDL) con bilanciere', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
+          info:{setup:"In piedi, bilanciere davanti alle cosce, presa poco più larga dei fianchi, ginocchia leggermente flesse e fisse per tutto il movimento.",
+                esec:"Eccentrica: spingi i fianchi indietro (non piegare le ginocchia) facendo scorrere il bilanciere lungo le gambe, schiena dritta, finché senti tensione sui femorali. Concentrica: torna su spingendo i fianchi in avanti e contraendo i glutei.",
+                muscolo:"Femorali e gluteo. Sensazione corretta: forte tensione dietro la coscia in fondo al movimento. Errore comune: arrotondare la schiena bassa o piegare troppo le ginocchia trasformandolo in uno squat.",
+                resp:"Inspira scendendo, espira tornando su."}},
+        {n:'Hyperextension focus glutei', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:"discesa lenta in 3″",
+          info:{setup:"Su panca per iperestensioni, bacino appoggiato sul cuscinetto, caviglie bloccate, busto piegato in avanti a 90°.",
+                esec:"Discesa lenta in 3 secondi: scendi controllata piegandoti sui fianchi. Concentrica: risali contraendo i glutei fino ad allineare il busto con le gambe, senza andare oltre la linea retta.",
+                muscolo:"Gluteo. La discesa lenta aumenta il tempo sotto tensione, cioè quanto il muscolo resta sotto sforzo durante la serie. Errore comune: iperestendere la schiena in cima invece di fermarsi in linea retta.",
+                resp:"Inspira scendendo, espira risalendo."}},
+        {n:'Abductor machine', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec',
+          info:{setup:"Seduta con schiena aderente allo schienale, esterno coscia contro i cuscinetti, ginocchia leggermente flesse.",
+                esec:"Concentrica: apri le gambe verso l'esterno. Eccentrica: richiudi controllata senza far sbattere i pesi.",
+                muscolo:"Gluteo medio (parte esterna del gluteo, importante per la stabilità del bacino). Errore comune: slancio invece di movimento lento e controllato.",
+                resp:"Espira aprendo le gambe, inspira richiudendo."}},
+        {n:'Cable kickback', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'per gamba',
+          info:{setup:"In piedi davanti al cavo basso, cavigliera al piede da lavorare, busto leggermente inclinato in avanti con supporto per equilibrio.",
+                esec:"Concentrica: spingi la gamba indietro contraendo il gluteo, senza inarcare la schiena. Eccentrica: torna avanti controllata.",
+                muscolo:"Gluteo massimo, isolato su una gamba per volta. Errore comune: usare la schiena per generare slancio.",
+                resp:"Espira spingendo indietro, inspira tornando avanti."}},
+        {n:'Monster walk con fascia elastica', s:3, sc:'3×10 passi', rpe:'-', rec:60, recLabel:'60 sec', note:'per lato',
+          info:{setup:"Fascia elastica sopra le caviglie o sopra le ginocchia, leggera flessione di ginocchia e fianchi, busto dritto.",
+                esec:"Cammina lateralmente a piccoli passi mantenendo tensione costante sulla fascia, senza far toccare i piedi tra loro.",
+                muscolo:"Gluteo medio, utile per la stabilità dell'anca in camminata e corsa. Errore comune: raddrizzare troppo le ginocchia perdendo tensione sulla fascia.",
+                resp:"Respira in modo naturale e continuo durante il movimento."}},
+        {n:'Leg curl sdraiato', s:3, sc:'3×12-15', rpe:'8', rec:75, recLabel:'60-90 sec',
+          info:{setup:"Sdraiata a pancia in giù, caviglie sotto il rullo imbottito, ginocchia appena fuori dal bordo della panca.",
+                esec:"Concentrica: piega le ginocchia portando i talloni verso i glutei. Eccentrica: torna giù controllata senza far sbattere i pesi.",
+                muscolo:"Femorali (parte posteriore della coscia). Errore comune: sollevare il bacino dalla panca per aiutarsi con lo slancio.",
+                resp:"Espira piegando le ginocchia, inspira tornando giù."}},
+      ]},
+    { label:'Giorno 4', meta:'Upper B', sub:'Tirata e spalle/postura',
+      esercizi:[
+        {n:'Trazioni assistite presa neutra', s:4, sc:'4×8-10', rpe:'7-8', rec:120, recLabel:'2 min',
+          info:{setup:"In ginocchio o seduta sulla pedana della macchina assistita, presa sulle maniglie parallele (palmi l'uno verso l'altro), peso di assistenza impostato in base al livello.",
+                esec:"Concentrica: tira il corpo verso l'alto fino a portare il mento sopra le mani. Eccentrica: scendi controllata fino a braccia quasi distese.",
+                muscolo:"Dorsali e bicipiti. Sensazione corretta: percepire il lavoro soprattutto nella schiena, non solo nelle braccia. Errore comune: usare tutto lo slancio delle gambe sulla pedana.",
+                resp:"Espira tirando su, inspira scendendo."}},
+        {n:'Pulley / seated row presa larga', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
+          info:{setup:"Seduta con ginocchia leggermente flesse, presa larga sulla barra, busto dritto e leggermente inclinato in avanti a inizio movimento.",
+                esec:"Concentrica: tira la barra verso l'addome aprendo i gomiti verso l'esterno e avvicinando le scapole. Eccentrica: torna avanti controllata.",
+                muscolo:"Dorsali e parte alta della schiena. Errore comune: dondolare il busto avanti e indietro invece di lasciar lavorare solo braccia e schiena.",
+                resp:"Espira tirando, inspira tornando avanti."}},
+        {n:'Shoulder press con manubri da seduta', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec',
+          info:{setup:"Seduta con schiena appoggiata, un manubrio per mano all'altezza delle spalle, palmi rivolti in avanti.",
+                esec:"Concentrica: spingi i manubri verso l'alto fino quasi a distendere le braccia sopra la testa. Eccentrica: scendi controllata fino all'altezza delle spalle.",
+                muscolo:"Deltoidi (spalle) con contributo di tricipiti. Errore comune: inarcare troppo la schiena bassa durante la spinta.",
+                resp:"Espira spingendo in alto, inspira scendendo."}},
+        {n:'Rear delt fly', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
+          info:{setup:"Seduta con busto inclinato in avanti (o su macchina dedicata), un manubrio per mano, braccia leggermente piegate.",
+                esec:"Concentrica: apri le braccia lateralmente all'indietro portando le scapole verso il centro. Eccentrica: torna avanti controllata.",
+                muscolo:"Deltoide posteriore. Errore comune: usare slancio del busto invece di isolare il movimento delle braccia.",
+                resp:"Espira aprendo le braccia, inspira tornando avanti."}},
+        {n:'Alzate laterali su panca 30°', s:3, sc:'3×12', rpe:'8', rec:60, recLabel:'60 sec',
+          info:{setup:"Sdraiata su un fianco su una panca inclinata a 30°, un manubrio nella mano superiore, braccio leggermente piegato.",
+                esec:"Concentrica: alza il braccio lateralmente fino all'altezza della spalla. Eccentrica: scendi controllata.",
+                muscolo:"Deltoide laterale, con maggiore isolamento rispetto alla versione in piedi grazie all'appoggio. Errore comune: ruotare il busto per aiutarsi con lo slancio.",
+                resp:"Espira alzando il braccio, inspira scendendo."}},
+        {n:'French press con manubri', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60-90 sec', note:'Superset con biceps curl · 60-90″ dopo il giro',
+          info:{setup:"Sdraiata su panca (o seduta), manubri tenuti sopra la testa con gomiti puntati verso l'alto e vicini tra loro.",
+                esec:"Eccentrica: piega i gomiti abbassando i manubri dietro la testa. Concentrica: estendi i gomiti tornando su.",
+                muscolo:"Tricipite (capo lungo). Errore comune: allargare i gomiti durante il movimento, che toglie lavoro al tricipite.",
+                resp:"Inspira scendendo, espira estendendo verso l'alto."}},
+        {n:'Biceps curl panca 45°', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', note:'Superset con french press · 60-90″ dopo il giro',
+          info:{setup:"Sdraiata a pancia in giù su una panca inclinata a 45°, braccia pendenti con un manubrio per mano.",
+                esec:"Concentrica: piega i gomiti portando i manubri verso le spalle. Eccentrica: scendi controllata fino a braccia quasi distese.",
+                muscolo:"Bicipite, con isolamento maggiore grazie alla panca che impedisce di usare slancio. Errore comune: sollevare le spalle o staccarle dalla panca.",
+                resp:"Espira salendo, inspira scendendo."}},
+      ]},
+  ]
+};
+/* ============== STATE ============== */
+let state = { screen:'home', giornoIdx:null, date: new Date().toISOString().slice(0,10), log: null, returnTo:'cicli' };
+let timer = { total:90, remaining:90, running:false, intervalId:null };
+let saveTimeout = null;
+const app = document.getElementById('app');
+const toastEl = document.getElementById('toast');
+function showToast(msg){
+  toastEl.textContent = msg;
+  toastEl.classList.add('show');
+  clearTimeout(showToast._t);
+  showToast._t = setTimeout(()=>toastEl.classList.remove('show'), 1600);
+}
+function setTimerBarVisible(v){ document.body.classList.toggle('has-timerbar', v); }
+/* ============== CONFIRM MODAL ============== */
+function showConfirm(msg, onOk){
+  const overlay = document.getElementById('confirmOverlay');
+  document.getElementById('confirmMsg').textContent = msg;
+  overlay.classList.add('open');
+  const okBtn = document.getElementById('confirmOk');
+  const cancelBtn = document.getElementById('confirmCancel');
+  const cleanup = ()=>{ overlay.classList.remove('open'); okBtn.onclick=null; cancelBtn.onclick=null; };
+  okBtn.onclick = ()=>{ cleanup(); onOk(); };
+  cancelBtn.onclick = cleanup;
+}
+/* ============== EXERCISE INFO POPUP ============== */
+const ICO_SETUP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M3 9h6"/></svg>';
+const ICO_MOVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+const ICO_MUSCLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>';
+const ICO_BREATH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12a6 6 0 1 0 12 0 6 6 0 1 0-12 0"/><path d="M12 8v8"/></svg>';
+function openExerciseInfo(ex){
+  document.getElementById('infoTitle').textContent = ex.n;
+  const info = ex.info || {};
+  document.getElementById('infoScroll').innerHTML = `
+    <div class="info-block"><div class="info-block-label">${ICO_SETUP} Setup</div><p>${info.setup||'—'}</p></div>
+    <div class="info-block"><div class="info-block-label">${ICO_MOVE} Esecuzione</div><p>${info.esec||'—'}</p></div>
+    <div class="info-block"><div class="info-block-label">${ICO_MUSCLE} Muscolo target</div><p>${info.muscolo||'—'}</p></div>
+    <div class="info-block"><div class="info-block-label">${ICO_BREATH} Respirazione</div><p>${info.resp||'—'}</p></div>
+  `;
+  document.getElementById('infoSheet').classList.add('open');
+}
+document.getElementById('infoClose').onclick = ()=>document.getElementById('infoSheet').classList.remove('open');
+document.getElementById('infoSheet').addEventListener('click',(e)=>{ if(e.target.id==='infoSheet') e.currentTarget.classList.remove('open'); });
+/* ============== STORAGE HELPERS ============== */
+function logKey(giornoIdx,sessionId){ return `log-${SCHEDA.id}-${giornoIdx}-${sessionId}`; }
+function generateSessionId(){ return 's'+Date.now()+'_'+Math.random().toString(36).slice(2,8); }
+function isLegacyDateId(id){ return /^\d{4}-\d{2}-\d{2}$/.test(id); }
+function sessionTimeLabel(sessionId){
+  if(!sessionId || !sessionId.startsWith('s') || isLegacyDateId(sessionId)) return '';
+  try{
+    const ts = parseInt(sessionId.split('_')[0].slice(1));
+    if(isNaN(ts)) return '';
+    const label = new Date(ts).toLocaleTimeString('it-IT',{hour:'2-digit',minute:'2-digit'});
+    return label === 'Invalid Date' ? '' : label;
+  }catch(e){ return ''; }
+}
+function blankLog(esercizi){
+  const log = { date:new Date().toISOString().slice(0,10), esercizi:{} };
+  esercizi.forEach((ex,i)=>{ log.esercizi[i] = Array.from({length:ex.s},()=>({kg:'',reps:'',done:false})); });
+  return log;
+}
+async function saveLog(){
+  if(!state.log) return;
+  try{
+    await window.storage.set(logKey(state.giornoIdx,state.sessionId), JSON.stringify(state.log), false);
+    showToast('Sessione salvata ✓');
+  }catch(e){ showToast('Errore salvataggio'); }
+}
+function queueSave(){ clearTimeout(saveTimeout); saveTimeout = setTimeout(saveLog, 700); }
+/* Returns [{sessionId, date, log}] for a giorno, most recent first */
+async function listSessionsDetailed(giornoIdx){
+  try{
+    const prefix = `log-${SCHEDA.id}-${giornoIdx}-`;
+    const res = await window.storage.list(prefix, false);
+    if(!res || !res.keys) return [];
+    const items = [];
+    for(const k of res.keys){
+      const sessionId = k.slice(prefix.length);
+      try{
+        const r = await window.storage.get(k, false);
+        if(r && r.value){
+          const log = JSON.parse(r.value);
+          let date = log.date;
+          if(!date) date = isLegacyDateId(sessionId) ? sessionId : new Date().toISOString().slice(0,10);
+          items.push({ sessionId, date, log });
+        }
+      }catch(e){}
+    }
+    items.sort((a,b)=> b.date.localeCompare(a.date) || b.sessionId.localeCompare(a.sessionId));
+    return items;
+  }catch(e){ return []; }
+}
+async function lastSessionDate(giornoIdx){
+  const list = await listSessionsDetailed(giornoIdx);
+  return list.length ? list[0].date : null;
+}
+async function deleteSession(giornoIdx, sessionId){
+  try{ await window.storage.delete(logKey(giornoIdx,sessionId), false); return true; }catch(e){ return false; }
+}
+/* ============== ICONS ============== */
+const ICO = {
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 18l6-6-6-6"/></svg>',
+  chevDown:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>',
+  check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width=3 stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>',
+  play:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
+  pause:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14"/><rect x="14" y="5" width="4" height="14"/></svg>',
+  reset:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 4v6h6M23 20v-6h-6"/><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  timerIco:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l3 2M9 2h6"/></svg>',
+  dumbbellHome:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5l11 11M4 9l3-3M17 20l3-3M2 12l2-2M20 14l2-2M7 4l-3 3 3 3M17 20l3-3-3-3"/></svg>',
+  chartHome:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>',
+  clockHome:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6h12z"/></svg>',
+};
+/* ============== HOME ============== */
+function renderHome(){
+  state.screen = 'home';
+  setTimerBarVisible(false);
+  app.innerHTML = `
+    <div class="hero">
+      <div class="eyebrow">Cowork - App PT Sissa</div>
+      <h1>Ciao,<br>Silvana.</h1>
+      <p>Scegli cosa vuoi fare: allenarti seguendo la scheda, guardare i tuoi progressi, o rivedere lo storico delle sessioni.</p>
+    </div>
+    <div class="wrap">
+      <div class="home-grid">
+        <button class="home-card" data-go="cicli">
+          <div class="hc-ico">${ICO.dumbbellHome}</div>
+          <div class="hc-info">
+            <div class="hc-title">Cicli di allenamento</div>
+            <div class="hc-sub">La scheda attuale, giorno per giorno</div>
+          </div>
+          <div class="hc-arrow">${ICO.chev}</div>
+        </button>
+        <button class="home-card" data-go="stats">
+          <div class="hc-ico">${ICO.chartHome}</div>
+          <div class="hc-info">
+            <div class="hc-title">Statistiche</div>
+            <div class="hc-sub">Andamento dei carichi nel tempo</div>
+          </div>
+          <div class="hc-arrow">${ICO.chev}</div>
+        </button>
+        <button class="home-card" data-go="cronologia">
+          <div class="hc-ico">${ICO.clockHome}</div>
+          <div class="hc-info">
+            <div class="hc-title">Cronologia allenamenti</div>
+            <div class="hc-sub">Tutte le sessioni salvate, mese per mese</div>
+          </div>
+          <div class="hc-arrow">${ICO.chev}</div>
+        </button>
+      </div>
+    </div>
+  `;
+  app.querySelectorAll('.home-card').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const go = btn.dataset.go;
+      if(go==='cicli') renderGiorni();
+      else if(go==='stats') renderStats();
+      else renderCronologia();
+    });
+  });
+}
+/* ============== CICLI: GIORNI ============== */
+async function renderGiorni(){
+  state.screen = 'cicli';
+  setTimerBarVisible(false);
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" id="btnBack">${ICO.back}</button>
+      <div class="titles"><h1>Allenamento</h1><div class="eyebrow" style="margin-top:3px;">Scheda di settembre 2026</div></div>
+    </div>
+    <div class="wrap">
+      <div class="info-panel" id="infoPanel">
+        <div class="info-panel-head" id="infoPanelHead">
+          <div>
+            <div class="iph-title">Struttura, periodizzazione e come leggere le tabelle</div>
+            <div class="iph-sub">Split settimanale, RPE, deload e la logica del ciclo</div>
+          </div>
+          <div class="info-panel-chev" id="infoPanelChev">${ICO.chevDown}</div>
+        </div>
+        <div class="info-panel-body" id="infoPanelBody">
+          <p><b>Split:</b> 4 giorni fissi — gambe e glutei nei Giorni 1 e 3, parte superiore nei Giorni 2 e 4, con più esercizi di tirata che di spinta per lavorare sulla postura.</p>
+          <p><b>Riscaldamento:</b> 8-10 minuti di mobilità prima di ogni sessione — cat-cow, world's greatest stretch, squat a corpo libero, rotazione toracica, ponte glutei.</p>
+          <p><b>Glossario rapido:</b></p>
+          <ul>
+            <li><b>RPE</b> = sforzo percepito da 1 a 10 (8 = ancora ~2 ripetizioni prima del cedimento).</li>
+            <li><b>Isolamento</b> = coinvolge un solo muscolo; <b>multiarticolare</b> = più articolazioni insieme, recuperi più lunghi.</li>
+            <li><b>Ipertrofia</b> = crescita muscolare.</li>
+            <li><b>Deload</b> = settimana a volume e intensità ridotti per recuperare.</li>
+          </ul>
+          <p><b>Periodizzazione:</b> settembre-ottobre (6 settimane) — 5 settimane di accumulo a RPE 7-8, poi 1 di deload (2 serie invece di 3-4, RPE 5-6). Da novembre: blocco forza di 6-7 settimane (carichi più alti, ripetizioni più basse), seguito da un nuovo deload.</p>
+        </div>
+      </div>
+      <div class="section-label">Seleziona il giorno</div>
+      <div class="giorno-grid">
+        ${SCHEDA.giorni.map((g,i)=>`
+          <button class="giorno-card" data-i="${i}">
+            <div class="gnum">${g.label.toUpperCase()}</div>
+            <div class="glabel">${g.meta}</div>
+            <div class="gsub">${g.sub}</div>
+            <div class="gmeta">${g.esercizi.length} esercizi</div>
+            <div class="glast" data-last="${i}">Caricamento…</div>
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = renderHome;
+  document.getElementById('infoPanelHead').onclick = ()=>{
+    document.getElementById('infoPanelBody').classList.toggle('open');
+    document.getElementById('infoPanelChev').classList.toggle('open');
+  };
+  app.querySelectorAll('.giorno-card').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      await startNewWorkout(parseInt(btn.dataset.i));
+    });
+  });
+  SCHEDA.giorni.forEach(async (g,i)=>{
+    const last = await lastSessionDate(i);
+    const el = app.querySelector(`[data-last="${i}"]`);
+    if(el) el.innerHTML = last ? `Ultima sessione: <b>${fmtDate(last)}</b>` : `Nessuna sessione registrata`;
+  });
+}
+function fmtDate(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('it-IT',{day:'2-digit',month:'short',year:'numeric'});
+}
+function fmtDayMonth(iso){
+  const d = new Date(iso+'T00:00:00');
+  return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+}
+/* ============== WORKOUT ============== */
+async function startNewWorkout(giornoIdx){
+  const giorno = SCHEDA.giorni[giornoIdx];
+  state.giornoIdx = giornoIdx;
+  state.sessionId = generateSessionId();
+  state.returnTo = 'cicli';
+  state.log = blankLog(giorno.esercizi);
+  state.screen = 'workout';
+  renderWorkout();
+}
+async function openExistingSession(giornoIdx, sessionId){
+  const giorno = SCHEDA.giorni[giornoIdx];
+  state.giornoIdx = giornoIdx;
+  state.sessionId = sessionId;
+  state.returnTo = 'cronologia';
+  try{
+    const res = await window.storage.get(logKey(giornoIdx, sessionId), false);
+    state.log = (res && res.value) ? JSON.parse(res.value) : blankLog(giorno.esercizi);
+  }catch(e){ state.log = blankLog(giorno.esercizi); }
+  if(!state.log.date) state.log.date = isLegacyDateId(sessionId) ? sessionId : new Date().toISOString().slice(0,10);
+  giorno.esercizi.forEach((ex,i)=>{
+    if(!state.log.esercizi[i]) state.log.esercizi[i] = Array.from({length:ex.s},()=>({kg:'',reps:'',done:false}));
+  });
+  state.screen = 'workout';
+  renderWorkout();
+}
+function renderWorkout(){
+  const giorno = SCHEDA.giorni[state.giornoIdx];
+  setTimerBarVisible(true);
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" id="btnBack">${ICO.back}</button>
+      <div class="titles"><div class="eyebrow">${giorno.label}</div><h1>${giorno.meta}</h1></div>
+    </div>
+    <div class="wrap">
+      <div class="date-bar">
+        <div><label>Data sessione</label><input type="date" id="dateInput" value="${state.log.date}"></div>
+        <span class="save-pill" id="savePill">salvato</span>
+      </div>
+      <div class="warmup-note">${ICO.timerIco}<span>Riscaldamento con mobilità 8-10 minuti prima di iniziare (non incluso qui sotto).</span></div>
+      <div class="section-label">${giorno.sub}</div>
+      ${giorno.esercizi.map((ex,i)=>renderExercise(ex,i)).join('')}
+      <button class="cta" id="btnSaveManual">Salva sessione</button>
+    </div>
+    <div class="timer-bar">
+      <div class="timer-bar-inner">
+        <span class="timer-label">Pausa</span>
+        <button class="chip" data-t="60">60″</button>
+        <button class="chip active" data-t="90">90″</button>
+        <button class="chip" data-t="120">2′</button>
+        <button class="chip" data-t="180">3′</button>
+        <button class="timer-start" id="timerStart">${ICO.play}</button>
+      </div>
+    </div>
+    <div class="timer-sheet" id="timerSheet">
+      <div class="timer-sheet-inner">
+        <button class="timer-sheet-close" id="timerClose">${ICO.close}</button>
+        <div class="timer-source" id="timerSource">recupero generico</div>
+        <div class="ring-wrap">
+          <svg viewBox="0 0 230 230" width="230" height="230">
+            <circle class="ring-bg" cx="115" cy="115" r="100"></circle>
+            <circle class="ring-fg" id="ringFg" cx="115" cy="115" r="100" stroke-dasharray="628" stroke-dashoffset="0"></circle>
+          </svg>
+          <div class="ring-center"><div class="ring-time" id="ringTime">01:30</div><div class="ring-status" id="ringStatus">recupero</div></div>
+        </div>
+        <div class="timer-controls">
+          <button class="tc-btn" id="tcMinus">−15″</button>
+          <button class="tc-btn tc-main" id="tcToggle">${ICO.play}</button>
+          <button class="tc-btn" id="tcReset">${ICO.reset}</button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = ()=>{ state.returnTo==='cronologia' ? renderCronologia() : renderGiorni(); };
+  document.getElementById('btnSaveManual').onclick = async ()=>{
+    await saveLog();
+    renderHome();
+  };
+  document.getElementById('dateInput').onchange = (e)=>{ state.log.date = e.target.value; queueSave(); };
+  wireExerciseEvents(giorno);
+  wireTimer();
+}
+function renderExercise(ex, i){
+  const rows = state.log ? state.log.esercizi[i] : Array.from({length:ex.s},()=>({kg:'',reps:'',done:false}));
+  return `
+    <div class="ex-card" data-ex="${i}">
+      <div class="ex-head">
+        <div class="ex-title-row">
+          <button class="ex-name-btn" data-info="${i}">
+            <span class="ex-name">${ex.n}</span>
+            <span class="info-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg></span>
+          </button>
+          <div class="ex-badges">
+            ${ex.sc ? `<div class="ex-badge">${ex.sc}</div>` : ''}
+            ${ex.rpe && ex.rpe !== '-' ? `<div class="ex-badge rpe">RPE ${ex.rpe}</div>` : ''}
+          </div>
+        </div>
+        ${ex.note ? `<div class="ex-note">${ex.note}</div>` : ''}
+      </div>
+      <div class="rec-row">
+        <span class="rlabel">Recupero consigliato: <b>${ex.recLabel}</b></span>
+        <button class="rec-start" data-rec="${ex.rec}" data-name="${ex.n}">${ICO.play} avvia</button>
+      </div>
+      <div class="set-table">
+        <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span></span></div>
+        <div class="rows-container">${rows.map((r,si)=>renderSetRow(r,si)).join('')}</div>
+      </div>
+      <div class="ex-actions">
+        <button class="set-btn" data-act="add" data-ex="${i}">+ Aggiungi serie</button>
+        <button class="set-btn" data-act="remove" data-ex="${i}">− Rimuovi ultima</button>
+      </div>
+    </div>
+  `;
+}
+function renderSetRow(r, si){
+  return `
+    <div class="set-row" data-si="${si}">
+      <span class="set-idx">${si+1}</span>
+      <input type="number" inputmode="decimal" step="0.5" placeholder="0" value="${r.kg}" data-f="kg">
+      <input type="number" inputmode="numeric" step="1" placeholder="0" value="${r.reps}" data-f="reps">
+      <button class="set-done ${r.done?'on':''}" data-f="done">${ICO.check}</button>
+    </div>
+  `;
+}
+function wireExerciseEvents(giorno){
+  app.querySelectorAll('.ex-name-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const idx = parseInt(btn.dataset.info);
+      openExerciseInfo(giorno.esercizi[idx]);
+    });
+  });
+  app.querySelectorAll('.ex-card').forEach(card=>{
+    const exIdx = parseInt(card.dataset.ex);
+    const rowsContainer = card.querySelector('.rows-container');
+    function bindRows(){
+      rowsContainer.querySelectorAll('.set-row').forEach(row=>{
+        const si = parseInt(row.dataset.si);
+        row.querySelectorAll('input').forEach(inp=>{
+          inp.addEventListener('input', ()=>{
+            state.log.esercizi[exIdx][si][inp.dataset.f] = inp.value;
+            queueSave();
+          });
+        });
+        const doneBtn = row.querySelector('.set-done');
+        doneBtn.addEventListener('click', ()=>{
+          state.log.esercizi[exIdx][si].done = !state.log.esercizi[exIdx][si].done;
+          doneBtn.classList.toggle('on');
+          queueSave();
+        });
+      });
+    }
+    bindRows();
+    card.querySelectorAll('.set-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const arr = state.log.esercizi[exIdx];
+        if(btn.dataset.act === 'add') arr.push({kg:'',reps:'',done:false});
+        else if(btn.dataset.act === 'remove' && arr.length > 1) arr.pop();
+        rowsContainer.innerHTML = arr.map((r,si)=>renderSetRow(r,si)).join('');
+        bindRows();
+        queueSave();
+      });
+    });
+    const recBtn = card.querySelector('.rec-start');
+    recBtn.addEventListener('click', ()=> startTimerWithDuration(parseInt(recBtn.dataset.rec), recBtn.dataset.name));
+  });
+}
+/* ============== REST TIMER ============== */
+function wireTimer(){
+  const chips = app.querySelectorAll('.chip');
+  chips.forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      chips.forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      timer.total = parseInt(chip.dataset.t);
+      if(!timer.running) timer.remaining = timer.total;
+      document.getElementById('timerSource').textContent = 'recupero generico';
+    });
+  });
+  document.getElementById('timerStart').onclick = ()=>openTimerSheet();
+  document.getElementById('timerClose').onclick = ()=>document.getElementById('timerSheet').classList.remove('open');
+  document.getElementById('tcToggle').onclick = toggleTimer;
+  document.getElementById('tcReset').onclick = resetTimer;
+  document.getElementById('tcMinus').onclick = ()=>adjustTimer(-15);
+  updateRing();
+}
+function startTimerWithDuration(seconds, name){
+  timer.total = seconds; timer.remaining = seconds;
+  document.getElementById('timerSource').textContent = name || 'recupero';
+  openTimerSheet(true);
+}
+function openTimerSheet(forceStart){
+  document.getElementById('timerSheet').classList.add('open');
+  document.getElementById('ringFg').classList.remove('done');
+  if(forceStart || !timer.running) startTimer();
+}
+function startTimer(){
+  timer.running = true;
+  document.getElementById('tcToggle').innerHTML = ICO.pause;
+  document.getElementById('timerStart').innerHTML = ICO.pause;
+  document.getElementById('ringStatus').textContent = 'recupero';
+  clearInterval(timer.intervalId);
+  timer.intervalId = setInterval(()=>{
+    timer.remaining -= 1;
+    if(timer.remaining <= 0){ timer.remaining = 0; finishTimer(); }
+    updateRing();
+  },1000);
+  updateRing();
+}
+function pauseTimer(){
+  timer.running = false; clearInterval(timer.intervalId);
+  document.getElementById('tcToggle').innerHTML = ICO.play;
+  document.getElementById('timerStart').innerHTML = ICO.play;
+  document.getElementById('ringStatus').textContent = 'in pausa';
+}
+function toggleTimer(){ timer.running ? pauseTimer() : startTimer(); }
+function resetTimer(){
+  pauseTimer(); timer.remaining = timer.total;
+  document.getElementById('ringStatus').textContent = 'recupero';
+  document.getElementById('ringFg').classList.remove('done');
+  updateRing();
+}
+function adjustTimer(delta){
+  timer.remaining = Math.max(0, timer.remaining + delta);
+  timer.total = Math.max(timer.total, timer.remaining);
+  updateRing();
+}
+function finishTimer(){
+  pauseTimer();
+  document.getElementById('ringStatus').textContent = 'tempo scaduto!';
+  document.getElementById('ringFg').classList.add('done');
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    [0,0.18,0.36].forEach(t=>{
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.connect(g); g.connect(ctx.destination);
+      o.frequency.value = 880; g.gain.value = 0.15;
+      o.start(ctx.currentTime+t); o.stop(ctx.currentTime+t+0.12);
+    });
+  }catch(e){}
+  if(navigator.vibrate) navigator.vibrate([200,100,200]);
+}
+function updateRing(){
+  const ring = document.getElementById('ringFg');
+  const timeEl = document.getElementById('ringTime');
+  if(!ring || !timeEl) return;
+  const circumference = 628;
+  const pct = timer.total>0 ? timer.remaining/timer.total : 0;
+  ring.setAttribute('stroke-dashoffset', circumference*(1-pct));
+  const m = Math.floor(timer.remaining/60).toString().padStart(2,'0');
+  const s = (timer.remaining%60).toString().padStart(2,'0');
+  timeEl.textContent = `${m}:${s}`;
+}
+/* ============== STATISTICHE ============== */
+let statsSel = { giornoIdx: 0, exIdx: 0 };
+let statsAllPoints = [];
+let statsRange = { from:null, to:null };
+async function getExerciseHistory(giornoIdx, exIdx){
+  const sessions = (await listSessionsDetailed(giornoIdx)).slice().sort((a,b)=> a.date.localeCompare(b.date) || a.sessionId.localeCompare(b.sessionId));
+  const points = [];
+  sessions.forEach(s=>{
+    const rows = s.log.esercizi && s.log.esercizi[exIdx];
+    if(!rows) return;
+    let best = null;
+    rows.forEach(r=>{
+      const kg = parseFloat(r.kg);
+      if(!isNaN(kg) && (best === null || kg > best.kg)) best = {kg, reps:r.reps};
+    });
+    if(best) points.push({date:s.date, kg:best.kg, reps:best.reps, sessionId:s.sessionId});
+  });
+  return points;
+}
+function niceStep(range){
+  const raw = range/4;
+  const pow = Math.pow(10, Math.floor(Math.log10(raw||1)));
+  const norm = raw/pow;
+  let step;
+  if(norm < 1.5) step = 1; else if(norm < 3) step = 2; else if(norm < 7) step = 5; else step = 10;
+  return step*pow;
+}
+function lineChartSVG(points){
+  const W = 340, H = 240;
+  const mL = 34, mR = 12, mT = 16, mB = 34;
+  const plotW = W - mL - mR, plotH = H - mT - mB;
+  const kgs = points.map(p=>p.kg);
+  let yMin = Math.min(...kgs), yMax = Math.max(...kgs);
+  if(yMin === yMax){ yMin -= 5; yMax += 5; }
+  const step = niceStep(yMax - yMin) || 1;
+  yMin = Math.floor(yMin/step)*step; yMax = Math.ceil(yMax/step)*step;
+  if(yMin === yMax) yMax = yMin + step;
+  const ticks = [];
+  for(let v = yMin; v <= yMax + 0.001; v += step) ticks.push(Math.round(v*100)/100);
+  const xFor = (i)=> points.length === 1 ? mL + plotW/2 : mL + (i/(points.length-1))*plotW;
+  const yFor = (kg)=> mT + (1 - (kg-yMin)/(yMax-yMin)) * plotH;
+  const gridLines = ticks.map(t=>{
+    const y = yFor(t);
+    return `<line class="chart-grid-line" x1="${mL}" y1="${y.toFixed(1)}" x2="${W-mR}" y2="${y.toFixed(1)}"/>
+      <text class="chart-tick-label" x="${mL-6}" y="${(y+3).toFixed(1)}" text-anchor="end">${t}</text>`;
+  }).join('');
+  const showEveryLabel = points.length <= 7;
+  const xLabels = points.map((p,i)=>{
+    if(!showEveryLabel && i % Math.ceil(points.length/6) !== 0 && i !== points.length-1) return '';
+    const x = xFor(i);
+    return `<text class="chart-tick-label" x="${x.toFixed(1)}" y="${H-mB+16}" text-anchor="middle">${fmtDayMonth(p.date)}</text>`;
+  }).join('');
+  const coords = points.map((p,i)=>[xFor(i), yFor(p.kg)]);
+  const path = coords.map((c,i)=> (i===0?'M':'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1)).join(' ');
+  const dots = coords.map((c,i)=>`
+      <circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${i===coords.length-1?5:3.5}" style="fill:${i===coords.length-1?'var(--accent)':'var(--bg-elev)'};stroke:var(--accent);stroke-width:2;"/>
+      ${points.length<=9?`<text class="chart-point-label" x="${c[0].toFixed(1)}" y="${(c[1]-10).toFixed(1)}" text-anchor="middle">${points[i].kg}</text>`:''}
+  `).join('');
+  return `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      ${gridLines}
+      <line class="chart-axis-line" x1="${mL}" y1="${mT}" x2="${mL}" y2="${H-mB}"/>
+      <line class="chart-axis-line" x1="${mL}" y1="${H-mB}" x2="${W-mR}" y2="${H-mB}"/>
+      ${xLabels}
+      <path d="${path}" fill="none" style="stroke:var(--accent);" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}
+    </svg>
+  `;
+}
+function currentExercise(){ return SCHEDA.giorni[statsSel.giornoIdx].esercizi[statsSel.exIdx]; }
+function filteredPoints(){
+  return statsAllPoints.filter(p => (!statsRange.from || p.date >= statsRange.from) && (!statsRange.to || p.date <= statsRange.to));
+}
+function updateChartUI(){
+  const points = filteredPoints();
+  const chartWrap = document.getElementById('chartWrap');
+  const prBadge = document.getElementById('prBadge');
+  const chartMeta = document.getElementById('chartMeta');
+  if(!chartWrap) return;
+  if(points.length === 0){
+    chartWrap.innerHTML = `<div class="stat-empty">Nessun dato nell'intervallo di date selezionato.</div>`;
+    chartMeta.innerHTML = ''; prBadge.style.display='none';
+    return;
+  }
+  const pr = Math.max(...points.map(p=>p.kg));
+  prBadge.textContent = `PR ${pr} kg`;
+  prBadge.style.display = 'inline-block';
+  if(points.length === 1){
+    const p = points[0];
+    chartWrap.innerHTML = `<div class="stat-empty">Una sola sessione nell'intervallo (${fmtDate(p.date)}: ${p.kg} kg × ${p.reps||'?'}).</div>`;
+    chartMeta.innerHTML = '';
+    return;
+  }
+  chartWrap.innerHTML = lineChartSVG(points);
+  const first = points[0], last = points[points.length-1];
+  chartMeta.innerHTML = `<span>${fmtDate(first.date)}: <b>${first.kg} kg</b></span><span>${fmtDate(last.date)}: <b>${last.kg} kg</b></span>`;
+}
+function setQuickRange(days){
+  if(!statsAllPoints.length) return;
+  const lastDate = statsAllPoints[statsAllPoints.length-1].date;
+  if(days === 'all'){
+    statsRange.from = statsAllPoints[0].date;
+    statsRange.to = lastDate;
+  } else {
+    const d = new Date(lastDate+'T00:00:00');
+    d.setDate(d.getDate() - days);
+    statsRange.from = d.toISOString().slice(0,10);
+    statsRange.to = lastDate;
+  }
+  document.getElementById('rangeFrom').value = statsRange.from;
+  document.getElementById('rangeTo').value = statsRange.to;
+  document.querySelectorAll('.range-chip').forEach(c=>c.classList.remove('active'));
+  document.querySelector(`.range-chip[data-days="${days}"]`)?.classList.add('active');
+  updateChartUI();
+}
+async function renderStats(){
+  state.screen = 'stats';
+  setTimerBarVisible(false);
+  const ex = currentExercise();
+  const giorno = SCHEDA.giorni[statsSel.giornoIdx];
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" id="btnBack">${ICO.back}</button>
+      <div class="titles"><h1>I tuoi progressi</h1><div class="eyebrow" style="margin-top:3px;">Statistiche</div></div>
+    </div>
+    <div class="wrap">
+      <div class="stat-summary">
+        <div class="stat-summary-card"><div class="val" id="totSessions">—</div><div class="lbl">sessioni registrate</div></div>
+        <div class="stat-summary-card"><div class="val" id="lastSessionVal">—</div><div class="lbl">ultima sessione</div></div>
+      </div>
+      <button class="picker-btn" id="pickerBtn">
+        <div class="pb-left">
+          <div class="pb-eyebrow">${giorno.label} · ${giorno.meta}</div>
+          <div class="pb-name">${ex.n}</div>
+        </div>
+        <div class="pb-chev">${ICO.chevDown}</div>
+      </button>
+      <div class="range-row">
+        <div class="range-field"><label>Da</label><input type="date" id="rangeFrom"></div>
+        <div class="range-field"><label>A</label><input type="date" id="rangeTo"></div>
+      </div>
+      <div class="range-chips">
+        <button class="range-chip" data-days="30">30 giorni</button>
+        <button class="range-chip" data-days="90">90 giorni</button>
+        <button class="range-chip" data-days="365">1 anno</button>
+        <button class="range-chip active" data-days="all">Tutto</button>
+      </div>
+      <div class="chart-card">
+        <div class="chart-card-head">
+          <div><div class="name">${ex.n}</div><div class="sub">${giorno.label} · ${giorno.meta} · schema ${ex.sc||'—'}</div></div>
+          <span class="stat-pr" id="prBadge" style="display:none;"></span>
+        </div>
+        <div class="chart-svg-wrap" id="chartWrap"><div class="stat-empty">Caricamento…</div></div>
+        <div class="stat-meta-row" id="chartMeta"></div>
+      </div>
+    </div>
+    <div class="picker-sheet" id="pickerSheet">
+      <div class="picker-sheet-inner">
+        <div class="picker-head"><h3>Scegli esercizio</h3><button id="pickerClose">${ICO.close}</button></div>
+        <div class="picker-scroll">
+          ${SCHEDA.giorni.map((g,gi)=>`
+            <div class="picker-group">
+              <div class="picker-group-label">${g.label} · ${g.meta}</div>
+              ${g.esercizi.map((e,ei)=>`
+                <button class="picker-item ${gi===statsSel.giornoIdx && ei===statsSel.exIdx?'sel':''}" data-gi="${gi}" data-ei="${ei}">
+                  <span>${e.n}</span>${gi===statsSel.giornoIdx && ei===statsSel.exIdx ? ICO.check : ''}
+                </button>
+              `).join('')}
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = renderHome;
+  document.getElementById('pickerBtn').onclick = ()=>document.getElementById('pickerSheet').classList.add('open');
+  document.getElementById('pickerClose').onclick = ()=>document.getElementById('pickerSheet').classList.remove('open');
+  document.getElementById('pickerSheet').addEventListener('click', (e)=>{ if(e.target.id === 'pickerSheet') e.currentTarget.classList.remove('open'); });
+  document.querySelectorAll('.picker-item').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      statsSel = { giornoIdx: parseInt(btn.dataset.gi), exIdx: parseInt(btn.dataset.ei) };
+      renderStats();
+    });
+  });
+  (async ()=>{
+    let total = 0, mostRecent = null;
+    for(let gi=0; gi<SCHEDA.giorni.length; gi++){
+      const sessions = await listSessionsDetailed(gi);
+      total += sessions.length;
+      sessions.forEach(s=>{ if(!mostRecent || s.date > mostRecent) mostRecent = s.date; });
+    }
+    document.getElementById('totSessions').textContent = total;
+    document.getElementById('lastSessionVal').textContent = mostRecent ? fmtDate(mostRecent) : '—';
+  })();
+  statsAllPoints = await getExerciseHistory(statsSel.giornoIdx, statsSel.exIdx);
+  if(statsAllPoints.length){
+    statsRange.from = statsAllPoints[0].date;
+    statsRange.to = statsAllPoints[statsAllPoints.length-1].date;
+    document.getElementById('rangeFrom').value = statsRange.from;
+    document.getElementById('rangeTo').value = statsRange.to;
+  }
+  document.getElementById('rangeFrom').onchange = (e)=>{ statsRange.from = e.target.value; document.querySelectorAll('.range-chip').forEach(c=>c.classList.remove('active')); updateChartUI(); };
+  document.getElementById('rangeTo').onchange = (e)=>{ statsRange.to = e.target.value; document.querySelectorAll('.range-chip').forEach(c=>c.classList.remove('active')); updateChartUI(); };
+  document.querySelectorAll('.range-chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const d = btn.dataset.days;
+      setQuickRange(d === 'all' ? 'all' : parseInt(d));
+    });
+  });
+  updateChartUI();
+}
+/* ============== CRONOLOGIA ============== */
+const MESI_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
+async function getAllSessionsFlat(){
+  const out = [];
+  for(let gi=0; gi<SCHEDA.giorni.length; gi++){
+    const sessions = await listSessionsDetailed(gi);
+    sessions.forEach(s=> out.push({ giornoIdx:gi, giornoLabel:SCHEDA.giorni[gi].label, meta:SCHEDA.giorni[gi].meta, date:s.date, sessionId:s.sessionId }));
+  }
+  out.sort((a,b)=> b.date.localeCompare(a.date) || b.sessionId.localeCompare(a.sessionId));
+  return out;
+}
+async function renderCronologia(){
+  state.screen = 'cronologia';
+  setTimerBarVisible(false);
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" id="btnBack">${ICO.back}</button>
+      <div class="titles"><h1>Cronologia</h1><div class="eyebrow" style="margin-top:3px;">I tuoi allenamenti</div></div>
+    </div>
+    <div class="wrap" id="cronWrap"><div class="stat-empty" style="text-align:center;padding:40px 0;">Caricamento…</div></div>
+  `;
+  document.getElementById('btnBack').onclick = renderHome;
+  await refreshCronologia();
+}
+async function refreshCronologia(){
+  const sessions = await getAllSessionsFlat();
+  const wrap = document.getElementById('cronWrap');
+  if(!sessions.length){
+    wrap.innerHTML = `<div class="cron-empty">Nessun allenamento salvato finora.<br>Registrane uno dalla sezione Cicli di allenamento.</div>`;
+    return;
+  }
+  const groups = {};
+  sessions.forEach(s=>{
+    const ym = s.date.slice(0,7);
+    if(!groups[ym]) groups[ym] = [];
+    groups[ym].push(s);
+  });
+  const monthKeys = Object.keys(groups).sort().reverse();
+  wrap.innerHTML = monthKeys.map(ym=>{
+    const [y,m] = ym.split('-');
+    const mi = parseInt(m)-1;
+    const label = (MESI_IT[mi] && y) ? `${MESI_IT[mi]} ${y}` : 'Data sconosciuta';
+    const dateCounts = {};
+    groups[ym].forEach(s=>{ dateCounts[s.date] = (dateCounts[s.date]||0) + 1; });
+    const rows = groups[ym].map(s=>{
+      const d = new Date(s.date+'T00:00:00');
+      const showTime = dateCounts[s.date] > 1;
+      return `
+        <div class="session-row" data-gi="${s.giornoIdx}" data-session="${s.sessionId}">
+          <div class="sr-left">
+            <div class="sr-date">${d.getDate()}</div>
+            <div class="sr-info">
+              <div class="sr-giorno">${s.giornoLabel} · ${s.meta}</div>
+              <div class="sr-meta">${fmtDate(s.date)}${showTime ? ' · ' + sessionTimeLabel(s.sessionId) : ''}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="color:var(--text-faint);display:flex;">${ICO.chev}</span>
+            <button class="sr-del" data-gi="${s.giornoIdx}" data-session="${s.sessionId}">${ICO.trash}</button>
+          </div>
+        </div>
+      `;
+    }).join('');
+    return `<div class="month-group"><div class="month-title">${label}</div>${rows}</div>`;
+  }).join('');
+  wrap.querySelectorAll('.session-row').forEach(row=>{
+    row.addEventListener('click', async ()=>{
+      await openExistingSession(parseInt(row.dataset.gi), row.dataset.session);
+    });
+  });
+  wrap.querySelectorAll('.sr-del').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const gi = parseInt(btn.dataset.gi);
+      const sessionId = btn.dataset.session;
+      const rowDate = btn.closest('.session-row').querySelector('.sr-meta').textContent;
+      showConfirm(`Eliminare questo allenamento (${rowDate})? L'operazione non può essere annullata e i dati spariranno anche dalle statistiche.`, async ()=>{
+        await deleteSession(gi, sessionId);
+        showToast('Sessione eliminata');
+        await refreshCronologia();
+      });
+    });
+  });
+}
+/* ============== INIT ============== */
+renderHome();
+</script>
+</body>
+</html>
