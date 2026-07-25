@@ -98,6 +98,7 @@ input{font-family:inherit;}
 .home-card{
   background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
   padding:20px;display:flex;align-items:center;gap:16px;text-align:left;color:var(--text);
+  width:100%;
 }
 .home-card:active{transform:scale(0.98);}
 .home-card .hc-ico{
@@ -292,6 +293,10 @@ input{font-family:inherit;}
 .picker-group-label{
   font-family:var(--mono);font-size:10.5px;color:var(--text-faint);text-transform:uppercase;
   letter-spacing:.1em;padding:8px 12px 6px;
+}
+.picker-ciclo-label{
+  font-family:var(--disp);font-size:16px;letter-spacing:.02em;color:var(--accent);
+  padding:14px 12px 2px;
 }
 .picker-item{
   width:100%;text-align:left;background:none;border:none;color:var(--text-muted);
@@ -506,15 +511,17 @@ window.storage = {
     }catch(e){ return { keys: [] }; }
   }
 };
-/* ============== DATI — Scheda Settembre 2026 (Silvana) ==============
-   Ogni giorno e ogni esercizio ha un "id" stabile e permanente.
-   I dati salvati fanno riferimento a questi id, MAI alla posizione nella lista:
-   così puoi aggiungere, togliere o riordinare esercizi in futuro senza
-   perdere o mescolare i dati storici di cronologia e statistiche. */
-const SCHEDA = {
-  id:'set2026', nome:'Ciclo Settembre 2026', sub:'4 giorni · upper / lower',
-  giorni:[
-    { id:'g1', label:'Giorno 1', meta:'Lower A', sub:'Quadricipiti e gluteo massimo',
+/* ============== DATI — Cicli di allenamento (Silvana) ==============
+   L'app supporta più cicli nel tempo: quello con stato:'attuale' è la scheda
+   in corso, quelli con stato:'precedente' finiscono nella sezione "Allenamenti
+   precedenti" — restano sempre consultabili con la loro cronologia e statistiche.
+   Ogni giorno e ogni esercizio ha un "id" stabile e permanente: aggiungere,
+   togliere o riordinare esercizi (o passare a un ciclo nuovo) non fa MAI
+   perdere o mescolare i dati storici già salvati. */
+const CICLI = [
+  { id:'set2026', nome:'Ciclo Settembre 2026', periodo:'Settembre – Ottobre 2026', sub:'4 giorni · upper / lower', stato:'attuale',
+    giorni:[
+    { id:'set2026-g1', label:'Giorno 1', meta:'Lower A', sub:'Quadricipiti e gluteo massimo',
       esercizi:[
         {id:'hack-squat', n:'Hack squat', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
           info:{setup:"Piedi in appoggio sulla pedana, leggermente più larghi delle spalle, schiena e spalle premute contro lo schienale imbottito.",
@@ -547,7 +554,7 @@ const SCHEDA = {
                 muscolo:"Polpacci. Errore comune: movimento troppo veloce senza scendere completamente, perdendo la parte più efficace dell'esercizio.",
                 resp:"Espira salendo, inspira scendendo."}},
       ]},
-    { id:'g2', label:'Giorno 2', meta:'Upper A', sub:'Spinta e correzione posturale',
+    { id:'set2026-g2', label:'Giorno 2', meta:'Upper A', sub:'Spinta e correzione posturale',
       esercizi:[
         {id:'lat-machine-larga', n:'Lat machine presa larga', s:4, sc:'4×10-12', rpe:'7-8', rec:120, recLabel:'2 min',
           info:{setup:"Seduta con le cosce bloccate sotto il cuscinetto, presa sulla barra più larga delle spalle, busto leggermente inclinato indietro.",
@@ -585,7 +592,7 @@ const SCHEDA = {
                 muscolo:"Bicipite e brachiale (parte esterna del braccio). Errore comune: usare lo slancio della schiena.",
                 resp:"Espira salendo, inspira scendendo."}},
       ]},
-    { id:'g3', label:'Giorno 3', meta:'Lower B', sub:'Femorali e gluteo medio/piccolo',
+    { id:'set2026-g3', label:'Giorno 3', meta:'Lower B', sub:'Femorali e gluteo medio/piccolo',
       esercizi:[
         {id:'stacco-rumeno-rdl', n:'Stacco rumeno (RDL) con bilanciere', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
           info:{setup:"In piedi, bilanciere davanti alle cosce, presa poco più larga dei fianchi, ginocchia leggermente flesse e fisse per tutto il movimento.",
@@ -618,7 +625,7 @@ const SCHEDA = {
                 muscolo:"Femorali (parte posteriore della coscia). Errore comune: sollevare il bacino dalla panca per aiutarsi con lo slancio.",
                 resp:"Espira piegando le ginocchia, inspira tornando giù."}},
       ]},
-    { id:'g4', label:'Giorno 4', meta:'Upper B', sub:'Tirata e spalle/postura',
+    { id:'set2026-g4', label:'Giorno 4', meta:'Upper B', sub:'Tirata e spalle/postura',
       esercizi:[
         {id:'trazioni-assistite-neutra', n:'Trazioni assistite presa neutra', s:4, sc:'4×8-10', rpe:'7-8', rec:120, recLabel:'2 min',
           info:{setup:"In ginocchio o seduta sulla pedana della macchina assistita, presa sulle maniglie parallele (palmi l'uno verso l'altro), peso di assistenza impostato in base al livello.",
@@ -656,15 +663,19 @@ const SCHEDA = {
                 muscolo:"Bicipite, con isolamento maggiore grazie alla panca che impedisce di usare slancio. Errore comune: sollevare le spalle o staccarle dalla panca.",
                 resp:"Espira salendo, inspira scendendo."}},
       ]},
-  ]
-};
-/* Lookup rapido esercizio per id, e giorno per id — sempre riflette la SCHEDA attuale */
+  ]},
+];
+/* Helper: cicli/giorni/esercizi — sempre riflettono la struttura sopra */
+CICLI.forEach(c=> c.giorni.forEach(g=> g.cicloId = c.id));
 const EXBYID = {};
-SCHEDA.giorni.forEach(g=> g.esercizi.forEach(ex=> EXBYID[ex.id] = ex));
-function giornoById(id){ return SCHEDA.giorni.find(g=>g.id===id); }
-function giornoOfExercise(exId){ return SCHEDA.giorni.find(g=>g.esercizi.some(e=>e.id===exId)); }
+CICLI.forEach(c=> c.giorni.forEach(g=> g.esercizi.forEach(ex=> EXBYID[ex.id] = ex)));
+function cicloAttuale(){ return CICLI.find(c=>c.stato==='attuale'); }
+function cicliPrecedenti(){ return CICLI.filter(c=>c.stato==='precedente'); }
+function cicloById(id){ return CICLI.find(c=>c.id===id); }
+function giornoById(id){ for(const c of CICLI){ const g=c.giorni.find(x=>x.id===id); if(g) return g; } return null; }
+function allGiorni(){ return CICLI.flatMap(c=>c.giorni); }
 /* ============== STATE ============== */
-let state = { screen:'home', giornoId:null, sessionId:null, log: null, returnTo:'cicli' };
+let state = { screen:'home', cicloId:null, giornoId:null, sessionId:null, log: null, returnTo:'cicli' };
 let timer = { total:90, remaining:90, running:false, intervalId:null };
 let saveTimeout = null;
 const app = document.getElementById('app');
@@ -720,9 +731,10 @@ function sessionTimeLabel(sessionId){
 }
 /* Costruisce una sessione vuota per un giorno, facendo uno "snapshot" di nome e
    schema serie di ogni esercizio così com'è ORA — anche se in futuro la scheda
-   cambia, questa sessione ricorderà per sempre cos'era stato effettivamente svolto. */
+   cambia (o passa a un nuovo ciclo), questa sessione ricorderà per sempre cos'era
+   stato effettivamente svolto. */
 function blankLog(giorno){
-  const log = { date:new Date().toISOString().slice(0,10), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, esercizi:{} };
+  const log = { date:new Date().toISOString().slice(0,10), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, cicloId:giorno.cicloId, esercizi:{} };
   giorno.esercizi.forEach(ex=>{
     log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets: Array.from({length:ex.s},()=>({kg:'',reps:'',done:false})) };
   });
@@ -780,6 +792,7 @@ const ICO = {
   chartHome:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg>',
   clockHome:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6h12z"/></svg>',
+  archive:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8M10 12h4"/></svg>',
 };
 /* ============== HOME ============== */
 function renderHome(){
@@ -797,7 +810,7 @@ function renderHome(){
           <div class="hc-ico">${ICO.dumbbellHome}</div>
           <div class="hc-info">
             <div class="hc-title">Cicli di allenamento</div>
-            <div class="hc-sub">La scheda attuale, giorno per giorno</div>
+            <div class="hc-sub">Scheda attuale e allenamenti precedenti</div>
           </div>
           <div class="hc-arrow">${ICO.chev}</div>
         </button>
@@ -823,20 +836,65 @@ function renderHome(){
   app.querySelectorAll('.home-card').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const go = btn.dataset.go;
-      if(go==='cicli') renderGiorni();
+      if(go==='cicli') renderCicli();
       else if(go==='stats') renderStats();
       else renderCronologia();
     });
   });
 }
-/* ============== CICLI: GIORNI ============== */
-async function renderGiorni(){
+/* ============== CICLI: SCHERMATA PRINCIPALE (attuale + precedenti) ============== */
+function renderCicli(){
   state.screen = 'cicli';
   setTimerBarVisible(false);
+  const attuale = cicloAttuale();
+  const precedenti = cicliPrecedenti();
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><h1>Allenamento</h1><div class="eyebrow" style="margin-top:3px;">Scheda di settembre 2026</div></div>
+      <div class="titles"><h1>Allenamento</h1><div class="eyebrow" style="margin-top:3px;">I tuoi cicli</div></div>
+    </div>
+    <div class="wrap">
+      <div class="section-label">Allenamento attuale</div>
+      ${attuale ? `
+        <button class="home-card" id="btnAttuale" style="margin-bottom:8px;">
+          <div class="hc-ico">${ICO.dumbbellHome}</div>
+          <div class="hc-info">
+            <div class="hc-title">${attuale.nome}</div>
+            <div class="hc-sub">${attuale.periodo || attuale.sub}</div>
+          </div>
+          <div class="hc-arrow">${ICO.chev}</div>
+        </button>
+      ` : `<div class="cron-empty" style="padding:24px 20px;">Nessuna scheda attiva al momento.</div>`}
+      <div class="section-label">Allenamenti precedenti</div>
+      ${precedenti.length ? precedenti.map(c=>`
+        <button class="home-card ciclo-prev" data-cid="${c.id}" style="margin-bottom:8px;">
+          <div class="hc-ico" style="background:var(--bg-elev);color:var(--text-faint);">${ICO.archive}</div>
+          <div class="hc-info">
+            <div class="hc-title">${c.nome}</div>
+            <div class="hc-sub">${c.periodo || c.sub}</div>
+          </div>
+          <div class="hc-arrow">${ICO.chev}</div>
+        </button>
+      `).join('') : `<div class="cron-empty" style="padding:24px 20px;">Quando sostituirai la scheda attuale con una nuova, quella vecchia finirà qui — con cronologia e statistiche sempre consultabili.</div>`}
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = renderHome;
+  if(attuale) document.getElementById('btnAttuale').onclick = ()=> renderGiorniOfCiclo(attuale.id);
+  app.querySelectorAll('.ciclo-prev').forEach(btn=>{
+    btn.addEventListener('click', ()=> renderGiorniOfCiclo(btn.dataset.cid));
+  });
+}
+/* ============== CICLI: GIORNI DI UN CICLO ============== */
+async function renderGiorniOfCiclo(cicloId){
+  state.screen = 'cicli';
+  state.cicloId = cicloId;
+  setTimerBarVisible(false);
+  const ciclo = cicloById(cicloId);
+  if(!ciclo){ renderCicli(); return; }
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" id="btnBack">${ICO.back}</button>
+      <div class="titles"><h1>${ciclo.nome}</h1><div class="eyebrow" style="margin-top:3px;">${ciclo.periodo || ciclo.sub}${ciclo.stato==='precedente' ? ' · archiviato' : ''}</div></div>
     </div>
     <div class="wrap">
       <div class="info-panel" id="infoPanel">
@@ -862,7 +920,7 @@ async function renderGiorni(){
       </div>
       <div class="section-label">Seleziona il giorno</div>
       <div class="giorno-grid">
-        ${SCHEDA.giorni.map(g=>`
+        ${ciclo.giorni.map(g=>`
           <button class="giorno-card" data-gid="${g.id}">
             <div class="gnum">${g.label.toUpperCase()}</div>
             <div class="glabel">${g.meta}</div>
@@ -874,7 +932,7 @@ async function renderGiorni(){
       </div>
     </div>
   `;
-  document.getElementById('btnBack').onclick = renderHome;
+  document.getElementById('btnBack').onclick = renderCicli;
   document.getElementById('infoPanelHead').onclick = ()=>{
     document.getElementById('infoPanelBody').classList.toggle('open');
     document.getElementById('infoPanelChev').classList.toggle('open');
@@ -884,7 +942,7 @@ async function renderGiorni(){
       await startNewWorkout(btn.dataset.gid);
     });
   });
-  SCHEDA.giorni.forEach(async (g)=>{
+  ciclo.giorni.forEach(async (g)=>{
     const last = await lastSessionDate(g.id);
     const el = app.querySelector(`[data-last="${g.id}"]`);
     if(el) el.innerHTML = last ? `Ultima sessione: <b>${fmtDate(last)}</b>` : `Nessuna sessione registrata`;
@@ -902,6 +960,7 @@ function fmtDayMonth(iso){
 async function startNewWorkout(giornoId){
   const giorno = giornoById(giornoId);
   state.giornoId = giornoId;
+  state.cicloId = giorno.cicloId;
   state.sessionId = generateSessionId();
   state.returnTo = 'cicli';
   state.log = blankLog(giorno);
@@ -916,9 +975,10 @@ async function openExistingSession(giornoId, sessionId){
     const res = await window.storage.get(logKey(giornoId, sessionId), false);
     state.log = (res && res.value) ? JSON.parse(res.value) : null;
   }catch(e){ state.log = null; }
+  const giorno = giornoById(giornoId);
+  state.cicloId = (state.log && state.log.cicloId) || (giorno && giorno.cicloId) || null;
   if(!state.log){
-    const giorno = giornoById(giornoId);
-    state.log = giorno ? blankLog(giorno) : { date:new Date().toISOString().slice(0,10), giornoId, giornoLabel:'', giornoMeta:'', esercizi:{} };
+    state.log = giorno ? blankLog(giorno) : { date:new Date().toISOString().slice(0,10), giornoId, giornoLabel:'', giornoMeta:'', cicloId:null, esercizi:{} };
   }
   state.screen = 'workout';
   renderWorkout();
@@ -980,7 +1040,7 @@ function renderWorkout(){
       </div>
     </div>
   `;
-  document.getElementById('btnBack').onclick = ()=>{ state.returnTo==='cronologia' ? renderCronologia() : renderGiorni(); };
+  document.getElementById('btnBack').onclick = ()=>{ state.returnTo==='cronologia' ? renderCronologia() : renderGiorniOfCiclo(state.cicloId); };
   document.getElementById('btnSaveManual').onclick = async ()=>{
     await saveLog();
     renderHome();
@@ -1170,14 +1230,15 @@ function updateRing(){
   timeEl.textContent = `${m}:${s}`;
 }
 /* ============== STATISTICHE ============== */
-let statsSel = { exId: SCHEDA.giorni[0].esercizi[0].id, exName: SCHEDA.giorni[0].esercizi[0].n, giornoLabel: SCHEDA.giorni[0].label, giornoMeta: SCHEDA.giorni[0].meta, sc: SCHEDA.giorni[0].esercizi[0].sc };
+let statsSel = { exId: CICLI[0].giorni[0].esercizi[0].id, exName: CICLI[0].giorni[0].esercizi[0].n, giornoLabel: CICLI[0].giorni[0].label, giornoMeta: CICLI[0].giorni[0].meta, sc: CICLI[0].giorni[0].esercizi[0].sc };
 let statsAllPoints = [];
 let statsRange = { from:null, to:null };
-/* Trova negli storici salvati eventuali esercizi che non esistono più nella scheda
-   attuale, così le loro statistiche restano comunque consultabili. */
+/* Trova negli storici salvati eventuali esercizi che non esistono più in NESSUN
+   ciclo (attuale o precedente), così le loro statistiche restano comunque
+   consultabili anche se l'id non è più definito da nessuna parte. */
 async function discoverOrphanExercises(){
   const orphans = {};
-  for(const g of SCHEDA.giorni){
+  for(const g of allGiorni()){
     const sessions = await listSessionsDetailed(g.id);
     sessions.forEach(s=>{
       Object.keys(s.log.esercizi||{}).forEach(exId=>{
@@ -1191,7 +1252,7 @@ async function discoverOrphanExercises(){
 }
 async function getExerciseHistory(exId){
   const points = [];
-  for(const g of SCHEDA.giorni){
+  for(const g of allGiorni()){
     const sessions = await listSessionsDetailed(g.id);
     sessions.forEach(s=>{
       const entry = s.log.esercizi && s.log.esercizi[exId];
@@ -1346,19 +1407,22 @@ async function renderStats(){
       <div class="picker-sheet-inner">
         <div class="picker-head"><h3>Scegli esercizio</h3><button id="pickerClose">${ICO.close}</button></div>
         <div class="picker-scroll">
-          ${SCHEDA.giorni.map((g)=>`
-            <div class="picker-group">
-              <div class="picker-group-label">${g.label} · ${g.meta}</div>
-              ${g.esercizi.map((e)=>`
-                <button class="picker-item ${statsSel.exId===e.id?'sel':''}" data-exid="${e.id}" data-name="${e.n}" data-gl="${g.label}" data-gm="${g.meta}" data-sc="${e.sc||''}">
-                  <span>${e.n}</span>${statsSel.exId===e.id ? ICO.check : ''}
-                </button>
-              `).join('')}
-            </div>
+          ${CICLI.map(c=>`
+            <div class="picker-ciclo-label">${c.nome}${c.stato==='precedente'?' (archiviato)':''}</div>
+            ${c.giorni.map(g=>`
+              <div class="picker-group">
+                <div class="picker-group-label">${g.label} · ${g.meta}</div>
+                ${g.esercizi.map(e=>`
+                  <button class="picker-item ${statsSel.exId===e.id?'sel':''}" data-exid="${e.id}" data-name="${e.n}" data-gl="${g.label}" data-gm="${g.meta}" data-sc="${e.sc||''}">
+                    <span>${e.n}</span>${statsSel.exId===e.id ? ICO.check : ''}
+                  </button>
+                `).join('')}
+              </div>
+            `).join('')}
           `).join('')}
           ${Object.keys(orphans).length ? `
+            <div class="picker-ciclo-label">Esercizi non più in scheda</div>
             <div class="picker-group">
-              <div class="picker-group-label">Esercizi non più in scheda</div>
               ${Object.values(orphans).map(o=>`
                 <button class="picker-item ${statsSel.exId===o.id?'sel':''}" data-exid="${o.id}" data-name="${o.name}" data-gl="Storico" data-gm="" data-sc="${o.sc||''}">
                   <span>${o.name}</span>${statsSel.exId===o.id ? ICO.check : ''}
@@ -1382,7 +1446,7 @@ async function renderStats(){
   });
   (async ()=>{
     let total = 0, mostRecent = null;
-    for(const g of SCHEDA.giorni){
+    for(const g of allGiorni()){
       const sessions = await listSessionsDetailed(g.id);
       total += sessions.length;
       sessions.forEach(s=>{ if(!mostRecent || s.date > mostRecent) mostRecent = s.date; });
@@ -1411,7 +1475,7 @@ async function renderStats(){
 const MESI_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
 async function getAllSessionsFlat(){
   const out = [];
-  for(const g of SCHEDA.giorni){
+  for(const g of allGiorni()){
     const sessions = await listSessionsDetailed(g.id);
     sessions.forEach(s=> out.push({
       giornoId: g.id,
