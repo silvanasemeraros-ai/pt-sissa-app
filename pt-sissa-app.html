@@ -743,6 +743,61 @@ function cicliPrecedenti(){ return CICLI.filter(c=>c.stato==='precedente'); }
 function cicloById(id){ return CICLI.find(c=>c.id===id); }
 function giornoById(id){ for(const c of CICLI){ const g=c.giorni.find(x=>x.id===id); if(g) return g; } return null; }
 function allGiorni(){ return CICLI.flatMap(c=>c.giorni); }
+/* ============== RISCALDAMENTO PER GIORNO ==============
+   Riscaldamenti specifici per giorno, pensati sui gruppi muscolari coinvolti
+   quel giorno (quadricipiti/glutei, spinta/postura, femorali/gluteo medio,
+   tirata/spalle). Chiave = id del giorno. */
+const WARMUP_BY_GIORNO = {
+  'set2026-g1': [
+    {n:'Cat-cow', d:'10 ripetizioni'},
+    {n:"World's greatest stretch", d:'5 per lato'},
+    {n:'Squat a corpo libero', d:'15 ripetizioni'},
+    {n:'Affondi in camminata', d:'10 per gamba'},
+    {n:'Leg swings avanti-indietro', d:'10 per gamba'},
+    {n:'Ponte glutei', d:'15 ripetizioni'},
+    {n:'Air squat con pausa in basso', d:'10 ripetizioni'},
+    {n:'Monster walk leggero con fascia', d:'10 passi per lato'},
+    {n:'Mobilità caviglia al muro (dorsiflessione)', d:'10 per lato'},
+    {n:'Squat con bilanciere scarico', d:'8 ripetizioni'},
+  ],
+  'set2026-g2': [
+    {n:'Cat-cow', d:'10 ripetizioni'},
+    {n:'Rotazione toracica a quattro zampe', d:'8 per lato'},
+    {n:'Band pull-apart', d:'15 ripetizioni'},
+    {n:'Face pull leggero con elastico', d:'15 ripetizioni'},
+    {n:'Circonduzioni di spalle', d:'10 avanti, 10 indietro'},
+    {n:'Wall slide', d:'10 ripetizioni'},
+    {n:'Retrazioni scapolari in plank', d:'10 ripetizioni'},
+    {n:'Rotazione esterna di spalla con elastico', d:'12 per lato'},
+    {n:'Stretch pettorale al muro', d:"20″ per lato"},
+    {n:'Piegamenti leggeri (anche sulle ginocchia)', d:'8 ripetizioni'},
+  ],
+  'set2026-g3': [
+    {n:'Cat-cow', d:'10 ripetizioni'},
+    {n:"World's greatest stretch", d:'5 per lato'},
+    {n:'Leg swings laterali', d:'10 per gamba'},
+    {n:'Monster walk con fascia elastica', d:'10 passi per lato'},
+    {n:'Ponte glutei monopodalico', d:'8 per gamba'},
+    {n:'Good morning a corpo libero', d:'12 ripetizioni'},
+    {n:'Affondi laterali', d:'8 per lato'},
+    {n:'Clamshell (attivazione gluteo medio)', d:'12 per lato'},
+    {n:'Stacco rumeno a corpo libero', d:'10 ripetizioni'},
+    {n:'Squat sumo leggero', d:'10 ripetizioni'},
+  ],
+  'set2026-g4': [
+    {n:'Cat-cow', d:'10 ripetizioni'},
+    {n:'Rotazione toracica a quattro zampe', d:'8 per lato'},
+    {n:'Band pull-apart', d:'15 ripetizioni'},
+    {n:'Retrazioni scapolari (o scapular pull-up alla sbarra)', d:'10 ripetizioni'},
+    {n:'Face pull con elastico', d:'15 ripetizioni'},
+    {n:'Circonduzioni di spalle', d:'10 avanti, 10 indietro'},
+    {n:'Rotazione esterna di spalla con elastico', d:'12 per lato'},
+    {n:'Dead hang leggero alla sbarra', d:"15-20″"},
+    {n:'Row leggero con elastico', d:'12 ripetizioni'},
+    {n:"Stretch dorsali (child's pose con braccia estese)", d:"20″"},
+  ],
+};
+function warmupForGiorno(giornoId){ return WARMUP_BY_GIORNO[giornoId] || null; }
 /* ============== STATE ============== */
 let state = { screen:'home', cicloId:null, giornoId:null, sessionId:null, log: null, returnTo:'cicli' };
 let timer = { total:90, remaining:90, running:false, intervalId:null };
@@ -1382,7 +1437,10 @@ function renderWorkout(){
         <div><label>Data sessione</label><input type="date" id="dateInput" value="${state.log.date}"></div>
         <span class="save-pill" id="savePill">salvato</span>
       </div>
-      <div class="warmup-note">${ICO.timerIco}<span>Riscaldamento con mobilità 8-10 minuti prima di iniziare (non incluso qui sotto).</span></div>
+      <button class="warmup-note" id="btnWarmup" style="width:100%;text-align:left;border:1px solid rgba(63,199,184,0.25);">
+        ${ICO.timerIco}<span>Riscaldamento con mobilità 8-10 minuti prima di iniziare (non incluso qui sotto). Tocca per vedere gli esercizi.</span>
+        <span style="margin-left:auto;flex-shrink:0;color:var(--teal);">${ICO.chev}</span>
+      </button>
       ${headerSub ? `<div class="section-label">${headerSub}</div>` : ''}
       ${displayList.map(entry=>renderExercise(entry)).join('')}
       <button class="cta" id="btnSaveManual">Salva sessione</button>
@@ -1422,8 +1480,30 @@ function renderWorkout(){
     renderHome();
   };
   document.getElementById('dateInput').onchange = (e)=>{ state.log.date = e.target.value; queueSave(); };
+  document.getElementById('btnWarmup').onclick = ()=> openWarmupInfo(state.giornoId, headerLabel, headerMeta);
   wireExerciseEvents();
   wireTimer();
+}
+function openWarmupInfo(giornoId, headerLabel, headerMeta){
+  const list = warmupForGiorno(giornoId);
+  document.getElementById('infoTitle').textContent = 'Riscaldamento';
+  if(!list){
+    document.getElementById('infoScroll').innerHTML = `<div class="info-block"><p>Nessun riscaldamento specifico configurato per questo giorno: usa 8-10 minuti di mobilità generale prima di iniziare.</p></div>`;
+  } else {
+    document.getElementById('infoScroll').innerHTML = `
+      <div class="info-block">
+        <div class="info-block-label">${ICO_MOVE} ${headerLabel || ''} ${headerMeta ? '· '+headerMeta : ''}</div>
+        <p>Circa 8-10 minuti, pensati per i muscoli che userai oggi.</p>
+      </div>
+      ${list.map((w,i)=>`
+        <div class="info-block">
+          <div class="info-block-label">${ICO_SETUP} ${i+1}. ${w.n}</div>
+          <p>${w.d}</p>
+        </div>
+      `).join('')}
+    `;
+  }
+  document.getElementById('infoSheet').classList.add('open');
 }
 function renderExercise(entry){
   const id = entry.id;
