@@ -6,6 +6,9 @@
 <title>Cowork - App PT Sissa</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
 <style>
 :root{
   color-scheme: light;
@@ -458,6 +461,52 @@ input{font-family:inherit;}
   width:64px;height:64px;background:var(--accent);border:none;color:#101314;
 }
 .tc-main svg{width:24px;height:24px;}
+/* AUTH */
+.auth-wrap{max-width:420px;margin:0 auto;padding:60px 20px 40px;}
+.auth-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;font-weight:700;margin-bottom:8px;}
+.auth-wrap h1{font-family:var(--disp);font-size:40px;line-height:0.95;margin:0 0 8px;}
+.auth-wrap .auth-sub{color:var(--text-muted);font-size:14px;line-height:1.5;margin:0 0 24px;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:11px;color:var(--text-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;}
+.field input{
+  width:100%;background:var(--bg-card);border:1px solid var(--border-strong);border-radius:10px;
+  padding:13px 14px;color:var(--text);font-size:15px;
+}
+.field input:focus{outline:none;border-color:var(--accent);}
+.auth-error{background:var(--danger-dim);color:var(--danger);border-radius:10px;padding:10px 14px;font-size:12.5px;margin-bottom:14px;display:none;}
+.auth-error.show{display:block;}
+.auth-info{background:var(--teal-dim);color:var(--teal);border-radius:10px;padding:10px 14px;font-size:12.5px;margin-bottom:14px;display:none;}
+.auth-info.show{display:block;}
+.auth-switch{text-align:center;margin-top:18px;font-size:13px;color:var(--text-muted);}
+.auth-switch a{color:var(--accent);font-weight:700;text-decoration:none;cursor:pointer;}
+.auth-forgot{text-align:right;margin:-6px 0 18px;}
+.auth-forgot a{color:var(--text-muted);font-size:12.5px;text-decoration:none;cursor:pointer;}
+.logout-link{
+  position:fixed;top:16px;right:16px;z-index:45;
+  font-family:var(--mono);font-size:11px;color:var(--text-faint);background:var(--bg-card);
+  border:1px solid var(--border-strong);border-radius:20px;padding:7px 12px;text-decoration:none;
+}
+/* MISURE */
+.measure-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px;}
+.measure-field{background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:12px;}
+.measure-field label{display:block;font-size:11px;color:var(--text-muted);font-family:var(--mono);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;}
+.measure-field .mf-row{display:flex;align-items:center;gap:6px;}
+.measure-field input{
+  width:100%;background:var(--bg-elev);border:1px solid var(--border);border-radius:8px;
+  padding:9px 8px;color:var(--text);font-family:var(--mono);font-size:15px;text-align:center;
+}
+.measure-field .mf-unit{font-family:var(--mono);font-size:11px;color:var(--text-faint);flex-shrink:0;}
+.measure-row{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:var(--bg-card);border:1px solid var(--border);border-radius:12px;
+  padding:13px 14px;margin-bottom:8px;
+}
+.measure-row .mr-date{font-weight:700;font-size:13.5px;}
+.measure-row .mr-vals{font-size:11.5px;color:var(--text-muted);font-family:var(--mono);margin-top:2px;}
+/* TABS */
+.tab-row{display:flex;gap:8px;margin-bottom:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:4px;}
+.tab-btn{flex:1;background:none;border:none;color:var(--text-muted);font-family:var(--mono);font-size:12.5px;font-weight:700;padding:10px;border-radius:9px;text-transform:uppercase;letter-spacing:.04em;}
+.tab-btn.active{background:var(--accent);color:#101314;}
 </style>
 </head>
 <body>
@@ -484,30 +533,50 @@ input{font-family:inherit;}
   </div>
 </div>
 <script>
-/* ============== STORAGE ADAPTER (localStorage-backed, mimics original async window.storage API) ============== */
+/* ============== FIREBASE (login + salvataggio cloud) ============== */
+const firebaseConfig = {
+  apiKey: "AIzaSyAHjALZ8FSA-4AtbU9YUhS4c8kCIMlOFMo",
+  authDomain: "pt-sissa-app.firebaseapp.com",
+  projectId: "pt-sissa-app",
+  storageBucket: "pt-sissa-app.firebasestorage.app",
+  messagingSenderId: "884794525634",
+  appId: "1:884794525634:web:dc765fa3dce484a33ab85b"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+const db = firebase.firestore();
+let currentUser = null;
+/* ============== STORAGE ADAPTER (Firestore, per utente) ==============
+   Ogni utente autenticato ha una collezione privata users/{uid}/kv. L'adapter
+   espone la stessa identica forma (set/get/delete/list) di prima: tutta la
+   logica dell'app sotto resta invariata. I dati vivono nel cloud legati
+   all'account, quindi non si perdono cambiando telefono, browser o
+   cancellando la cronologia di Safari. */
 window.storage = {
-  _prefixKey(k){ return 'ptsissa::' + k; },
+  _col(){
+    if(!currentUser) throw new Error('Utente non autenticato');
+    return db.collection('users').doc(currentUser.uid).collection('kv');
+  },
   async set(key, value, _unused){
-    try{ localStorage.setItem(this._prefixKey(key), value); return true; }catch(e){ return false; }
+    try{ await this._col().doc(key).set({ value }); return true; }catch(e){ return false; }
   },
   async get(key, _unused){
     try{
-      const v = localStorage.getItem(this._prefixKey(key));
-      return v === null ? null : { value: v };
+      const snap = await this._col().doc(key).get();
+      return snap.exists ? { value: snap.data().value } : null;
     }catch(e){ return null; }
   },
   async delete(key, _unused){
-    try{ localStorage.removeItem(this._prefixKey(key)); return true; }catch(e){ return false; }
+    try{ await this._col().doc(key).delete(); return true; }catch(e){ return false; }
   },
   async list(prefix, _unused){
     try{
-      const full = this._prefixKey(prefix);
-      const keys = [];
-      for(let i=0;i<localStorage.length;i++){
-        const k = localStorage.key(i);
-        if(k && k.startsWith(full)) keys.push(k.slice('ptsissa::'.length));
-      }
-      return { keys };
+      const end = prefix + '';
+      const q = await this._col()
+        .where(firebase.firestore.FieldPath.documentId(), '>=', prefix)
+        .where(firebase.firestore.FieldPath.documentId(), '<', end)
+        .get();
+      return { keys: q.docs.map(d=>d.id) };
     }catch(e){ return { keys: [] }; }
   }
 };
@@ -688,11 +757,12 @@ function showToast(msg){
 }
 function setTimerBarVisible(v){ document.body.classList.toggle('has-timerbar', v); }
 /* ============== CONFIRM MODAL ============== */
-function showConfirm(msg, onOk){
+function showConfirm(msg, onOk, okLabel){
   const overlay = document.getElementById('confirmOverlay');
   document.getElementById('confirmMsg').textContent = msg;
-  overlay.classList.add('open');
   const okBtn = document.getElementById('confirmOk');
+  okBtn.textContent = okLabel || 'Elimina';
+  overlay.classList.add('open');
   const cancelBtn = document.getElementById('confirmCancel');
   const cleanup = ()=>{ overlay.classList.remove('open'); okBtn.onclick=null; cancelBtn.onclick=null; };
   okBtn.onclick = ()=>{ cleanup(); onOk(); };
@@ -777,6 +847,166 @@ async function lastSessionDate(giornoId){
 async function deleteSession(giornoId, sessionId){
   try{ await window.storage.delete(logKey(giornoId,sessionId), false); return true; }catch(e){ return false; }
 }
+/* ============== MISURE CORPOREE ============== */
+const MISURE_LABELS = {
+  seno:'Seno', sottoseno:'Sottoseno', vita:'Vita', fianchi:'Fianchi',
+  braccio:'Braccio', coscia:'Coscia', glutei:'Glutei', polpaccio:'Polpaccio', spalla:'Spalla'
+};
+const MISURE_ORDER = ['seno','sottoseno','vita','fianchi','braccio','coscia','glutei','polpaccio','spalla'];
+function measureKey(id){ return `misure-${id}`; }
+async function saveMeasureEntry(date, values){
+  const id = 'm'+Date.now();
+  await window.storage.set(measureKey(id), JSON.stringify({ date, values }), false);
+  return id;
+}
+async function listMeasureEntries(){
+  try{
+    const res = await window.storage.list('misure-', false);
+    if(!res || !res.keys) return [];
+    const items = [];
+    for(const k of res.keys){
+      const r = await window.storage.get(k, false);
+      if(r && r.value){
+        try{ items.push({ key:k, ...JSON.parse(r.value) }); }catch(e){}
+      }
+    }
+    items.sort((a,b)=> b.date.localeCompare(a.date) || b.key.localeCompare(a.key));
+    return items;
+  }catch(e){ return []; }
+}
+async function deleteMeasureEntry(key){
+  try{ await window.storage.delete(key, false); return true; }catch(e){ return false; }
+}
+async function getMeasureTypeHistory(type){
+  const entries = await listMeasureEntries();
+  const points = [];
+  entries.forEach(e=>{
+    const v = e.values && e.values[type];
+    const cm = parseFloat(v);
+    if(v !== undefined && v !== '' && !isNaN(cm)) points.push({ date:e.date, cm, key:e.key });
+  });
+  points.sort((a,b)=> a.date.localeCompare(b.date));
+  return points;
+}
+/* ============== AUTENTICAZIONE ============== */
+function authErrorMessage(code){
+  const map = {
+    'auth/invalid-email':'Email non valida.',
+    'auth/user-not-found':'Nessun account trovato con questa email.',
+    'auth/wrong-password':'Password errata.',
+    'auth/invalid-credential':'Email o password non corrette.',
+    'auth/email-already-in-use':'Esiste già un account con questa email.',
+    'auth/weak-password':'La password deve avere almeno 6 caratteri.',
+    'auth/missing-password':'Inserisci una password.',
+    'auth/too-many-requests':'Troppi tentativi. Riprova tra qualche minuto.',
+  };
+  return map[code] || 'Si è verificato un errore. Riprova.';
+}
+function displayNameOf(user){
+  if(!user) return '';
+  if(user.displayName) return user.displayName;
+  if(user.email) return user.email.split('@')[0];
+  return '';
+}
+function renderLogin(){
+  state.screen = 'login';
+  setTimerBarVisible(false);
+  app.innerHTML = `
+    <div class="auth-wrap">
+      <div class="auth-eyebrow">App PT Sissa</div>
+      <h1>Bentornata.</h1>
+      <p class="auth-sub">Accedi con la tua email per ritrovare i tuoi allenamenti e le tue misure.</p>
+      <div class="auth-error" id="authError"></div>
+      <div class="field"><label>Email</label><input type="email" id="loginEmail" autocomplete="email" placeholder="tuaemail@esempio.it"></div>
+      <div class="field"><label>Password</label><input type="password" id="loginPassword" autocomplete="current-password" placeholder="••••••••"></div>
+      <div class="auth-forgot"><a id="goForgot">Password dimenticata?</a></div>
+      <button class="cta" id="btnLogin">Accedi</button>
+      <div class="auth-switch">Non hai un account? <a id="goSignup">Registrati</a></div>
+    </div>
+  `;
+  document.getElementById('goSignup').onclick = renderSignup;
+  document.getElementById('goForgot').onclick = renderForgotPassword;
+  document.getElementById('btnLogin').onclick = async ()=>{
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('authError');
+    errEl.classList.remove('show');
+    if(!email || !password){ errEl.textContent = 'Inserisci email e password.'; errEl.classList.add('show'); return; }
+    try{
+      await auth.signInWithEmailAndPassword(email, password);
+    }catch(e){
+      errEl.textContent = authErrorMessage(e.code);
+      errEl.classList.add('show');
+    }
+  };
+}
+function renderSignup(){
+  state.screen = 'signup';
+  setTimerBarVisible(false);
+  app.innerHTML = `
+    <div class="auth-wrap">
+      <div class="auth-eyebrow">App PT Sissa</div>
+      <h1>Crea il tuo account.</h1>
+      <p class="auth-sub">Registrati con email e password per salvare i tuoi allenamenti nel cloud.</p>
+      <div class="auth-error" id="authError"></div>
+      <div class="field"><label>Nome</label><input type="text" id="signupName" autocomplete="name" placeholder="Il tuo nome"></div>
+      <div class="field"><label>Email</label><input type="email" id="signupEmail" autocomplete="email" placeholder="tuaemail@esempio.it"></div>
+      <div class="field"><label>Password</label><input type="password" id="signupPassword" autocomplete="new-password" placeholder="Almeno 6 caratteri"></div>
+      <button class="cta" id="btnSignup">Registrati</button>
+      <div class="auth-switch">Hai già un account? <a id="goLogin">Accedi</a></div>
+    </div>
+  `;
+  document.getElementById('goLogin').onclick = renderLogin;
+  document.getElementById('btnSignup').onclick = async ()=>{
+    const name = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const errEl = document.getElementById('authError');
+    errEl.classList.remove('show');
+    if(!name || !email || !password){ errEl.textContent = 'Compila tutti i campi.'; errEl.classList.add('show'); return; }
+    try{
+      const cred = await auth.createUserWithEmailAndPassword(email, password);
+      await cred.user.updateProfile({ displayName: name });
+      currentUser = auth.currentUser;
+      renderHome();
+    }catch(e){
+      errEl.textContent = authErrorMessage(e.code);
+      errEl.classList.add('show');
+    }
+  };
+}
+function renderForgotPassword(){
+  state.screen = 'forgot';
+  setTimerBarVisible(false);
+  app.innerHTML = `
+    <div class="auth-wrap">
+      <div class="auth-eyebrow">App PT Sissa</div>
+      <h1>Recupera password.</h1>
+      <p class="auth-sub">Inserisci la tua email: ti invieremo un link per reimpostare la password.</p>
+      <div class="auth-error" id="authError"></div>
+      <div class="auth-info" id="authInfo"></div>
+      <div class="field"><label>Email</label><input type="email" id="forgotEmail" autocomplete="email" placeholder="tuaemail@esempio.it"></div>
+      <button class="cta" id="btnForgot">Invia email di recupero</button>
+      <div class="auth-switch"><a id="goLogin">Torna al login</a></div>
+    </div>
+  `;
+  document.getElementById('goLogin').onclick = renderLogin;
+  document.getElementById('btnForgot').onclick = async ()=>{
+    const email = document.getElementById('forgotEmail').value.trim();
+    const errEl = document.getElementById('authError');
+    const infoEl = document.getElementById('authInfo');
+    errEl.classList.remove('show'); infoEl.classList.remove('show');
+    if(!email){ errEl.textContent = 'Inserisci la tua email.'; errEl.classList.add('show'); return; }
+    try{
+      await auth.sendPasswordResetEmail(email);
+      infoEl.textContent = 'Email inviata! Controlla la posta (anche lo spam) per il link di recupero.';
+      infoEl.classList.add('show');
+    }catch(e){
+      errEl.textContent = authErrorMessage(e.code);
+      errEl.classList.add('show');
+    }
+  };
+}
 /* ============== ICONS ============== */
 const ICO = {
   back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>',
@@ -793,15 +1023,18 @@ const ICO = {
   clockHome:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>',
   trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 011-1h6a1 1 0 011 1v2m2 0v14a1 1 0 01-1 1H7a1 1 0 01-1-1V6h12z"/></svg>',
   archive:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="4" rx="1"/><path d="M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8M10 12h4"/></svg>',
+  rulerHome:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="1"/><path d="M7 7v3M11 7v5M15 7v3M19 7v5"/></svg>',
 };
 /* ============== HOME ============== */
 function renderHome(){
   state.screen = 'home';
   setTimerBarVisible(false);
+  const nome = displayNameOf(currentUser);
   app.innerHTML = `
+    <a class="logout-link" id="btnLogout" href="#">Esci</a>
     <div class="hero">
-      <div class="eyebrow">Cowork - App PT Sissa</div>
-      <h1>Ciao,<br>Silvana.</h1>
+      <div class="eyebrow">App PT Sissa</div>
+      <h1>Ciao,<br>${nome || 'Silvana'}.</h1>
       <p>Scegli cosa vuoi fare: allenarti seguendo la scheda, guardare i tuoi progressi, o rivedere lo storico delle sessioni.</p>
     </div>
     <div class="wrap">
@@ -814,11 +1047,19 @@ function renderHome(){
           </div>
           <div class="hc-arrow">${ICO.chev}</div>
         </button>
+        <button class="home-card" data-go="misure">
+          <div class="hc-ico">${ICO.rulerHome}</div>
+          <div class="hc-info">
+            <div class="hc-title">Le tue misure</div>
+            <div class="hc-sub">Registra le circonferenze del corpo</div>
+          </div>
+          <div class="hc-arrow">${ICO.chev}</div>
+        </button>
         <button class="home-card" data-go="stats">
           <div class="hc-ico">${ICO.chartHome}</div>
           <div class="hc-info">
             <div class="hc-title">Statistiche</div>
-            <div class="hc-sub">Andamento dei carichi nel tempo</div>
+            <div class="hc-sub">Andamento di carichi e misure nel tempo</div>
           </div>
           <div class="hc-arrow">${ICO.chev}</div>
         </button>
@@ -833,10 +1074,15 @@ function renderHome(){
       </div>
     </div>
   `;
+  document.getElementById('btnLogout').onclick = (e)=>{
+    e.preventDefault();
+    showConfirm('Vuoi uscire dal tuo account?', async ()=>{ await auth.signOut(); }, 'Esci');
+  };
   app.querySelectorAll('.home-card').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const go = btn.dataset.go;
       if(go==='cicli') renderCicli();
+      else if(go==='misure') renderMisure();
       else if(go==='stats') renderStats();
       else renderCronologia();
     });
@@ -955,6 +1201,83 @@ function fmtDate(iso){
 function fmtDayMonth(iso){
   const d = new Date(iso+'T00:00:00');
   return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
+}
+/* ============== LE TUE MISURE ============== */
+async function renderMisure(){
+  state.screen = 'misure';
+  setTimerBarVisible(false);
+  const today = new Date().toISOString().slice(0,10);
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" id="btnBack">${ICO.back}</button>
+      <div class="titles"><h1>Le tue misure</h1><div class="eyebrow" style="margin-top:3px;">Circonferenze corporee</div></div>
+    </div>
+    <div class="wrap">
+      <div class="date-bar">
+        <div><label>Data rilevazione</label><input type="date" id="misureDate" value="${today}"></div>
+      </div>
+      <div class="section-label">Inserisci le misure (cm)</div>
+      <div class="measure-grid">
+        ${MISURE_ORDER.map(k=>`
+          <div class="measure-field">
+            <label>${MISURE_LABELS[k]}</label>
+            <div class="mf-row">
+              <input type="number" inputmode="decimal" step="0.5" placeholder="0" id="mf-${k}">
+              <span class="mf-unit">cm</span>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="cta" id="btnSaveMisure">Salva misure</button>
+      <div class="section-label">Storico rilevazioni</div>
+      <div id="misureList"><div class="stat-empty">Caricamento…</div></div>
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = renderHome;
+  document.getElementById('btnSaveMisure').onclick = async ()=>{
+    const date = document.getElementById('misureDate').value || today;
+    const values = {};
+    let hasAny = false;
+    MISURE_ORDER.forEach(k=>{
+      const v = document.getElementById(`mf-${k}`).value;
+      if(v !== ''){ values[k] = v; hasAny = true; }
+    });
+    if(!hasAny){ showToast('Inserisci almeno una misura'); return; }
+    await saveMeasureEntry(date, values);
+    showToast('Misure salvate ✓');
+    MISURE_ORDER.forEach(k=>{ document.getElementById(`mf-${k}`).value = ''; });
+    await refreshMisureList();
+  };
+  await refreshMisureList();
+}
+async function refreshMisureList(){
+  const listEl = document.getElementById('misureList');
+  const entries = await listMeasureEntries();
+  if(!entries.length){
+    listEl.innerHTML = `<div class="cron-empty">Nessuna misura registrata finora.</div>`;
+    return;
+  }
+  listEl.innerHTML = entries.map(e=>{
+    const parts = MISURE_ORDER.filter(k=>e.values[k]!==undefined && e.values[k]!=='').map(k=>`${MISURE_LABELS[k]} ${e.values[k]}cm`);
+    return `
+      <div class="measure-row" data-key="${e.key}">
+        <div>
+          <div class="mr-date">${fmtDate(e.date)}</div>
+          <div class="mr-vals">${parts.join(' · ') || '—'}</div>
+        </div>
+        <button class="sr-del" data-key="${e.key}">${ICO.trash}</button>
+      </div>
+    `;
+  }).join('');
+  listEl.querySelectorAll('.sr-del').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      showConfirm('Eliminare questa rilevazione di misure? L\'operazione non può essere annullata.', async ()=>{
+        await deleteMeasureEntry(btn.dataset.key);
+        showToast('Rilevazione eliminata');
+        await refreshMisureList();
+      });
+    });
+  });
 }
 /* ============== WORKOUT ============== */
 async function startNewWorkout(giornoId){
@@ -1363,85 +1686,114 @@ function setQuickRange(days){
   document.querySelector(`.range-chip[data-days="${days}"]`)?.classList.add('active');
   updateChartUI();
 }
+let statsTab = 'esercizi';
+let statsSelMisura = { type:'vita' };
+let statsMisuraPoints = [];
+let statsMisuraRange = { from:null, to:null };
 async function renderStats(){
   state.screen = 'stats';
   setTimerBarVisible(false);
-  const orphans = await discoverOrphanExercises();
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
       <div class="titles"><h1>I tuoi progressi</h1><div class="eyebrow" style="margin-top:3px;">Statistiche</div></div>
     </div>
     <div class="wrap">
-      <div class="stat-summary">
-        <div class="stat-summary-card"><div class="val" id="totSessions">—</div><div class="lbl">sessioni registrate</div></div>
-        <div class="stat-summary-card"><div class="val" id="lastSessionVal">—</div><div class="lbl">ultima sessione</div></div>
+      <div class="tab-row">
+        <button class="tab-btn ${statsTab==='esercizi'?'active':''}" data-tab="esercizi">Esercizi</button>
+        <button class="tab-btn ${statsTab==='misure'?'active':''}" data-tab="misure">Misure corporee</button>
       </div>
-      <button class="picker-btn" id="pickerBtn">
-        <div class="pb-left">
-          <div class="pb-eyebrow">${statsSel.giornoLabel} · ${statsSel.giornoMeta}</div>
-          <div class="pb-name">${statsSel.exName}</div>
-        </div>
-        <div class="pb-chev">${ICO.chevDown}</div>
-      </button>
-      <div class="range-row">
-        <div class="range-field"><label>Da</label><input type="date" id="rangeFrom"></div>
-        <div class="range-field"><label>A</label><input type="date" id="rangeTo"></div>
-      </div>
-      <div class="range-chips">
-        <button class="range-chip" data-days="30">30 giorni</button>
-        <button class="range-chip" data-days="90">90 giorni</button>
-        <button class="range-chip" data-days="365">1 anno</button>
-        <button class="range-chip active" data-days="all">Tutto</button>
-      </div>
-      <div class="chart-card">
-        <div class="chart-card-head">
-          <div><div class="name">${statsSel.exName}</div><div class="sub">${statsSel.giornoLabel} · ${statsSel.giornoMeta} · schema ${statsSel.sc||'—'}</div></div>
-          <span class="stat-pr" id="prBadge" style="display:none;"></span>
-        </div>
-        <div class="chart-svg-wrap" id="chartWrap"><div class="stat-empty">Caricamento…</div></div>
-        <div class="stat-meta-row" id="chartMeta"></div>
-      </div>
+      <div id="statsBody"><div class="stat-empty">Caricamento…</div></div>
     </div>
     <div class="picker-sheet" id="pickerSheet">
       <div class="picker-sheet-inner">
-        <div class="picker-head"><h3>Scegli esercizio</h3><button id="pickerClose">${ICO.close}</button></div>
-        <div class="picker-scroll">
-          ${CICLI.map(c=>`
-            <div class="picker-ciclo-label">${c.nome}${c.stato==='precedente'?' (archiviato)':''}</div>
-            ${c.giorni.map(g=>`
-              <div class="picker-group">
-                <div class="picker-group-label">${g.label} · ${g.meta}</div>
-                ${g.esercizi.map(e=>`
-                  <button class="picker-item ${statsSel.exId===e.id?'sel':''}" data-exid="${e.id}" data-name="${e.n}" data-gl="${g.label}" data-gm="${g.meta}" data-sc="${e.sc||''}">
-                    <span>${e.n}</span>${statsSel.exId===e.id ? ICO.check : ''}
-                  </button>
-                `).join('')}
-              </div>
-            `).join('')}
-          `).join('')}
-          ${Object.keys(orphans).length ? `
-            <div class="picker-ciclo-label">Esercizi non più in scheda</div>
-            <div class="picker-group">
-              ${Object.values(orphans).map(o=>`
-                <button class="picker-item ${statsSel.exId===o.id?'sel':''}" data-exid="${o.id}" data-name="${o.name}" data-gl="Storico" data-gm="" data-sc="${o.sc||''}">
-                  <span>${o.name}</span>${statsSel.exId===o.id ? ICO.check : ''}
-                </button>
-              `).join('')}
-            </div>
-          ` : ''}
-        </div>
+        <div class="picker-head"><h3 id="pickerTitle">Scegli</h3><button id="pickerClose">${ICO.close}</button></div>
+        <div class="picker-scroll" id="pickerScroll"></div>
       </div>
     </div>
   `;
   document.getElementById('btnBack').onclick = renderHome;
-  document.getElementById('pickerBtn').onclick = ()=>document.getElementById('pickerSheet').classList.add('open');
   document.getElementById('pickerClose').onclick = ()=>document.getElementById('pickerSheet').classList.remove('open');
   document.getElementById('pickerSheet').addEventListener('click', (e)=>{ if(e.target.id === 'pickerSheet') e.currentTarget.classList.remove('open'); });
-  document.querySelectorAll('.picker-item').forEach(btn=>{
+  app.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      statsTab = btn.dataset.tab;
+      app.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b.dataset.tab===statsTab));
+      renderStatsBody();
+    });
+  });
+  await renderStatsBody();
+}
+async function renderStatsBody(){
+  if(statsTab === 'esercizi') await renderStatsEsercizi();
+  else await renderStatsMisure();
+}
+async function renderStatsEsercizi(){
+  const body = document.getElementById('statsBody');
+  const orphans = await discoverOrphanExercises();
+  body.innerHTML = `
+    <div class="stat-summary">
+      <div class="stat-summary-card"><div class="val" id="totSessions">—</div><div class="lbl">sessioni registrate</div></div>
+      <div class="stat-summary-card"><div class="val" id="lastSessionVal">—</div><div class="lbl">ultima sessione</div></div>
+    </div>
+    <button class="picker-btn" id="pickerBtn">
+      <div class="pb-left">
+        <div class="pb-eyebrow">${statsSel.giornoLabel} · ${statsSel.giornoMeta}</div>
+        <div class="pb-name">${statsSel.exName}</div>
+      </div>
+      <div class="pb-chev">${ICO.chevDown}</div>
+    </button>
+    <div class="range-row">
+      <div class="range-field"><label>Da</label><input type="date" id="rangeFrom"></div>
+      <div class="range-field"><label>A</label><input type="date" id="rangeTo"></div>
+    </div>
+    <div class="range-chips">
+      <button class="range-chip" data-days="30">30 giorni</button>
+      <button class="range-chip" data-days="90">90 giorni</button>
+      <button class="range-chip" data-days="365">1 anno</button>
+      <button class="range-chip active" data-days="all">Tutto</button>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-head">
+        <div><div class="name">${statsSel.exName}</div><div class="sub">${statsSel.giornoLabel} · ${statsSel.giornoMeta} · schema ${statsSel.sc||'—'}</div></div>
+        <span class="stat-pr" id="prBadge" style="display:none;"></span>
+      </div>
+      <div class="chart-svg-wrap" id="chartWrap"><div class="stat-empty">Caricamento…</div></div>
+      <div class="stat-meta-row" id="chartMeta"></div>
+    </div>
+  `;
+  document.getElementById('pickerTitle').textContent = 'Scegli esercizio';
+  document.getElementById('pickerScroll').innerHTML = `
+    ${CICLI.map(c=>`
+      <div class="picker-ciclo-label">${c.nome}${c.stato==='precedente'?' (archiviato)':''}</div>
+      ${c.giorni.map(g=>`
+        <div class="picker-group">
+          <div class="picker-group-label">${g.label} · ${g.meta}</div>
+          ${g.esercizi.map(e=>`
+            <button class="picker-item ${statsSel.exId===e.id?'sel':''}" data-exid="${e.id}" data-name="${e.n}" data-gl="${g.label}" data-gm="${g.meta}" data-sc="${e.sc||''}">
+              <span>${e.n}</span>${statsSel.exId===e.id ? ICO.check : ''}
+            </button>
+          `).join('')}
+        </div>
+      `).join('')}
+    `).join('')}
+    ${Object.keys(orphans).length ? `
+      <div class="picker-ciclo-label">Esercizi non più in scheda</div>
+      <div class="picker-group">
+        ${Object.values(orphans).map(o=>`
+          <button class="picker-item ${statsSel.exId===o.id?'sel':''}" data-exid="${o.id}" data-name="${o.name}" data-gl="Storico" data-gm="" data-sc="${o.sc||''}">
+            <span>${o.name}</span>${statsSel.exId===o.id ? ICO.check : ''}
+          </button>
+        `).join('')}
+      </div>
+    ` : ''}
+  `;
+  document.getElementById('pickerBtn').onclick = ()=>document.getElementById('pickerSheet').classList.add('open');
+  document.querySelectorAll('#pickerScroll .picker-item').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       statsSel = { exId: btn.dataset.exid, exName: btn.dataset.name, giornoLabel: btn.dataset.gl, giornoMeta: btn.dataset.gm, sc: btn.dataset.sc };
-      renderStats();
+      document.getElementById('pickerSheet').classList.remove('open');
+      renderStatsEsercizi();
     });
   });
   (async ()=>{
@@ -1461,15 +1813,165 @@ async function renderStats(){
     document.getElementById('rangeFrom').value = statsRange.from;
     document.getElementById('rangeTo').value = statsRange.to;
   }
-  document.getElementById('rangeFrom').onchange = (e)=>{ statsRange.from = e.target.value; document.querySelectorAll('.range-chip').forEach(c=>c.classList.remove('active')); updateChartUI(); };
-  document.getElementById('rangeTo').onchange = (e)=>{ statsRange.to = e.target.value; document.querySelectorAll('.range-chip').forEach(c=>c.classList.remove('active')); updateChartUI(); };
-  document.querySelectorAll('.range-chip').forEach(btn=>{
+  document.getElementById('rangeFrom').onchange = (e)=>{ statsRange.from = e.target.value; document.querySelectorAll('#statsBody .range-chip').forEach(c=>c.classList.remove('active')); updateChartUI(); };
+  document.getElementById('rangeTo').onchange = (e)=>{ statsRange.to = e.target.value; document.querySelectorAll('#statsBody .range-chip').forEach(c=>c.classList.remove('active')); updateChartUI(); };
+  document.querySelectorAll('#statsBody .range-chip').forEach(btn=>{
     btn.addEventListener('click', ()=>{
       const d = btn.dataset.days;
       setQuickRange(d === 'all' ? 'all' : parseInt(d));
     });
   });
   updateChartUI();
+}
+async function renderStatsMisura(){
+  const body = document.getElementById('statsBody');
+  body.innerHTML = `
+    <button class="picker-btn" id="pickerBtnMisura">
+      <div class="pb-left">
+        <div class="pb-eyebrow">Misura corporea</div>
+        <div class="pb-name">${MISURE_LABELS[statsSelMisura.type]}</div>
+      </div>
+      <div class="pb-chev">${ICO.chevDown}</div>
+    </button>
+    <div class="range-row">
+      <div class="range-field"><label>Da</label><input type="date" id="rangeFromM"></div>
+      <div class="range-field"><label>A</label><input type="date" id="rangeToM"></div>
+    </div>
+    <div class="range-chips">
+      <button class="range-chip" data-days="30">30 giorni</button>
+      <button class="range-chip" data-days="90">90 giorni</button>
+      <button class="range-chip" data-days="365">1 anno</button>
+      <button class="range-chip active" data-days="all">Tutto</button>
+    </div>
+    <div class="chart-card">
+      <div class="chart-card-head">
+        <div><div class="name">${MISURE_LABELS[statsSelMisura.type]}</div><div class="sub">Andamento in cm nel tempo</div></div>
+        <span class="stat-pr" id="prBadgeM" style="display:none;"></span>
+      </div>
+      <div class="chart-svg-wrap" id="chartWrapM"><div class="stat-empty">Caricamento…</div></div>
+      <div class="stat-meta-row" id="chartMetaM"></div>
+    </div>
+  `;
+  document.getElementById('pickerTitle').textContent = 'Scegli misura';
+  document.getElementById('pickerScroll').innerHTML = `
+    <div class="picker-group">
+      ${MISURE_ORDER.map(k=>`
+        <button class="picker-item ${statsSelMisura.type===k?'sel':''}" data-type="${k}">
+          <span>${MISURE_LABELS[k]}</span>${statsSelMisura.type===k ? ICO.check : ''}
+        </button>
+      `).join('')}
+    </div>
+  `;
+  document.getElementById('pickerBtnMisura').onclick = ()=>document.getElementById('pickerSheet').classList.add('open');
+  document.querySelectorAll('#pickerScroll .picker-item').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      statsSelMisura = { type: btn.dataset.type };
+      document.getElementById('pickerSheet').classList.remove('open');
+      renderStatsMisura();
+    });
+  });
+  statsMisuraPoints = await getMeasureTypeHistory(statsSelMisura.type);
+  if(statsMisuraPoints.length){
+    statsMisuraRange.from = statsMisuraPoints[0].date;
+    statsMisuraRange.to = statsMisuraPoints[statsMisuraPoints.length-1].date;
+    document.getElementById('rangeFromM').value = statsMisuraRange.from;
+    document.getElementById('rangeToM').value = statsMisuraRange.to;
+  }
+  document.getElementById('rangeFromM').onchange = (e)=>{ statsMisuraRange.from = e.target.value; document.querySelectorAll('#statsBody .range-chip').forEach(c=>c.classList.remove('active')); updateMisuraChartUI(); };
+  document.getElementById('rangeToM').onchange = (e)=>{ statsMisuraRange.to = e.target.value; document.querySelectorAll('#statsBody .range-chip').forEach(c=>c.classList.remove('active')); updateMisuraChartUI(); };
+  document.querySelectorAll('#statsBody .range-chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const d = btn.dataset.days;
+      setQuickRangeMisura(d === 'all' ? 'all' : parseInt(d));
+    });
+  });
+  updateMisuraChartUI();
+}
+function filteredMisuraPoints(){
+  return statsMisuraPoints.filter(p => (!statsMisuraRange.from || p.date >= statsMisuraRange.from) && (!statsMisuraRange.to || p.date <= statsMisuraRange.to));
+}
+function cmChartSVG(points){
+  const W = 340, H = 240;
+  const mL = 34, mR = 12, mT = 16, mB = 34;
+  const plotW = W - mL - mR, plotH = H - mT - mB;
+  const vals = points.map(p=>p.cm);
+  let yMin = Math.min(...vals), yMax = Math.max(...vals);
+  if(yMin === yMax){ yMin -= 5; yMax += 5; }
+  const step = niceStep(yMax - yMin) || 1;
+  yMin = Math.floor(yMin/step)*step; yMax = Math.ceil(yMax/step)*step;
+  if(yMin === yMax) yMax = yMin + step;
+  const ticks = [];
+  for(let v = yMin; v <= yMax + 0.001; v += step) ticks.push(Math.round(v*100)/100);
+  const xFor = (i)=> points.length === 1 ? mL + plotW/2 : mL + (i/(points.length-1))*plotW;
+  const yFor = (val)=> mT + (1 - (val-yMin)/(yMax-yMin)) * plotH;
+  const gridLines = ticks.map(t=>{
+    const y = yFor(t);
+    return `<line class="chart-grid-line" x1="${mL}" y1="${y.toFixed(1)}" x2="${W-mR}" y2="${y.toFixed(1)}"/>
+      <text class="chart-tick-label" x="${mL-6}" y="${(y+3).toFixed(1)}" text-anchor="end">${t}</text>`;
+  }).join('');
+  const showEveryLabel = points.length <= 7;
+  const xLabels = points.map((p,i)=>{
+    if(!showEveryLabel && i % Math.ceil(points.length/6) !== 0 && i !== points.length-1) return '';
+    const x = xFor(i);
+    return `<text class="chart-tick-label" x="${x.toFixed(1)}" y="${H-mB+16}" text-anchor="middle">${fmtDayMonth(p.date)}</text>`;
+  }).join('');
+  const coords = points.map((p,i)=>[xFor(i), yFor(p.cm)]);
+  const path = coords.map((c,i)=> (i===0?'M':'L') + c[0].toFixed(1) + ',' + c[1].toFixed(1)).join(' ');
+  const dots = coords.map((c,i)=>`
+      <circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${i===coords.length-1?5:3.5}" style="fill:${i===coords.length-1?'var(--accent)':'var(--bg-elev)'};stroke:var(--accent);stroke-width:2;"/>
+      ${points.length<=9?`<text class="chart-point-label" x="${c[0].toFixed(1)}" y="${(c[1]-10).toFixed(1)}" text-anchor="middle">${points[i].cm}</text>`:''}
+  `).join('');
+  return `
+    <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
+      ${gridLines}
+      <line class="chart-axis-line" x1="${mL}" y1="${mT}" x2="${mL}" y2="${H-mB}"/>
+      <line class="chart-axis-line" x1="${mL}" y1="${H-mB}" x2="${W-mR}" y2="${H-mB}"/>
+      ${xLabels}
+      <path d="${path}" fill="none" style="stroke:var(--teal);" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+      ${dots}
+    </svg>
+  `;
+}
+function updateMisuraChartUI(){
+  const points = filteredMisuraPoints();
+  const chartWrap = document.getElementById('chartWrapM');
+  const prBadge = document.getElementById('prBadgeM');
+  const chartMeta = document.getElementById('chartMetaM');
+  if(!chartWrap) return;
+  if(points.length === 0){
+    chartWrap.innerHTML = `<div class="stat-empty">Nessuna misura registrata in questo intervallo.</div>`;
+    chartMeta.innerHTML = ''; prBadge.style.display='none';
+    return;
+  }
+  const last = points[points.length-1];
+  prBadge.textContent = `Ultima: ${last.cm} cm`;
+  prBadge.style.display = 'inline-block';
+  if(points.length === 1){
+    chartWrap.innerHTML = `<div class="stat-empty">Una sola rilevazione nell'intervallo (${fmtDate(last.date)}: ${last.cm} cm).</div>`;
+    chartMeta.innerHTML = '';
+    return;
+  }
+  chartWrap.innerHTML = cmChartSVG(points);
+  const first = points[0];
+  chartMeta.innerHTML = `<span>${fmtDate(first.date)}: <b>${first.cm} cm</b></span><span>${fmtDate(last.date)}: <b>${last.cm} cm</b></span>`;
+}
+function setQuickRangeMisura(days){
+  if(!statsMisuraPoints.length) return;
+  const lastDate = statsMisuraPoints[statsMisuraPoints.length-1].date;
+  if(days === 'all'){
+    statsMisuraRange.from = statsMisuraPoints[0].date;
+    statsMisuraRange.to = lastDate;
+  } else {
+    const d = new Date(lastDate+'T00:00:00');
+    d.setDate(d.getDate() - days);
+    statsMisuraRange.from = d.toISOString().slice(0,10);
+    statsMisuraRange.to = lastDate;
+  }
+  document.getElementById('rangeFromM').value = statsMisuraRange.from;
+  document.getElementById('rangeToM').value = statsMisuraRange.to;
+  document.querySelectorAll('#statsBody .range-chip').forEach(c=>c.classList.remove('active'));
+  document.querySelector(`#statsBody .range-chip[data-days="${days}"]`)?.classList.add('active');
+  updateMisuraChartUI();
 }
 /* ============== CRONOLOGIA ============== */
 const MESI_IT = ['Gennaio','Febbraio','Marzo','Aprile','Maggio','Giugno','Luglio','Agosto','Settembre','Ottobre','Novembre','Dicembre'];
@@ -1561,8 +2063,12 @@ async function refreshCronologia(){
     });
   });
 }
-/* ============== INIT ============== */
-renderHome();
+/* ============== INIT / SESSIONE ============== */
+auth.onAuthStateChanged((user)=>{
+  currentUser = user;
+  if(user){ renderHome(); }
+  else { renderLogin(); }
+});
 </script>
 </body>
 </html>
