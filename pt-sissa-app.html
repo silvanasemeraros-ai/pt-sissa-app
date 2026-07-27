@@ -1270,12 +1270,12 @@ async function renderMisure(){
         </div>
       `).join('')}
       <button class="cta" id="btnSaveMisure">Salva misure</button>
-      <div class="section-label">Storico rilevazioni</div>
-      <div id="misureList"><div class="stat-empty">Caricamento…</div></div>
+      <button class="set-btn" id="btnStoricoMisure" style="width:100%;padding:14px;margin-bottom:20px;">Storico misure</button>
     </div>
   `;
   document.getElementById('btnBack').onclick = renderHome;
   document.getElementById('btnMisureGuide').onclick = openMisureGuide;
+  document.getElementById('btnStoricoMisure').onclick = renderStoricoMisure;
   document.getElementById('btnSaveMisure').onclick = async ()=>{
     const date = document.getElementById('misureDate').value || today;
     const values = {};
@@ -1287,9 +1287,20 @@ async function renderMisure(){
     if(!hasAny){ showToast('Inserisci almeno una misura'); return; }
     await saveMeasureEntry(date, values);
     showToast('Misure salvate ✓');
-    MISURE_ORDER.forEach(k=>{ document.getElementById(`mf-${k}`).value = ''; });
-    await refreshMisureList();
+    renderHome();
   };
+}
+async function renderStoricoMisure(){
+  state.screen = 'storico-misure';
+  setTimerBarVisible(false);
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" id="btnBack">${ICO.back}</button>
+      <div class="titles"><h1>Storico misure</h1><div class="eyebrow" style="margin-top:3px;">Tutte le rilevazioni salvate</div></div>
+    </div>
+    <div class="wrap" id="misureList"><div class="stat-empty">Caricamento…</div></div>
+  `;
+  document.getElementById('btnBack').onclick = renderMisure;
   await refreshMisureList();
 }
 async function refreshMisureList(){
