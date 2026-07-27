@@ -784,6 +784,13 @@ function openExerciseInfo(ex){
   `;
   document.getElementById('infoSheet').classList.add('open');
 }
+function openMisureGuide(){
+  document.getElementById('infoTitle').textContent = 'Come prendo le misure?';
+  document.getElementById('infoScroll').innerHTML = MISURE_GUIDE.map(item=>`
+    <div class="info-block"><div class="info-block-label">${ICO_SETUP} ${item.label}</div><p>${item.text}</p></div>
+  `).join('');
+  document.getElementById('infoSheet').classList.add('open');
+}
 document.getElementById('infoClose').onclick = ()=>document.getElementById('infoSheet').classList.remove('open');
 document.getElementById('infoSheet').addEventListener('click',(e)=>{ if(e.target.id==='infoSheet') e.currentTarget.classList.remove('open'); });
 /* ============== STORAGE HELPERS ==============
@@ -848,11 +855,36 @@ async function deleteSession(giornoId, sessionId){
   try{ await window.storage.delete(logKey(giornoId,sessionId), false); return true; }catch(e){ return false; }
 }
 /* ============== MISURE CORPOREE ============== */
+const MISURE_GROUPS = [
+  { label:'Circonferenze', unit:'cm',
+    keys:['vita','fianchi','cosciaDx','cosciaSx','braccioDxContratto','braccioDxRilassato','braccioSxContratto','braccioSxRilassato','petto','polpaccio'] },
+  { label:'Composizione corporea', unit:'%',
+    keys:['massaGrassa','massaMagra'] },
+];
 const MISURE_LABELS = {
-  seno:'Seno', sottoseno:'Sottoseno', vita:'Vita', fianchi:'Fianchi',
-  braccio:'Braccio', coscia:'Coscia', glutei:'Glutei', polpaccio:'Polpaccio', spalla:'Spalla'
+  vita:'Vita', fianchi:'Fianchi / Glutei',
+  cosciaDx:'Coscia destra', cosciaSx:'Coscia sinistra',
+  braccioDxContratto:'Braccio destro (contratto)', braccioDxRilassato:'Braccio destro (rilassato)',
+  braccioSxContratto:'Braccio sinistro (contratto)', braccioSxRilassato:'Braccio sinistro (rilassato)',
+  petto:'Petto', polpaccio:'Polpacci',
+  massaGrassa:'% Massa grassa', massaMagra:'% Massa magra',
 };
-const MISURE_ORDER = ['seno','sottoseno','vita','fianchi','braccio','coscia','glutei','polpaccio','spalla'];
+const MISURE_UNITS = {
+  vita:'cm', fianchi:'cm', cosciaDx:'cm', cosciaSx:'cm',
+  braccioDxContratto:'cm', braccioDxRilassato:'cm', braccioSxContratto:'cm', braccioSxRilassato:'cm',
+  petto:'cm', polpaccio:'cm', massaGrassa:'%', massaMagra:'%',
+};
+const MISURE_ORDER = MISURE_GROUPS.flatMap(g=>g.keys);
+const MISURE_GUIDE = [
+  { label:'Vita', text:"Di solito all'altezza dell'ombelico o nel punto più stretto del busto." },
+  { label:'Fianchi / Glutei', text:"Nel punto più largo di fianchi e glutei." },
+  { label:'Cosce', text:"A metà coscia o nel punto più largo. Misura entrambe le gambe: spesso c'è una piccola asimmetria tra destra e sinistra." },
+  { label:'Braccia', text:"Sul bicipite, sia contratto che rilassato se vuoi tenere traccia di entrambi. Misura sia il braccio destro che il sinistro." },
+  { label:'Petto', text:"Sotto le ascelle, nel punto più largo del torace." },
+  { label:'Polpacci', text:"Nel punto più largo del polpaccio." },
+  { label:'% Massa grassa e % Massa magra', text:"Si misurano con il plicometro (una pinza che valuta lo spessore della pelle in punti specifici), con la bioimpedenza (bilance o dispositivi che stimano la composizione tramite la resistenza elettrica del corpo), oppure — in modo più preciso — con una DEXA scan, una scansione medica meno accessibile nella pratica quotidiana." },
+  { label:'Perché confrontarle', text:"Guardare l'andamento di massa magra e massa grassa nel tempo è utile soprattutto in fase di definizione: aiuta a capire se un calo di peso viene dalla perdita di grasso o dalla perdita di muscolo." },
+];
 function measureKey(id){ return `misure-${id}`; }
 async function saveMeasureEntry(date, values){
   const id = 'm'+Date.now();
@@ -1210,30 +1242,40 @@ async function renderMisure(){
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><h1>Le tue misure</h1><div class="eyebrow" style="margin-top:3px;">Circonferenze corporee</div></div>
+      <div class="titles"><h1>Le tue misure</h1><div class="eyebrow" style="margin-top:3px;">Circonferenze e composizione corporea</div></div>
     </div>
     <div class="wrap">
       <div class="date-bar">
         <div><label>Data rilevazione</label><input type="date" id="misureDate" value="${today}"></div>
       </div>
-      <div class="section-label">Inserisci le misure (cm)</div>
-      <div class="measure-grid">
-        ${MISURE_ORDER.map(k=>`
-          <div class="measure-field">
-            <label>${MISURE_LABELS[k]}</label>
-            <div class="mf-row">
-              <input type="number" inputmode="decimal" step="0.5" placeholder="0" id="mf-${k}">
-              <span class="mf-unit">cm</span>
+      <button id="btnMisureGuide" style="width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 16px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--text);">
+        <div>
+          <div style="font-weight:700;font-size:14px;">Come prendo le misure?</div>
+          <div style="font-size:12px;color:var(--text-muted);margin-top:2px;">Guida rapida per ogni parte del corpo</div>
+        </div>
+        <span style="color:var(--text-faint);display:flex;">${ICO.chev}</span>
+      </button>
+      ${MISURE_GROUPS.map(g=>`
+        <div class="section-label">${g.label} (${g.unit})</div>
+        <div class="measure-grid">
+          ${g.keys.map(k=>`
+            <div class="measure-field">
+              <label>${MISURE_LABELS[k]}</label>
+              <div class="mf-row">
+                <input type="number" inputmode="decimal" step="${g.unit==='%'?'0.1':'0.5'}" placeholder="0" id="mf-${k}">
+                <span class="mf-unit">${g.unit}</span>
+              </div>
             </div>
-          </div>
-        `).join('')}
-      </div>
+          `).join('')}
+        </div>
+      `).join('')}
       <button class="cta" id="btnSaveMisure">Salva misure</button>
       <div class="section-label">Storico rilevazioni</div>
       <div id="misureList"><div class="stat-empty">Caricamento…</div></div>
     </div>
   `;
   document.getElementById('btnBack').onclick = renderHome;
+  document.getElementById('btnMisureGuide').onclick = openMisureGuide;
   document.getElementById('btnSaveMisure').onclick = async ()=>{
     const date = document.getElementById('misureDate').value || today;
     const values = {};
@@ -1258,7 +1300,7 @@ async function refreshMisureList(){
     return;
   }
   listEl.innerHTML = entries.map(e=>{
-    const parts = MISURE_ORDER.filter(k=>e.values[k]!==undefined && e.values[k]!=='').map(k=>`${MISURE_LABELS[k]} ${e.values[k]}cm`);
+    const parts = MISURE_ORDER.filter(k=>e.values[k]!==undefined && e.values[k]!=='').map(k=>`${MISURE_LABELS[k]} ${e.values[k]}${MISURE_UNITS[k]}`);
     return `
       <div class="measure-row" data-key="${e.key}">
         <div>
@@ -1825,6 +1867,7 @@ async function renderStatsEsercizi(){
 }
 async function renderStatsMisura(){
   const body = document.getElementById('statsBody');
+  const unit = MISURE_UNITS[statsSelMisura.type] || 'cm';
   body.innerHTML = `
     <button class="picker-btn" id="pickerBtnMisura">
       <div class="pb-left">
@@ -1845,7 +1888,7 @@ async function renderStatsMisura(){
     </div>
     <div class="chart-card">
       <div class="chart-card-head">
-        <div><div class="name">${MISURE_LABELS[statsSelMisura.type]}</div><div class="sub">Andamento in cm nel tempo</div></div>
+        <div><div class="name">${MISURE_LABELS[statsSelMisura.type]}</div><div class="sub">Andamento in ${unit} nel tempo</div></div>
         <span class="stat-pr" id="prBadgeM" style="display:none;"></span>
       </div>
       <div class="chart-svg-wrap" id="chartWrapM"><div class="stat-empty">Caricamento…</div></div>
@@ -1854,13 +1897,16 @@ async function renderStatsMisura(){
   `;
   document.getElementById('pickerTitle').textContent = 'Scegli misura';
   document.getElementById('pickerScroll').innerHTML = `
-    <div class="picker-group">
-      ${MISURE_ORDER.map(k=>`
-        <button class="picker-item ${statsSelMisura.type===k?'sel':''}" data-type="${k}">
-          <span>${MISURE_LABELS[k]}</span>${statsSelMisura.type===k ? ICO.check : ''}
-        </button>
-      `).join('')}
-    </div>
+    ${MISURE_GROUPS.map(g=>`
+      <div class="picker-ciclo-label">${g.label}</div>
+      <div class="picker-group">
+        ${g.keys.map(k=>`
+          <button class="picker-item ${statsSelMisura.type===k?'sel':''}" data-type="${k}">
+            <span>${MISURE_LABELS[k]}</span>${statsSelMisura.type===k ? ICO.check : ''}
+          </button>
+        `).join('')}
+      </div>
+    `).join('')}
   `;
   document.getElementById('pickerBtnMisura').onclick = ()=>document.getElementById('pickerSheet').classList.add('open');
   document.querySelectorAll('#pickerScroll .picker-item').forEach(btn=>{
@@ -1943,17 +1989,18 @@ function updateMisuraChartUI(){
     chartMeta.innerHTML = ''; prBadge.style.display='none';
     return;
   }
+  const unit = MISURE_UNITS[statsSelMisura.type] || 'cm';
   const last = points[points.length-1];
-  prBadge.textContent = `Ultima: ${last.cm} cm`;
+  prBadge.textContent = `Ultima: ${last.cm} ${unit}`;
   prBadge.style.display = 'inline-block';
   if(points.length === 1){
-    chartWrap.innerHTML = `<div class="stat-empty">Una sola rilevazione nell'intervallo (${fmtDate(last.date)}: ${last.cm} cm).</div>`;
+    chartWrap.innerHTML = `<div class="stat-empty">Una sola rilevazione nell'intervallo (${fmtDate(last.date)}: ${last.cm} ${unit}).</div>`;
     chartMeta.innerHTML = '';
     return;
   }
   chartWrap.innerHTML = cmChartSVG(points);
   const first = points[0];
-  chartMeta.innerHTML = `<span>${fmtDate(first.date)}: <b>${first.cm} cm</b></span><span>${fmtDate(last.date)}: <b>${last.cm} cm</b></span>`;
+  chartMeta.innerHTML = `<span>${fmtDate(first.date)}: <b>${first.cm} ${unit}</b></span><span>${fmtDate(last.date)}: <b>${last.cm} ${unit}</b></span>`;
 }
 function setQuickRangeMisura(days){
   if(!statsMisuraPoints.length) return;
