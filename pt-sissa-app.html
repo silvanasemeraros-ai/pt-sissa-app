@@ -831,6 +831,16 @@ window.storage = {
     }catch(e){ return { keys: [] }; }
   }
 };
+/* "Oggi" in data locale (fuso orario del telefono), non UTC: usando
+   new Date().toISOString() la data cambierebbe a mezzanotte UTC, cioe'
+   all'1 o alle 2 di notte in Italia — un allenamento o un pasto registrati
+   subito dopo mezzanotte locale finirebbero salvati sotto la data di ieri. */
+function todayLocalISO(){
+  const d = new Date();
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const dd = String(d.getDate()).padStart(2,'0');
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
 /* ============== DATI — Cicli di allenamento (Silvana) ==============
    L'app supporta più cicli nel tempo: quello con stato:'attuale' è la scheda
    in corso, quelli con stato:'precedente' finiscono nella sezione "Allenamenti
@@ -1251,7 +1261,7 @@ function sessionTimeLabel(sessionId){
    cambia (o passa a un nuovo ciclo), questa sessione ricorderà per sempre cos'era
    stato effettivamente svolto. */
 function blankLog(giorno){
-  const log = { date:new Date().toISOString().slice(0,10), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, cicloId:giorno.cicloId, esercizi:{} };
+  const log = { date:todayLocalISO(), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, cicloId:giorno.cicloId, esercizi:{} };
   giorno.esercizi.forEach(ex=>{
     log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets: Array.from({length:ex.s},()=>({kg:'',reps:'',rpe:'',done:false})) };
   });
@@ -1294,7 +1304,7 @@ async function listSessionsDetailed(giornoId){
         const r = await window.storage.get(k, false);
         if(r && r.value){
           const log = JSON.parse(r.value);
-          const date = log.date || new Date().toISOString().slice(0,10);
+          const date = log.date || todayLocalISO();
           return { sessionId, date, log };
         }
       }catch(e){}
@@ -3558,7 +3568,7 @@ function alimPranzoName(giorno){
    senza scrivere nulla, al rientro trovi comunque la variante gia' scelta ad
    attenderti invece che la domanda "Cosa mangi stasera?" da capo. */
 async function startAlimVariant(giornoId){
-  const today = new Date().toISOString().slice(0,10);
+  const today = todayLocalISO();
   try{
     await saveAlimEntry(today, giornoId, {}, false);
   }catch(e){ showToast('Errore salvataggio — riprova'); return; }
@@ -3569,7 +3579,7 @@ async function renderAlimentazione(){
   state.screen = 'alimentazione';
   closeAllOverlays();
   setTimerBarVisible(false);
-  const today = new Date().toISOString().slice(0,10);
+  const today = todayLocalISO();
   /* Una bozza non ancora salvata in via definitiva (finalized:false) fa
      saltare la domanda "Cosa mangi stasera?" e riporta dritta al punto in
      cui avevi lasciato la registrazione di oggi. Il controllo e' scritto in
@@ -3998,7 +4008,7 @@ function renderMenuGiornoDetail(giornoId){
 }
 async function loadAlimHomeSummary(){
   const items = await listAlimEntries();
-  const today = new Date().toISOString().slice(0,10);
+  const today = todayLocalISO();
   ALIM_GIORNI.forEach(gi=>{
     const matching = items.filter(x=>x.giornoId===gi.id);
     matching.sort((a,b)=> b.date.localeCompare(a.date));
@@ -4165,7 +4175,7 @@ function renderGiornoAlimentare(giornoId, forDate){
   setTimerBarVisible(false);
   const giorno = ALIM_GIORNI.find(g=>g.id===giornoId);
   if(!giorno){ renderAlimentazione(); return; }
-  const today = new Date().toISOString().slice(0,10);
+  const today = todayLocalISO();
   const useDate = forDate || today;
   state.alimDate = useDate;
   state.alimQuantities = {};
@@ -4419,7 +4429,7 @@ async function renderMisure(){
   state.screen = 'misure';
   closeAllOverlays();
   setTimerBarVisible(false);
-  const today = new Date().toISOString().slice(0,10);
+  const today = todayLocalISO();
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
@@ -4513,7 +4523,7 @@ async function startNewWorkout(giornoId){
   /* Se per questo giorno esiste gia' una sessione salvata OGGI, non la riapriamo
      più in automatico: chiediamo prima conferma, poi se sovrascrivere quella
      sessione o crearne una seconda separata per la stessa giornata. */
-  const today = new Date().toISOString().slice(0,10);
+  const today = todayLocalISO();
   let todaySession = null;
   try{
     const sessions = await listSessionsDetailed(giornoId);
@@ -4563,7 +4573,7 @@ async function openExistingSession(giornoId, sessionId){
   const giorno = giornoById(giornoId);
   state.cicloId = (state.log && state.log.cicloId) || (giorno && giorno.cicloId) || null;
   if(!state.log){
-    state.log = giorno ? blankLog(giorno) : { date:new Date().toISOString().slice(0,10), giornoId, giornoLabel:'', giornoMeta:'', cicloId:null, esercizi:{} };
+    state.log = giorno ? blankLog(giorno) : { date:todayLocalISO(), giornoId, giornoLabel:'', giornoMeta:'', cicloId:null, esercizi:{} };
   }
   state.screen = 'workout';
   renderWorkout();
@@ -5092,7 +5102,7 @@ async function exportAllenamentiCSV(){
   });
   if(rows.length === 1){ showToast('Nessun allenamento da esportare'); return; }
   const csv = rows.map(r=>r.map(csvEscape).join(';')).join('\n');
-  downloadTextFile(`shape-track-allenamenti-${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv');
+  downloadTextFile(`shape-track-allenamenti-${todayLocalISO()}.csv`, csv, 'text/csv');
   showToast('Esportazione avviata ✓');
 }
 async function exportMisureCSV(){
@@ -5103,7 +5113,7 @@ async function exportMisureCSV(){
     rows.push([e.date, ...MISURE_ORDER.map(k=> e.values[k] !== undefined ? e.values[k] : '')]);
   });
   const csv = rows.map(r=>r.map(csvEscape).join(';')).join('\n');
-  downloadTextFile(`shape-track-misure-${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv');
+  downloadTextFile(`shape-track-misure-${todayLocalISO()}.csv`, csv, 'text/csv');
   showToast('Esportazione avviata ✓');
 }
 async function renderStats(){
