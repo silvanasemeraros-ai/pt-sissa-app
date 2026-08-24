@@ -801,8 +801,14 @@ window.storage = {
     if(!currentUser) throw new Error('Utente non autenticato');
     return db.collection('users').doc(currentUser.uid).collection('kv');
   },
+  /* set/delete NON inghiottono piu' gli errori al loro interno: se il
+     salvataggio su Firestore fallisce (telefono offline, connessione
+     instabile in palestra, ecc.) l'errore risale a chi ha chiamato la
+     funzione, cosi' l'interfaccia puo' mostrare "Errore salvataggio" invece
+     di dire "Salvato ✓" quando in realta' non e' stato salvato nulla. */
   async set(key, value, _unused){
-    try{ await this._col().doc(key).set({ value }); return true; }catch(e){ return false; }
+    await this._col().doc(key).set({ value });
+    return true;
   },
   async get(key, _unused){
     try{
@@ -811,7 +817,8 @@ window.storage = {
     }catch(e){ return null; }
   },
   async delete(key, _unused){
-    try{ await this._col().doc(key).delete(); return true; }catch(e){ return false; }
+    await this._col().doc(key).delete();
+    return true;
   },
   async list(prefix, _unused){
     try{
@@ -1303,7 +1310,7 @@ async function lastSessionDate(giornoId){
   return list.length ? list[0].date : null;
 }
 async function deleteSession(giornoId, sessionId){
-  try{ await window.storage.delete(logKey(giornoId,sessionId), false); return true; }catch(e){ return false; }
+  await window.storage.delete(logKey(giornoId,sessionId), false);
 }
 /* ============== MISURE CORPOREE ============== */
 const MISURE_GROUPS = [
@@ -1366,7 +1373,7 @@ async function listMeasureEntries(){
   }catch(e){ return []; }
 }
 async function deleteMeasureEntry(key){
-  try{ await window.storage.delete(key, false); return true; }catch(e){ return false; }
+  await window.storage.delete(key, false);
 }
 async function getMeasureTypeHistory(type){
   const entries = await listMeasureEntries();
@@ -3232,10 +3239,7 @@ async function loadAlimEntry(date){
    momento la giornata e' considerata conclusa e non viene piu' riproposta in
    automatico (resta comunque modificabile dallo Storico). */
 async function saveAlimEntry(date, giornoId, quantities, finalized){
-  try{
-    await window.storage.set(alimKey(date), JSON.stringify({ date, giornoId, quantities, finalized: !!finalized }), false);
-    return true;
-  }catch(e){ return false; }
+  await window.storage.set(alimKey(date), JSON.stringify({ date, giornoId, quantities, finalized: !!finalized }), false);
 }
 async function listAlimEntries(){
   try{
@@ -3252,7 +3256,7 @@ async function listAlimEntries(){
   }catch(e){ return []; }
 }
 async function deleteAlimEntry(date){
-  try{ await window.storage.delete(alimKey(date), false); return true; }catch(e){ return false; }
+  await window.storage.delete(alimKey(date), false);
 }
 /* "Componi la tua settimana": un unico piano settimanale ricorrente (non
    legato a una data precisa) che Silvana riscrive ogni sabato quando fa la
@@ -3267,10 +3271,7 @@ async function loadAlimSettimana(){
   return {};
 }
 async function saveAlimSettimana(giorni){
-  try{
-    await window.storage.set(ALIM_SETTIMANA_KEY, JSON.stringify(giorni), false);
-    return true;
-  }catch(e){ return false; }
+  await window.storage.set(ALIM_SETTIMANA_KEY, JSON.stringify(giorni), false);
 }
 /* ============== ALIMENTAZIONE > COMPONI LA TUA SETTIMANA ============== */
 let settimanaEditDayKey = null;
@@ -3322,9 +3323,11 @@ async function renderComponiSettimana(){
   document.getElementById('btnVediSpesa').onclick = renderListaSpesa;
   document.getElementById('btnSvuotaSettimana').onclick = ()=>{
     showConfirm('Svuotare tutti i giorni della settimana? Dovrai riassegnare le varianti da capo.', async ()=>{
-      await saveAlimSettimana({});
-      showToast('Settimana svuotata');
-      renderComponiSettimana();
+      try{
+        await saveAlimSettimana({});
+        showToast('Settimana svuotata');
+        renderComponiSettimana();
+      }catch(e){ showToast('Errore salvataggio — riprova'); }
     }, 'Svuota', 'Annulla');
   };
   document.getElementById('pickerCloseSettimana').onclick = ()=> document.getElementById('pickerSheetSettimana').classList.remove('open');
@@ -3335,9 +3338,11 @@ async function renderComponiSettimana(){
       const gid = btn.dataset.gid;
       const cur = await loadAlimSettimana();
       if(gid) cur[settimanaEditDayKey] = gid; else delete cur[settimanaEditDayKey];
-      await saveAlimSettimana(cur);
-      document.getElementById('pickerSheetSettimana').classList.remove('open');
-      renderSettimanaGiorniList(cur);
+      try{
+        await saveAlimSettimana(cur);
+        document.getElementById('pickerSheetSettimana').classList.remove('open');
+        renderSettimanaGiorniList(cur);
+      }catch(e){ showToast('Errore salvataggio — riprova'); }
     });
   });
   renderSettimanaGiorniList(settimana);
@@ -3554,7 +3559,9 @@ function alimPranzoName(giorno){
    attenderti invece che la domanda "Cosa mangi stasera?" da capo. */
 async function startAlimVariant(giornoId){
   const today = new Date().toISOString().slice(0,10);
-  await saveAlimEntry(today, giornoId, {}, false);
+  try{
+    await saveAlimEntry(today, giornoId, {}, false);
+  }catch(e){ showToast('Errore salvataggio — riprova'); return; }
   renderGiornoAlimentare(giornoId);
 }
 /* ============== ALIMENTAZIONE — panoramica / scelta della cena ============== */
@@ -3666,8 +3673,10 @@ async function renderAlimentazione(){
     document.getElementById('btnResumeAlim').onclick = ()=> renderGiornoAlimentare(draftGiorno.id);
     document.getElementById('btnRestartAlim').onclick = ()=>{
       showConfirm('Ricominciare la registrazione di oggi? I dati inseriti finora andranno persi.', async ()=>{
-        await deleteAlimEntry(today);
-        renderAlimentazione();
+        try{
+          await deleteAlimEntry(today);
+          renderAlimentazione();
+        }catch(e){ showToast('Errore — riprova'); }
       }, 'Ricomincia', 'Annulla');
     };
   } else {
@@ -4097,8 +4106,10 @@ function flashAlimSavePill(){
 function queueAlimSave(giorno){
   clearTimeout(alimSaveTimeout);
   alimSaveTimeout = setTimeout(async ()=>{
-    await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities);
-    flashAlimSavePill();
+    try{
+      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities);
+      flashAlimSavePill();
+    }catch(e){ showToast('Errore salvataggio'); }
   }, 700);
 }
 function setAlimQty(giorno, key, qty){
@@ -4187,7 +4198,9 @@ function renderGiornoAlimentare(giornoId, forDate){
   recomputeAlimTotals(giorno);
   loadExistingAlimEntry(giorno, useDate);
   document.getElementById('btnSaveAlim').onclick = async ()=>{
-    await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities, true);
+    try{
+      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities, true);
+    }catch(e){ showToast('Errore salvataggio — riprova'); return; }
     showToast('Registrazione salvata ✓');
     goBack();
   };
@@ -4265,9 +4278,11 @@ async function refreshAlimStorico(){
   });
   const doDelete = (date)=>{
     showConfirm(`Eliminare la registrazione del ${fmtDate(date)}? L'operazione non può essere annullata.`, async ()=>{
-      await deleteAlimEntry(date);
-      showToast('Registrazione eliminata');
-      await refreshAlimStorico();
+      try{
+        await deleteAlimEntry(date);
+        showToast('Registrazione eliminata');
+        await refreshAlimStorico();
+      }catch(e){ showToast('Errore — impossibile eliminare, riprova'); }
     });
   };
   body.querySelectorAll('.sr-del').forEach(btn=>{
@@ -4444,7 +4459,9 @@ async function renderMisure(){
       if(v !== ''){ values[k] = v; hasAny = true; }
     });
     if(!hasAny){ showToast('Inserisci almeno una misura'); return; }
-    await saveMeasureEntry(date, values);
+    try{
+      await saveMeasureEntry(date, values);
+    }catch(e){ showToast('Errore salvataggio — riprova'); return; }
     showToast('Misure salvate ✓');
     renderAllenamento();
   };
@@ -4476,9 +4493,11 @@ async function refreshMisureList(){
   }).join('');
   const doDelete = (key)=>{
     showConfirm('Eliminare questa rilevazione di misure? L\'operazione non può essere annullata.', async ()=>{
-      await deleteMeasureEntry(key);
-      showToast('Rilevazione eliminata');
-      await refreshMisureList();
+      try{
+        await deleteMeasureEntry(key);
+        showToast('Rilevazione eliminata');
+        await refreshMisureList();
+      }catch(e){ showToast('Errore — impossibile eliminare, riprova'); }
     });
   };
   listEl.querySelectorAll('.sr-del').forEach(btn=>{
@@ -4507,8 +4526,10 @@ async function startNewWorkout(giornoId){
         showConfirm(
           'Vuoi sovrascrivere l\'allenamento già fatto oggi, oppure crearne uno nuovo separato?',
           async ()=>{
-            await deleteSession(giornoId, todaySession.sessionId);
-            beginBlankWorkout(giornoId, giorno);
+            try{
+              await deleteSession(giornoId, todaySession.sessionId);
+              beginBlankWorkout(giornoId, giorno);
+            }catch(e){ showToast('Errore — riprova'); }
           },
           'Sovrascrivi',
           'Duplica',
@@ -5489,9 +5510,11 @@ async function refreshCronologia(){
   });
   const doDelete = (gid, sessionId, rowDate)=>{
     showConfirm(`Eliminare questo allenamento (${rowDate})? L'operazione non può essere annullata e i dati spariranno anche dalle statistiche.`, async ()=>{
-      await deleteSession(gid, sessionId);
-      showToast('Sessione eliminata');
-      await refreshCronologia();
+      try{
+        await deleteSession(gid, sessionId);
+        showToast('Sessione eliminata');
+        await refreshCronologia();
+      }catch(e){ showToast('Errore — impossibile eliminare, riprova'); }
     });
   };
   wrap.querySelectorAll('.sr-del').forEach(btn=>{
