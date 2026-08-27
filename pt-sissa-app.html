@@ -740,10 +740,16 @@ input{font-family:inherit;}
 .measure-row{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   background:var(--bg-card-hover);border:1px solid var(--border-strong);border-left:3px solid var(--accent);border-radius:12px;
-  padding:13px 14px;margin-bottom:8px;
+  padding:13px 14px;margin-bottom:8px;cursor:pointer;
 }
+.measure-row:active{background:var(--bg-card);}
 .measure-row .mr-date{font-weight:700;font-size:14.5px;color:var(--accent);}
 .measure-row .mr-vals{font-size:11.5px;color:var(--text);font-family:var(--mono);margin-top:2px;}
+.measure-row .sr-del,.measure-row .sr-edit{
+  width:34px;height:34px;border-radius:8px;flex-shrink:0;border:1px solid var(--border-strong);
+  background:var(--bg-elev);color:var(--text-faint);display:flex;align-items:center;justify-content:center;
+}
+.measure-row .sr-del svg,.measure-row .sr-edit svg{width:15px;height:15px;}
 /* TABS */
 .tab-row{display:flex;gap:8px;margin-bottom:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:4px;}
 .tab-btn{flex:1;background:none;border:none;color:var(--text-muted);font-family:var(--mono);font-size:12.5px;font-weight:700;padding:10px;border-radius:9px;text-transform:uppercase;letter-spacing:.04em;}
@@ -1361,10 +1367,13 @@ const MISURE_FIELD_TIPS = {
   peso: "Sempre nella stessa condizione (es. mattina a digiuno) — guarda la tendenza su 3-4 settimane, non il singolo giorno.",
 };
 function measureKey(id){ return `misure-${id}`; }
-async function saveMeasureEntry(date, values){
-  const id = 'm'+Date.now();
-  await window.storage.set(measureKey(id), JSON.stringify({ date, values }), false);
-  return id;
+/* Se si passa existingKey (la chiave di una rilevazione già salvata), i nuovi
+   valori sovrascrivono quella stessa rilevazione invece di crearne una nuova
+   — è così che "modifica" di una misura in Storico non genera un duplicato. */
+async function saveMeasureEntry(date, values, existingKey){
+  const key = existingKey || measureKey('m'+Date.now());
+  await window.storage.set(key, JSON.stringify({ date, values }), false);
+  return key;
 }
 async function listMeasureEntries(){
   try{
@@ -4425,19 +4434,25 @@ function fmtDayMonth(iso){
   return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
 }
 /* ============== LE TUE MISURE ============== */
-async function renderMisure(){
+/* editEntry, se presente ({key, date, values}), fa entrare la schermata in
+   modalità "modifica": i campi vengono precompilati con i valori già salvati
+   e il salvataggio aggiorna quella stessa rilevazione (stessa chiave) invece
+   di crearne una nuova — così non si generano duplicati in Storico misure. */
+async function renderMisure(editEntry){
   state.screen = 'misure';
   closeAllOverlays();
   setTimerBarVisible(false);
   const today = todayLocalISO();
+  const isEdit = !!editEntry;
+  const goBack = ()=> isEdit ? renderCronologia() : renderAllenamento();
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><h1>Misure</h1><div class="eyebrow" style="margin-top:3px;">Circonferenze e peso</div></div>
+      <div class="titles"><h1>${isEdit ? 'Modifica misure' : 'Misure'}</h1><div class="eyebrow" style="margin-top:3px;">${isEdit ? 'Stai modificando una rilevazione già salvata' : 'Circonferenze e peso'}</div></div>
     </div>
     <div class="wrap">
       <div class="date-bar">
-        <div><label>Data rilevazione</label><input type="date" id="misureDate" value="${today}"></div>
+        <div><label>Data rilevazione</label><input type="date" id="misureDate" value="${isEdit ? editEntry.date : today}"></div>
       </div>
       ${MISURE_GROUPS.map(g=>`
         <div class="misure-group-label">${g.label} (${g.unit})</div>
@@ -4448,7 +4463,7 @@ async function renderMisure(){
                 <label>${MISURE_LABELS[k]}</label>
               </div>
               <div class="mf-row">
-                <input type="number" inputmode="decimal" step="${g.unit==='%'?'0.1':'0.5'}" placeholder="0" id="mf-${k}">
+                <input type="number" inputmode="decimal" step="${g.unit==='%'?'0.1':'0.5'}" placeholder="0" id="mf-${k}" value="${isEdit && editEntry.values[k]!==undefined ? editEntry.values[k] : ''}">
                 <span class="mf-unit">${g.unit}</span>
               </div>
               <div class="mf-tip" id="tip-${k}">${MISURE_FIELD_TIPS[k]||''}</div>
@@ -4456,10 +4471,10 @@ async function renderMisure(){
           `).join('')}
         </div>
       `).join('')}
-      <button class="cta" id="btnSaveMisure">Salva misure</button>
+      <button class="cta" id="btnSaveMisure">${isEdit ? 'Salva modifiche' : 'Salva misure'}</button>
     </div>
   `;
-  document.getElementById('btnBack').onclick = renderAllenamento;
+  document.getElementById('btnBack').onclick = goBack;
   document.getElementById('btnSaveMisure').onclick = async ()=>{
     const date = document.getElementById('misureDate').value || today;
     const values = {};
@@ -4470,10 +4485,10 @@ async function renderMisure(){
     });
     if(!hasAny){ showToast('Inserisci almeno una misura'); return; }
     try{
-      await saveMeasureEntry(date, values);
+      await saveMeasureEntry(date, values, isEdit ? editEntry.key : undefined);
     }catch(e){ showToast('Errore salvataggio — riprova'); return; }
-    showToast('Misure salvate ✓');
-    renderAllenamento();
+    showToast(isEdit ? 'Misure aggiornate ✓' : 'Misure salvate ✓');
+    goBack();
   };
 }
 async function refreshMisureList(){
@@ -4495,12 +4510,26 @@ async function refreshMisureList(){
               <div class="mr-date">${fmtDate(e.date)}</div>
               <div class="mr-vals">${parts.join(' · ') || '—'}</div>
             </div>
-            <button class="sr-del" data-key="${e.key}">${ICO.trash}</button>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <button class="sr-edit" data-key="${e.key}">${ICO.edit}</button>
+              <button class="sr-del" data-key="${e.key}">${ICO.trash}</button>
+            </div>
           </div>
         </div>
       </div>
     `;
   }).join('');
+  const openEdit = (key)=>{
+    const entry = entries.find(en=>en.key===key);
+    if(!entry){ showToast('Rilevazione non trovata'); return; }
+    renderMisure(entry);
+  };
+  listEl.querySelectorAll('.measure-row').forEach(row=>{
+    row.addEventListener('click', ()=> openEdit(row.dataset.key));
+  });
+  listEl.querySelectorAll('.sr-edit').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); openEdit(btn.dataset.key); });
+  });
   const doDelete = (key)=>{
     showConfirm('Eliminare questa rilevazione di misure? L\'operazione non può essere annullata.', async ()=>{
       try{
