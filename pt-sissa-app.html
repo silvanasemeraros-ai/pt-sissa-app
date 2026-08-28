@@ -1691,6 +1691,17 @@ async function loadAllenamentoSummary(){
    unit '%' cosi' l'utente puo' comunque segnalare di averne mangiata solo
    una parte, riusando esattamente la stessa logica di calcolo. */
 const ALIM_TARGET = { kcal:1900, p:100, c:240, g:60 };
+/* Integratori giornalieri: fissi, uguali in ogni variante (a differenza dei
+   pasti, non cambiano da un giorno all'altro del piano) — per questo sono
+   una lista a parte e non fanno parte di ALIM_GIORNI. Non contano nel calcolo
+   di kcal/macro: sono solo un promemoria da spuntare per non dimenticarli. */
+const INTEGRATORI_GIORNALIERI = [
+  { id:'multivitaminico', nome:'Multivitaminico', momento:'Mattina' },
+  { id:'vitaminaD',       nome:'Vitamina D',       momento:'Pranzo' },
+  { id:'omega3',          nome:'Omega-3',          momento:'Pranzo' },
+  { id:'creatina',        nome:'Creatina',         momento:'Pranzo' },
+  { id:'zma',             nome:'ZMA',              momento:'Sera (dopo cena)' },
+];
 /* Metadati per lo screen "Statistiche" di Alimentazione: per ciascun
    macro tracciato, come chiamarlo nella tab, nel titolo del grafico e
    quale unita' di misura mostrare accanto al valore. */
@@ -3257,8 +3268,8 @@ async function loadAlimEntry(date){
    riapri l'app. finalized=true solo quando premi "Salva registrazione": da quel
    momento la giornata e' considerata conclusa e non viene piu' riproposta in
    automatico (resta comunque modificabile dallo Storico). */
-async function saveAlimEntry(date, giornoId, quantities, finalized){
-  await window.storage.set(alimKey(date), JSON.stringify({ date, giornoId, quantities, finalized: !!finalized }), false);
+async function saveAlimEntry(date, giornoId, quantities, finalized, integratori){
+  await window.storage.set(alimKey(date), JSON.stringify({ date, giornoId, quantities, finalized: !!finalized, integratori: integratori || {} }), false);
 }
 async function listAlimEntries(){
   try{
@@ -4072,6 +4083,58 @@ function ingRowHTML(pastoId, idx, ing){
     </div>
   `;
 }
+/* Card "Integratori": stesso linguaggio visivo dei pasti (per coerenza), ma
+   con una semplice spunta invece di quantita'/kcal, e raggruppata per
+   momento della giornata (Mattina/Pranzo/Sera) cosi' e' chiaro a colpo
+   d'occhio quando prendere cosa. */
+function integratoriCardHTML(){
+  const momenti = [];
+  INTEGRATORI_GIORNALIERI.forEach(it=>{
+    let m = momenti.find(x=>x.momento===it.momento);
+    if(!m){ m = { momento:it.momento, items:[] }; momenti.push(m); }
+    m.items.push(it);
+  });
+  return `
+    <div class="pasto-card">
+      <div class="pasto-head">
+        <div class="pasto-title">Ogni giorno</div>
+        <div class="pasto-name">Integratori</div>
+      </div>
+      <div class="ing-list">
+        ${momenti.map(m=>`
+          <div class="ing-row" style="border-bottom:none;padding-bottom:0;">
+            <div class="ing-main"><div class="ing-suggested" style="margin-top:0;color:var(--accent);font-weight:700;">${m.momento.toUpperCase()}</div></div>
+          </div>
+          ${m.items.map(it=>`
+            <div class="ing-row" data-key="${it.id}" style="justify-content:flex-start;">
+              <button class="ing-check" data-integ-check="${it.id}" title="Segna come preso">${ICO.check}</button>
+              <div class="ing-main">
+                <div class="ing-name">${it.nome}</div>
+              </div>
+            </div>
+          `).join('')}
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+function wireIntegratoriInputs(){
+  app.querySelectorAll('[data-integ-check]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.integCheck;
+      const isOn = btn.classList.contains('on');
+      state.alimIntegratori[id] = !isOn;
+      btn.classList.toggle('on', !isOn);
+      queueAlimSave(currentAlimGiorno);
+    });
+  });
+}
+function applyIntegratoriState(){
+  app.querySelectorAll('[data-integ-check]').forEach(btn=>{
+    const id = btn.dataset.integCheck;
+    btn.classList.toggle('on', !!state.alimIntegratori[id]);
+  });
+}
 function macroSummaryHTML(totals){
   const items = [
     { key:'kcal', label:'Kcal',        val:totals.kcal, target:ALIM_TARGET.kcal, unit:'' },
@@ -4115,6 +4178,7 @@ function recomputeAlimTotals(giorno){
   if(summaryEl) summaryEl.innerHTML = macroSummaryHTML(totals);
 }
 let alimSaveTimeout = null;
+let currentAlimGiorno = null; /* usato da wireIntegratoriInputs per richiamare queueAlimSave */
 function flashAlimSavePill(){
   const pill = document.getElementById('alimSavePill');
   if(!pill) return;
@@ -4126,7 +4190,7 @@ function queueAlimSave(giorno){
   clearTimeout(alimSaveTimeout);
   alimSaveTimeout = setTimeout(async ()=>{
     try{
-      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities);
+      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities, false, state.alimIntegratori);
       flashAlimSavePill();
     }catch(e){ showToast('Errore salvataggio'); }
   }, 700);
@@ -4174,6 +4238,10 @@ async function loadExistingAlimEntry(giorno, forDate){
     Object.keys(state.alimQuantities).forEach(key=> setAlimQty(giorno, key, state.alimQuantities[key]));
     recomputeAlimTotals(giorno);
   }
+  if(entry && entry.giornoId === giorno.id && entry.integratori){
+    state.alimIntegratori = { ...entry.integratori };
+    applyIntegratoriState();
+  }
 }
 /* forDate: se presente, apre il giorno gia' compilato con i dati salvati per
    quella data specifica (modifica da Storico) invece che con i valori a 0 di
@@ -4188,7 +4256,9 @@ function renderGiornoAlimentare(giornoId, forDate){
   const useDate = forDate || today;
   state.alimDate = useDate;
   state.alimQuantities = {};
+  state.alimIntegratori = {};
   state.alimReturnTo = forDate ? 'storico' : 'alimentazione';
+  currentAlimGiorno = giorno;
   const goBack = ()=> state.alimReturnTo === 'storico' ? renderStoricoAlimentazione() : renderAlimentazione();
   app.innerHTML = `
     <div class="topbar">
@@ -4203,6 +4273,8 @@ function renderGiornoAlimentare(giornoId, forDate){
       ${giorno.note ? `<div class="warmup-note" style="border-color:rgba(63,199,184,0.25);">${ICO.info}<span>${giorno.note}</span></div>` : ''}
       <div class="section-label">Rispetto al target</div>
       <div class="macro-summary" id="macroSummary"></div>
+      <div class="section-label">Integratori — uguali ogni giorno, non dimenticarli</div>
+      ${integratoriCardHTML()}
       <div class="section-label">Pasti — spunta ciò che hai mangiato o scrivi la quantità</div>
       ${giorno.pasti.map(pasto=>pastoCardHTML(pasto)).join('')}
       <button class="cta" id="btnSaveAlim">Salva registrazione</button>
@@ -4214,11 +4286,12 @@ function renderGiornoAlimentare(giornoId, forDate){
     queueAlimSave(giorno);
   };
   wireAlimInputs(giorno);
+  wireIntegratoriInputs();
   recomputeAlimTotals(giorno);
   loadExistingAlimEntry(giorno, useDate);
   document.getElementById('btnSaveAlim').onclick = async ()=>{
     try{
-      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities, true);
+      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities, true, state.alimIntegratori);
     }catch(e){ showToast('Errore salvataggio — riprova'); return; }
     showToast('Registrazione salvata ✓');
     goBack();
@@ -4265,6 +4338,7 @@ async function refreshAlimStorico(){
     const rows = rowsSorted.map(e=>{
       const giorno = ALIM_GIORNI.find(g=>g.id===e.giornoId);
       const totals = giorno ? giornoTotals(giorno, e.quantities) : { kcal:0, p:0, c:0, g:0 };
+      const integCount = INTEGRATORI_GIORNALIERI.filter(it=> e.integratori && e.integratori[it.id]).length;
       const d = new Date(e.date+'T00:00:00');
       return `
         <div class="swipe-wrap" data-date="${e.date}">
@@ -4275,7 +4349,7 @@ async function refreshAlimStorico(){
                 <div class="sr-date">${d.getDate()}</div>
                 <div class="sr-info">
                   <div class="sr-giorno">${giorno ? 'Variante '+giorno.lettera : 'Variante sconosciuta'} · ${fmtKcal(totals.kcal)} kcal</div>
-                  <div class="sr-meta">${fmtDate(e.date)} · P ${fmtMacro(totals.p)} · C ${fmtMacro(totals.c)} · G ${fmtMacro(totals.g)}</div>
+                  <div class="sr-meta">${fmtDate(e.date)} · P ${fmtMacro(totals.p)} · C ${fmtMacro(totals.c)} · G ${fmtMacro(totals.g)} · Integratori ${integCount}/${INTEGRATORI_GIORNALIERI.length}</div>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;">
