@@ -390,6 +390,19 @@ input{font-family:inherit;}
   border:none;border-radius:8px;padding:6px 10px;font-family:var(--mono);font-size:11px;font-weight:700;
 }
 .rec-start svg{width:11px;height:11px;}
+.lato-block{padding:0 16px;}
+.lato-block:first-child{padding-top:4px;}
+.lato-block .set-table{padding:0 0 12px;}
+.lato-block .ex-actions{padding:0 0 16px;}
+.lato-label{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  font-weight:700;margin:14px 0 8px;display:flex;align-items:center;gap:10px;
+}
+.lato-label::after{content:"";flex:1;height:1px;background:var(--border);}
+.lato-label.debole{color:var(--accent);}
+.lato-label.debole::after{background:rgba(255,92,57,0.3);}
+.lato-label.forte{color:var(--teal);}
+.lato-label.forte::after{background:rgba(63,199,184,0.3);}
 .set-table{padding:6px 16px 12px;}
 .set-row{
   display:grid;grid-template-columns:22px 1fr 1fr 1fr 34px;gap:6px;align-items:center;
@@ -864,6 +877,12 @@ function todayLocalISO(){
    Ogni giorno e ogni esercizio ha un "id" stabile e permanente: aggiungere,
    togliere o riordinare esercizi (o passare a un ciclo nuovo) non fa MAI
    perdere o mescolare i dati storici già salvati. */
+/* Lato debole/forte di Silvana, usato per gli esercizi con perLato:true
+   (fatti un lato alla volta): mostriamo sempre prima la sezione del lato
+   debole e subito dopo quella del lato forte, così è impossibile saltare
+   un lato per errore. Vale sia per le gambe sia per il rematore a un braccio. */
+const LATO_DEBOLE = 'Sinistra';
+const LATO_FORTE = 'Destra';
 const CICLI = [
   { id:'set2026', nome:'Ciclo Settembre 2026', periodo:'Settembre – Ottobre 2026', sub:'4 giorni · upper / lower', stato:'attuale',
     giorni:[
@@ -886,7 +905,7 @@ const CICLI = [
                 muscolo:"Gluteo massimo come motore principale. Sensazione corretta: contrazione forte dei glutei in cima, non nella schiena bassa. Rispetto al bilanciere la macchina guida il movimento e stabilizza il busto.",
                 resp:"Inspira in discesa, espira nella spinta verso l'alto.",
                 attenzione:"Anche con la macchina mantieni lo sguardo verso l'alto/avanti e il mento leggermente rientrato per tutta la serie, senza spingere la testa indietro contro lo schienale. Lo schienale guidato riduce molto il rischio rispetto al bilanciere, ma vista la tua storia di fastidio cervicale è una buona abitudine da mantenere comunque."}},
-        {id:'affondi-bulgari', n:'Affondi bulgari con manubri', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'per gamba',
+        {id:'affondi-bulgari', n:'Affondi bulgari con manubri', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', perLato:true,
           info:{setup:"Piede posteriore appoggiato con il collo del piede su una panca dietro di te, gamba anteriore avanti a circa un passo e mezzo, un manubrio per mano, busto leggermente inclinato in avanti.",
                 esec:"Discesa: piega il ginocchio anteriore scendendo verticalmente finché il ginocchio posteriore quasi tocca terra, senza far avanzare troppo il ginocchio oltre la punta del piede. Spinta: risali spingendo con tallone e avampiede della gamba anteriore.",
                 muscolo:"Quadricipite e gluteo della gamba anteriore, lavorati singolarmente — utile per correggere squilibri tra le due gambe. Cerca la sensazione di lavoro sulla gamba avanti, non su quella d'appoggio dietro.",
@@ -916,7 +935,7 @@ const CICLI = [
                 esec:"Concentrica: spingi le impugnature in avanti fino quasi alla distensione, senza bloccare di scatto i gomiti. Eccentrica: torna indietro controllata fino a un buon allungamento del petto, senza far sbattere i pesi.",
                 muscolo:"Petto (grande pettorale) con tricipiti e deltoide anteriore come sinergici. Errore comune: sollevare le spalle verso le orecchie durante la spinta.",
                 resp:"Espira spingendo in avanti, inspira tornando indietro."}},
-        {id:'rematore-manubrio-panca', n:'Rematore con manubrio su panca (one-arm dumbbell row)', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec per lato', note:'per lato',
+        {id:'rematore-manubrio-panca', n:'Rematore con manubrio su panca (one-arm dumbbell row)', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec per lato', perLato:true,
           info:{setup:"Un ginocchio e la mano corrispondente appoggiati su una panca, l'altro piede a terra, un manubrio nella mano libera con braccio disteso verso il basso.",
                 esec:"Tirata: tira il manubrio verso il fianco, portando il gomito indietro e in alto, avvicinando la scapola. Ritorno: lascia scendere il manubrio controllato fino a braccia quasi distese.",
                 muscolo:"Gran dorsale e trapezio medio/romboidi, ottimo per il lavoro posturale sulle spalle. Il busto appoggiato alla panca dà più stabilità e comfort rispetto al cavo basso da seduta. Se senti solo il braccio, stai tirando troppo con il bicipite.",
@@ -960,18 +979,18 @@ const CICLI = [
                 esec:"Apertura: spingi le gambe verso l'esterno il più possibile, contraendo il fianco. Ritorno: lascia richiudere le gambe controllate, senza far sbattere le placche.",
                 muscolo:"Gluteo medio e piccolo — le porzioni del gluteo centrali per l'obiettivo di 'glutei alti': il gluteo medio dà la forma rotonda ai fianchi vista di lato. Corretto se senti il lavoro sul lato esterno dell'anca, non sulle ginocchia.",
                 resp:"Espira nell'apertura, inspira nel ritorno."}},
-        {id:'pendulum-kickback', n:'Pendulum Kick Back (macchina guidata)', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'per gamba',
+        {id:'pendulum-kickback', n:'Pendulum Kick Back (macchina guidata)', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', perLato:true,
           info:{setup:"In ginocchio/appoggiata sulla macchina, piede agganciato al braccio a pendolo, mani sulle maniglie anteriori per stabilità, busto leggermente in avanti.",
                 esec:"Spinta: spingi la gamba indietro e verso l'alto seguendo l'arco guidato del pendolo, contraendo forte il gluteo in fondo. Ritorno: riporta la gamba in avanti controllata, seguendo la stessa traiettoria guidata.",
                 muscolo:"Gluteo massimo in isolamento. Il braccio a pendolo guida la traiettoria al posto tuo, quindi il rischio di compensare con la schiena bassa è molto più basso rispetto alla versione al cavo — ideale per iniziare, non avendo mai fatto il kickback ai cavi.",
                 resp:"Espira nella spinta, inspira nel ritorno."}},
-        {id:'kneeling-glute-isolator', n:'Kneeling Glute Isolator', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', note:'per gamba',
+        {id:'kneeling-glute-isolator', n:'Kneeling Glute Isolator', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', perLato:true,
           info:{setup:"In ginocchio sulla macchina, un ginocchio appoggiato sul cuscinetto imbottito, l'altra gamba agganciata alla leva con la pianta del piede, mani sulle maniglie anteriori solo per l'equilibrio.",
                 esec:"Spinta: spingi la gamba agganciata indietro e verso l'alto, estendendo l'anca e contraendo forte il gluteo. Ritorno: riporta la gamba in avanti controllata, senza far scattare il peso.",
                 muscolo:"Gluteo massimo in isolamento puro — questa posizione limita ancora di più la possibilità di compensare con la schiena rispetto agli altri esercizi glutei in scheda: un'ottima aggiunta vista la tua priorità sui glutei.",
                 resp:"Espira nella spinta, inspira nel ritorno.",
                 attrezzatura:"Non tirare con le braccia sulle maniglie durante il movimento (te lo segnala anche l'etichetta della macchina) — servono solo a stabilizzarti, il lavoro deve venire dal gluteo. È un esercizio nuovo per te: nelle prime sessioni parti leggera per imparare bene la traiettoria."}},
-        {id:'multi-abductor-3d', n:'3D Multi Abductor in piedi', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec', note:'per gamba',
+        {id:'multi-abductor-3d', n:'3D Multi Abductor in piedi', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec', perLato:true,
           info:{setup:"In piedi sulla macchina, caviglia agganciata alla leva regolabile, mani sulle maniglie anteriori per stabilità, busto fermo ed eretto per tutta la serie.",
                 esec:"Apertura: spingi la gamba lateralmente verso l'esterno contro la resistenza della macchina, senza inclinare il busto. Ritorno: riporta la gamba al centro controllata, senza far ricadere di scatto il peso.",
                 muscolo:"Gluteo medio come motore principale — stesso muscolo target del monster walk che sostituisce, ma qui il lavoro è isolato su una gamba con un carico regolabile sulla macchina invece della resistenza di una fascia elastica: puoi aumentare il peso nel tempo in modo misurabile.",
@@ -1302,7 +1321,14 @@ function sessionTimeLabel(sessionId){
 function blankLog(giorno){
   const log = { date:todayLocalISO(), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, cicloId:giorno.cicloId, esercizi:{} };
   giorno.esercizi.forEach(ex=>{
-    log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets: Array.from({length:ex.s},()=>({kg:'',reps:'',rpe:'',done:false})) };
+    // Gli esercizi perLato (un lato alla volta) hanno il doppio delle serie:
+    // le prime ex.s sono etichettate 'debole', le successive ex.s 'forte' —
+    // così in Workout compaiono come due sezioni separate, nell'ordine
+    // debole poi forte, e non si rischia di saltare un lato.
+    const sets = ex.perLato
+      ? Array.from({length:ex.s*2},(_, i)=>({kg:'',reps:'',rpe:'',done:false, lato: i<ex.s?'debole':'forte'}))
+      : Array.from({length:ex.s},()=>({kg:'',reps:'',rpe:'',done:false}));
+    log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets };
   });
   return log;
 }
@@ -4820,6 +4846,13 @@ function renderExercise(entry){
   const name = ex ? ex.n : snap.name;
   const sc = ex ? ex.sc : snap.sc;
   const rows = snap.sets;
+  // perLato = esercizio "un lato alla volta" (es. affondi bulgari, rematore a
+  // un braccio): mostriamo due sezioni separate, prima il lato debole e
+  // subito dopo il lato forte, così è impossibile saltarne uno per errore.
+  // Se la sessione è vecchia e le righe non hanno ancora l'etichetta lato
+  // (creata prima di questa funzione), ripieghiamo sulla tabella unica di
+  // sempre invece di rischiare di nascondere delle serie già salvate.
+  const isPerLato = !!(ex && ex.perLato && rows.length && rows.every(r=>r.lato==='debole'||r.lato==='forte'));
   return `
     <div class="ex-card" data-ex="${id}">
       <div class="ex-head">
@@ -4844,13 +4877,36 @@ function renderExercise(entry){
         <button class="rec-start" data-rec="${ex.rec}" data-name="${ex.n}">${ICO.play} avvia</button>
       </div>
       ` : ''}
+      ${isPerLato ? renderLatoBlock('debole', LATO_DEBOLE, rows) + renderLatoBlock('forte', LATO_FORTE, rows) : `
       <div class="set-table">
         <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span>RPE</span><span></span></div>
         <div class="rows-container">${rows.map((r,si)=>renderSetRow(r,si)).join('')}</div>
       </div>
       <div class="ex-actions">
-        <button class="set-btn" data-act="add" data-ex="${id}">+ Aggiungi serie</button>
-        <button class="set-btn" data-act="remove" data-ex="${id}">− Rimuovi ultima</button>
+        <button class="set-btn" data-act="add">+ Aggiungi serie</button>
+        <button class="set-btn" data-act="remove">− Rimuovi ultima</button>
+      </div>
+      `}
+    </div>
+  `;
+}
+/* Sezione di un singolo lato (debole o forte) dentro un esercizio perLato:
+   stessa tabella serie di sempre, ma filtrata sulle sole righe di quel lato
+   (mantenendo l'indice VERO nell'array sets, non quello locale al filtro,
+   così salvataggio/lettura restano invariati) e con i propri pulsanti
+   +/- serie, scoped a quel lato soltanto. */
+function renderLatoBlock(lato, label, rows){
+  const filtered = rows.map((r,i)=>({r,i})).filter(x=>x.r.lato===lato);
+  return `
+    <div class="lato-block" data-lato="${lato}">
+      <div class="lato-label ${lato}">Lato ${lato} — ${label}</div>
+      <div class="set-table">
+        <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span>RPE</span><span></span></div>
+        <div class="rows-container" data-lato="${lato}">${filtered.map(x=>renderSetRow(x.r, x.i)).join('')}</div>
+      </div>
+      <div class="ex-actions">
+        <button class="set-btn" data-act="add" data-lato="${lato}">+ Aggiungi serie</button>
+        <button class="set-btn" data-act="remove" data-lato="${lato}">− Rimuovi ultima</button>
       </div>
     </div>
   `;
@@ -4875,9 +4931,11 @@ function wireExerciseEvents(){
   });
   app.querySelectorAll('.ex-card').forEach(card=>{
     const exId = card.dataset.ex;
-    const rowsContainer = card.querySelector('.rows-container');
+    // bindRows lavora su TUTTE le righe della card (una o due sezioni lato),
+    // usando sempre l'indice vero data-si nell'array sets — così funziona
+    // identico sia per gli esercizi normali sia per quelli perLato.
     function bindRows(){
-      rowsContainer.querySelectorAll('.set-row').forEach(row=>{
+      card.querySelectorAll('.set-row').forEach(row=>{
         const si = parseInt(row.dataset.si);
         row.querySelectorAll('input').forEach(inp=>{
           inp.addEventListener('input', ()=>{
@@ -4897,9 +4955,34 @@ function wireExerciseEvents(){
     card.querySelectorAll('.set-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const arr = state.log.esercizi[exId].sets;
-        if(btn.dataset.act === 'add') arr.push({kg:'',reps:'',rpe:'',done:false});
-        else if(btn.dataset.act === 'remove' && arr.length > 1) arr.pop();
-        rowsContainer.innerHTML = arr.map((r,si)=>renderSetRow(r,si)).join('');
+        const lato = btn.dataset.lato; // presente solo per gli esercizi perLato
+        if(btn.dataset.act === 'add'){
+          if(lato){
+            // Inserisce subito dopo l'ultima riga esistente di quel lato
+            // (non semplicemente in fondo all'array, che per il lato
+            // 'debole' finirebbe dopo le righe 'forte').
+            let insertAt = -1;
+            for(let i=arr.length-1;i>=0;i--){ if(arr[i].lato===lato){ insertAt=i+1; break; } }
+            if(insertAt===-1) insertAt = lato==='debole' ? 0 : arr.length;
+            arr.splice(insertAt,0,{kg:'',reps:'',rpe:'',done:false,lato});
+          } else {
+            arr.push({kg:'',reps:'',rpe:'',done:false});
+          }
+        } else if(btn.dataset.act === 'remove'){
+          if(lato){
+            const idxs = arr.map((r,i)=> r.lato===lato ? i : -1).filter(i=>i>=0);
+            if(idxs.length > 1) arr.splice(idxs[idxs.length-1],1);
+          } else if(arr.length > 1){
+            arr.pop();
+          }
+        }
+        // Ri-renderizza tutti i rows-container della card: un inserimento a
+        // metà array cambia l'indice vero anche delle righe successive.
+        card.querySelectorAll('.rows-container').forEach(rc=>{
+          const rcLato = rc.dataset.lato;
+          const filtered = arr.map((r,i)=>({r,i})).filter(x=> rcLato ? x.r.lato===rcLato : true);
+          rc.innerHTML = filtered.map(x=>renderSetRow(x.r, x.i)).join('');
+        });
         bindRows();
         queueSave();
       });
