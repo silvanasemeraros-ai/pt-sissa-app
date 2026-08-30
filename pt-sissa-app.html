@@ -3446,10 +3446,13 @@ function vecchiaEntryAMuovaEntry(old){
         if(qty > 0) pastoFatto = true;
       }
     });
-    if(Object.keys(overrides).length){
-      entry.qtyOverride[pid] = overrides;
-    }
     if(pastoFatto){
+      /* Le correzioni ai grammi hanno senso solo per un pasto davvero
+         mangiato: se il vecchio pasto era tutto a 0 (saltato), non lo
+         segnamo "fatto" e non portiamo con noi grammature a zero, che nel
+         nuovo selettore verrebbero altrimenti mostrate come "0 g" al posto
+         della porzione di piano finche' non tocchi la spunta. */
+      entry.qtyOverride[pid] = overrides;
       entry.pastiFatti[pid] = true;
     }
   });
@@ -4936,7 +4939,29 @@ async function renderGiornoAlimentare(giornoId, forDate){
     ${opzioneSheetHTML()}
   `;
   document.getElementById('btnBack').onclick = goBack;
-  document.getElementById('alimDateInput').onchange = (e)=>{ state.alimDate = e.target.value; queueAlimSave(); };
+  document.getElementById('alimDateInput').onchange = async (e)=>{
+    const nuovaData = e.target.value;
+    const dataPrecedente = state.alimDate;
+    if(nuovaData === dataPrecedente) return;
+    /* Prima di spostare la registrazione su un'altra data, controlliamo che
+       quella data non abbia gia' una sua registrazione: altrimenti il
+       salvataggio la sovrascriverebbe in silenzio con quella che stai
+       modificando ora, perdendo i dati che c'erano gia' li'. */
+    let esistenteAltrove = null;
+    try{ esistenteAltrove = await loadAlimEntry(nuovaData); }catch(e){}
+    if(esistenteAltrove){
+      showConfirm(
+        `Il ${fmtDate(nuovaData)} ha gia' una registrazione salvata. Spostando questa qui la sostituisci: i dati che c'erano andrebbero persi. Continuare?`,
+        ()=>{ state.alimDate = nuovaData; queueAlimSave(); },
+        'Sostituisci',
+        'Annulla',
+        ()=>{ e.target.value = dataPrecedente; }
+      );
+      return;
+    }
+    state.alimDate = nuovaData;
+    queueAlimSave();
+  };
   wireMealsInputs();
   wireExtraInputs();
   wireIntegratoriInputs();
