@@ -247,6 +247,10 @@ input{font-family:inherit;}
 .ing-check svg{width:13px;height:13px;opacity:0;}
 .ing-check.on{background:var(--success);border-color:var(--success);}
 .ing-check.on svg{opacity:1;}
+/* .ing-check di base nasconde l'icona finche' non e' "on" (e' pensata per
+   la spunta "preso/fatto"): i pulsanti che invece eliminano qualcosa
+   riusano lo stesso stile di cornice ma devono mostrare l'icona sempre. */
+.ing-check-del svg{opacity:1;}
 .ing-suggested{font-size:10px;color:var(--text-faint);font-family:var(--mono);margin-top:3px;line-height:1.45;}
 .ing-suggested .ing-suggested-qty{
   display:inline-block;background:var(--accent-dim);color:var(--accent);
@@ -779,6 +783,44 @@ input{font-family:inherit;}
 .tab-btn.active{background:var(--accent);color:#101314;}
 .tab-btn{transition:background .15s ease, color .15s ease;}
 .tab-btn:active:not(.active){background:var(--bg-card-hover);color:var(--text);}
+
+/* ===== ALIMENTAZIONE v2 — pasti intercambiabili, extra, alimenti personalizzati ===== */
+.meal-row{display:flex;align-items:center;gap:10px;padding:12px 16px;}
+.meal-row-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.meal-row-icon{font-size:20px;flex-shrink:0;}
+.meal-row-info{flex:1;min-width:0;}
+.meal-row-name{font-size:13.5px;font-weight:700;color:var(--text);}
+.meal-row-opt{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
+.meal-row-var{font-family:var(--mono);color:var(--accent);font-size:10.5px;}
+.meal-row-kcal{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:700;text-align:right;flex-shrink:0;}
+.meal-row-kcal span{display:block;font-size:9px;color:var(--text-faint);font-weight:400;text-transform:uppercase;}
+.meal-row-card.done{border-color:var(--success);}
+.opz-item-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin:0 4px 10px;overflow:hidden;}
+.opz-item-card.sel{border-color:var(--accent);}
+.opz-item-select{width:100%;text-align:left;background:none;border:none;padding:14px 12px 10px;cursor:pointer;color:inherit;display:block;}
+.opz-item-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.opz-item-titolo{font-weight:700;color:var(--text);font-size:13.5px;}
+.opz-item-kcal{font-family:var(--mono);color:var(--accent);font-weight:700;font-size:13px;flex-shrink:0;}
+.opz-item-macro{font-size:11px;color:var(--text-faint);font-family:var(--mono);margin-top:4px;}
+.opz-item-var{color:var(--accent);}
+.opz-item-badge{background:var(--accent-dim);color:var(--accent);font-size:9px;padding:2px 6px;border-radius:6px;margin-left:6px;text-transform:uppercase;font-weight:700;vertical-align:middle;}
+.opz-item-toggle{width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--border);padding:10px 12px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
+.opz-item-detail{max-height:0;overflow:hidden;transition:max-height .3s ease;padding:0 12px;}
+.opz-item-detail.open{max-height:1200px;padding:6px 12px 12px;border-top:1px solid var(--border);}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.meal-row-porzione{color:var(--accent);font-family:var(--mono);font-size:10.5px;background:var(--accent-dim);padding:1px 6px;border-radius:6px;margin-left:4px;}
+.meal-row-consigliato{font-size:11px;color:var(--text-faint);margin-top:4px;line-height:1.4;}
+.meal-row-adatta{width:calc(100% - 8px);margin:0 4px 10px;text-align:center;background:var(--accent-dim);border:1px dashed var(--accent);border-radius:10px;padding:9px 10px;font-size:11.5px;font-weight:700;color:var(--accent);cursor:pointer;}
+.meal-row-qty-toggle{width:calc(100% - 8px);margin:0 4px;text-align:left;background:none;border:none;border-top:1px solid var(--border);padding:10px 8px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
+.meal-row-qty-detail{max-height:0;overflow:hidden;transition:max-height .3s ease;padding:0 8px;}
+.meal-row-qty-detail.open{max-height:1200px;padding:4px 8px 10px;}
+.ing-qty-input{width:52px;background:var(--bg-input,var(--bg-card));border:1px solid var(--border);border-radius:6px;color:var(--accent);font-family:var(--mono);font-weight:700;font-size:11.5px;padding:3px 4px;text-align:right;-moz-appearance:textfield;}
+.ing-qty-input::-webkit-outer-spin-button,.ing-qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.ing-qty-input.dirty{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.ing-qty-confirm{width:24px;height:24px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin:0 2px;padding:0;border-radius:7px;border:1px solid var(--border);background:none;color:var(--text-faint);cursor:pointer;}
+.ing-qty-confirm svg,.ing-qty-confirm img{width:13px;height:13px;}
+.ing-qty-confirm:disabled{opacity:.35;cursor:default;}
+.ing-qty-confirm:not(:disabled){border-color:var(--success);color:var(--success);background:color-mix(in srgb, var(--success) 14%, transparent);}
 </style>
 </head>
 <body>
@@ -3315,24 +3357,49 @@ const ALIM_GIORNI = [
     "lettera": "F"
   }
 ];
-function alimKey(date){ return `alim-v1-${date}`; }
+/* Sentinella per la scheda "Cosa mangi stasera?": un giorno senza alcuna
+   variante di partenza, per quando non vuoi seguire nessuna delle 7
+   combinazioni pronte ma comporre liberamente ogni pasto, pescando dal
+   paniere di tutte le opzioni intercambiabili (vedi opzioniPerPasto piu'
+   sotto). Non fa parte di ALIM_GIORNI di proposito: non deve comparire ne'
+   nel Menu delle varianti ne' in "Componi la tua settimana", dove serve
+   invece un pasto reale per generare la lista della spesa. */
+const ALIM_LIBERO_ID = '__libero__';
+const ALIM_GIORNO_LIBERO = { id: ALIM_LIBERO_ID, lettera:'—', cardSub:'Componi tu ogni pasto, dal paniere di tutte le opzioni', pasti: [] };
+function giornoOrLibero(id){
+  if(id === ALIM_LIBERO_ID) return ALIM_GIORNO_LIBERO;
+  return ALIM_GIORNI.find(g=>g.id===id) || null;
+}
+/* ============== ALIMENTAZIONE — registrazione giornaliera (v2) ==============
+   Chiave di storage "alim2-v1-" (invece della vecchia "alim-v1-"): il nuovo
+   modello dati (opzioni intercambiabili per pasto, correzioni manuali per
+   ingrediente, "Giorno libero") salva l'intera "entry" del giorno come un
+   unico oggetto, con una forma diversa da quella storica (che salvava
+   {giornoId, quantities} per una scheda a varianti fisse). Le vecchie
+   registrazioni restano leggibili sotto "alim-v1-" e vengono migrate una
+   sola volta in questo nuovo formato da migrateOldAlimEntriesOnce() qui
+   sotto, cosi' lo Storico resta completo. "Componi la tua settimana" invece
+   resta sulla chiave originale (alim-settimana-v1, invariata piu' sotto):
+   quella funzione non e' cambiata, quindi condivide i dati con quella
+   storica senza bisogno di migrazione. */
+function alimKey(date){ return `alim2-v1-${date}`; }
 async function loadAlimEntry(date){
   try{
     const r = await window.storage.get(alimKey(date), false);
     return (r && r.value) ? JSON.parse(r.value) : null;
   }catch(e){ return null; }
 }
-/* finalized=false (default) per il salvataggio automatico mentre compili durante
-   la giornata: la voce resta una "bozza" e riapre la stessa variante se chiudi e
-   riapri l'app. finalized=true solo quando premi "Salva registrazione": da quel
-   momento la giornata e' considerata conclusa e non viene piu' riproposta in
-   automatico (resta comunque modificabile dallo Storico). */
-async function saveAlimEntry(date, giornoId, quantities, finalized, integratori){
-  await window.storage.set(alimKey(date), JSON.stringify({ date, giornoId, quantities, finalized: !!finalized, integratori: integratori || {} }), false);
+/* L'intera "entry" del giorno (opzioni scelte per pasto, cosa e' segnato
+   fatto, alimenti extra, integratori) viene salvata come un unico oggetto
+   JSON, invece delle "quantities" per singolo ingrediente della vecchia
+   versione: e' la stessa idea di fondo del modello di Beat Yourself
+   (opzione selezionata + extra), adattata alla forma dati di questa app. */
+async function saveAlimEntry(date, entry){
+  await window.storage.set(alimKey(date), JSON.stringify({ ...entry, date }), false);
 }
 async function listAlimEntries(){
   try{
-    const res = await window.storage.list('alim-v1-', false);
+    const res = await window.storage.list('alim2-v1-', false);
     if(!res || !res.keys) return [];
     const results = await Promise.all(res.keys.map(async (k)=>{
       try{
@@ -3346,6 +3413,71 @@ async function listAlimEntries(){
 }
 async function deleteAlimEntry(date){
   await window.storage.delete(alimKey(date), false);
+}
+/* ============== MIGRAZIONE UNA TANTUM — vecchio diario (alim-v1-) ==============
+   La versione precedente dell'Alimentazione salvava ogni giorno come
+   { date, giornoId, quantities, finalized, integratori }, con "quantities"
+   chiave pastoId+'-'+idx -> grammi effettivamente mangiati (0 = non
+   mangiato). Le varianti A-G di allora sono le stesse di oggi (dati
+   invariati in ALIM_GIORNI), quindi per ogni pasto della vecchia variante
+   l'opzione "di default" nel nuovo catalogo (opzioneDefaultDiGiorno) e' la
+   ricetta identica, con gli ingredienti nello stesso identico ordine: le
+   vecchie chiavi pastoId+'-'+idx restano valide come correzioni manuali
+   (qtyOverride) nel nuovo formato. Un pasto per cui almeno un ingrediente
+   aveva grammi > 0 viene considerato "fatto" nel nuovo modello.
+   Gira una sola volta per utente (flag ALIM_MIGRAZIONE_KEY): non sovrascrive
+   mai una entry nuova gia' presente per quella data, e non tocca ne'
+   cancella i vecchi dati "alim-v1-", che restano come backup. */
+const ALIM_MIGRAZIONE_KEY = 'alim-migrazione-v2-fatta';
+function vecchiaEntryAMuovaEntry(old){
+  const giorno = ALIM_GIORNI.find(g=>g.id===old.giornoId);
+  if(!giorno) return null; // variante sconosciuta (es. cancellata) — non migrabile
+  const entry = nuovaEntryDaGiorno(giorno);
+  const quantities = old.quantities || {};
+  giorno.pasti.forEach(pasto=>{
+    const pid = pasto.id;
+    let pastoFatto = false;
+    const overrides = {};
+    pasto.ingredienti.forEach((ing, idx)=>{
+      const key = pid+'-'+idx;
+      const qty = quantities[key];
+      if(qty !== undefined && qty !== null){
+        overrides[idx] = qty;
+        if(qty > 0) pastoFatto = true;
+      }
+    });
+    if(Object.keys(overrides).length){
+      entry.qtyOverride[pid] = overrides;
+    }
+    if(pastoFatto){
+      entry.pastiFatti[pid] = true;
+    }
+  });
+  entry.integratori = old.integratori || {};
+  entry.finalized = !!old.finalized;
+  return entry;
+}
+async function migrateOldAlimEntriesOnce(){
+  try{
+    const flag = await window.storage.get(ALIM_MIGRAZIONE_KEY, false);
+    if(flag && flag.value === 'ok') return;
+    const res = await window.storage.list('alim-v1-', false);
+    const keys = (res && res.keys) ? res.keys : [];
+    for(const key of keys){
+      try{
+        const date = key.slice('alim-v1-'.length);
+        if(!date) continue;
+        const gia = await loadAlimEntry(date); // gia' nel nuovo formato per questa data?
+        if(gia) continue; // non sovrascrivere mai una entry nuova esistente
+        const r = await window.storage.get(key, false);
+        if(!r || !r.value) continue;
+        const old = JSON.parse(r.value);
+        const migrata = vecchiaEntryAMuovaEntry(old);
+        if(migrata) await saveAlimEntry(date, migrata);
+      }catch(e){ /* una singola data non migrabile non deve bloccare le altre */ }
+    }
+    await window.storage.set(ALIM_MIGRAZIONE_KEY, 'ok', false);
+  }catch(e){ /* la migrazione e' best-effort: nessun blocco dell'app se fallisce */ }
 }
 /* "Componi la tua settimana": un unico piano settimanale ricorrente (non
    legato a una data precisa) che Silvana riscrive ogni sabato quando fa la
@@ -3642,14 +3774,36 @@ function alimPranzoName(giorno){
   const pranzo = giorno.pasti.find(p=>p.id==='pranzo');
   return pranzo ? pranzo.nome : '';
 }
-/* Salva subito una bozza (quantita' vuote, finalized:false) nel momento in cui
-   scegli la cena, cosi' la scelta e' persistita fin da subito: se chiudi l'app
-   senza scrivere nulla, al rientro trovi comunque la variante gia' scelta ad
-   attenderti invece che la domanda "Cosa mangi stasera?" da capo. */
+/* Costruisce la entry di un nuovo giorno a partire da una variante scelta
+   come punto di partenza: precompila, per ogni pasto, l'opzione "di serie"
+   di quella variante (cosi' chi non tocca nulla ottiene lo stesso risultato
+   di prima), ma nessun pasto e' ancora segnato "fatto" — esattamente come
+   nella versione precedente, dove scegliere una variante non segnava nulla
+   in automatico, andava spuntato/scritto a mano pasto per pasto. */
+function nuovaEntryDaGiorno(giorno){
+  const opzioni = {};
+  ALIM_PASTI_ORDINE.forEach(pid=>{
+    const op = opzioneDefaultDiGiorno(giorno, pid);
+    if(op) opzioni[pid] = op.id;
+  });
+  return {
+    giornoBaseId: giorno.id,
+    opzioni,
+    pastiFatti: {},
+    pastiViaExtra: {},
+    alimentiExtra: [],
+    integratori: {},
+    fattori: {},
+    qtyOverride: {},
+    finalized: false,
+  };
+}
 async function startAlimVariant(giornoId){
+  const giorno = giornoOrLibero(giornoId);
+  if(!giorno) return;
   const today = todayLocalISO();
   try{
-    await saveAlimEntry(today, giornoId, {}, false);
+    await saveAlimEntry(today, nuovaEntryDaGiorno(giorno));
   }catch(e){ showToast('Errore salvataggio — riprova'); return; }
   renderGiornoAlimentare(giornoId);
 }
@@ -3659,21 +3813,11 @@ async function renderAlimentazione(){
   closeAllOverlays();
   setTimerBarVisible(false);
   const today = todayLocalISO();
-  /* Una bozza non ancora salvata in via definitiva (finalized:false) fa
-     saltare la domanda "Cosa mangi stasera?" e riporta dritta al punto in
-     cui avevi lasciato la registrazione di oggi. Il controllo e' scritto in
-     positivo (=== false, non !== true): una voce salvata da versioni
-     precedenti dell'app, che non hanno mai scritto il campo "finalized",
-     viene trattata come gia' conclusa invece che come bozza aperta — altrimenti
-     un test fatto prima che questa funzione esistesse bloccherebbe per sempre
-     la schermata sulla ripresa anziche' mostrare la scelta della cena. */
   const draft = await loadAlimEntry(today);
   const hasDraft = !!(draft && draft.finalized === false);
-  const draftGiorno = hasDraft ? ALIM_GIORNI.find(g=>g.id===draft.giornoId) : null;
+  const draftGiorno = hasDraft ? giornoOrLibero(draft.giornoBaseId) : null;
+  const draftIsLibero = !!draftGiorno && draftGiorno.id === ALIM_LIBERO_ID;
   const showResume = hasDraft && !!draftGiorno;
-  /* Se oggi hai gia' salvato una registrazione conclusa (finalized:true) e
-     scegli comunque un'altra variante, chiediamo conferma prima di
-     sovrascriverla: la vecchia registrazione di oggi andrebbe persa. */
   const hasFinalizedToday = !!(draft && draft.finalized === true);
   const settimana = await loadAlimSettimana();
   const nome = displayNameOf(currentUser);
@@ -3707,7 +3851,7 @@ async function renderAlimentazione(){
       ${showResume ? `
         <div class="section-label">Stai registrando oggi</div>
         <button class="cta-next" id="btnResumeAlim">
-          <div class="cta-next-eyebrow">Variante ${draftGiorno.lettera} · cena: ${alimCenaName(draftGiorno)}</div>
+          <div class="cta-next-eyebrow">${draftIsLibero ? 'Giorno libero' : `Variante ${draftGiorno.lettera} · cena: ${alimCenaName(draftGiorno)}`}</div>
           <div class="cta-next-title">Continua a registrare</div>
           <div class="cta-next-sub">Tocca per completare i pasti di oggi</div>
           <div class="cta-next-arrow">${ICO.chev}</div>
@@ -3725,7 +3869,6 @@ async function renderAlimentazione(){
         <div class="week-strip">
           ${ALIM_SETTIMANA_GIORNI.map(d=>{
             const gid = settimana[d.key];
-            // "Niente" e' una scelta consapevole quanto una variante vera: conta come "assegnato" (pallino pieno).
             return `
               <div class="week-day-chip ${gid ? 'filled' : ''}">
                 <div class="wdc-day">${d.label.slice(0,3)}</div>
@@ -3741,6 +3884,10 @@ async function renderAlimentazione(){
         <div class="picker-head"><h3>Cosa mangi stasera?</h3><button id="pickerCloseAlim">${ICO.close}</button></div>
         <div class="picker-scroll">
           <div class="picker-group">
+            <button class="picker-item" data-gid="${ALIM_LIBERO_ID}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;border-color:var(--accent);">
+              <span style="font-weight:700;color:var(--accent);">🎯 Giorno libero</span>
+              <span style="font-size:11.5px;color:var(--text-faint);">Nessuna variante di partenza: scegli tu ogni pasto dal paniere di tutte le opzioni</span>
+            </button>
             ${ALIM_GIORNI.map(gi=>`
               <button class="picker-item" data-gid="${gi.id}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;">
                 <span style="font-weight:700;color:var(--text);">Variante ${gi.lettera} — ${alimCenaName(gi)}</span>
@@ -3862,22 +4009,16 @@ let statsAlimPoints = [];
 let statsAlimRange = { from:null, to:null };
 async function getAlimMacroHistory(macroType){
   const entries = await listAlimEntries();
-  /* Come nel resto della sezione Alimentazione: una registrazione senza il
-     campo "finalized" e' una voce storica precedente a quel concetto e va
-     considerata conclusa; solo finalized===false e' una bozza aperta, che
-     qui escludiamo perche' rappresenterebbe una giornata a meta'. */
   const points = entries
     .filter(e=> e.finalized !== false)
     .map(e=>{
-      const giorno = ALIM_GIORNI.find(g=>g.id===e.giornoId);
-      if(!giorno) return null;
-      const totals = giornoTotals(giorno, e.quantities);
+      const totals = entryTotals(e);
       return { date: e.date, cm: Math.round(totals[macroType]*10)/10 };
-    })
-    .filter(Boolean);
+    });
   points.sort((a,b)=> a.date.localeCompare(b.date));
   return points;
 }
+
 async function renderStatsAlimentazione(){
   state.screen = 'alimStats';
   closeAllOverlays();
@@ -4100,52 +4241,293 @@ async function loadAlimHomeSummary(){
       : `Ultima volta: <b>${fmtDate(last.date)}</b>`;
   });
 }
-/* ============== ALIMENTAZIONE — dettaglio giorno e registrazione ============== */
-function pastoCardHTML(pasto){
-  return `
-    <div class="pasto-card" data-pasto="${pasto.id}">
-      <div class="pasto-head">
-        <div class="pasto-title">${pasto.label}${pasto.variante ? ' · variante '+pasto.variante : ''}</div>
-        <div class="pasto-name">${pasto.nome}</div>
-      </div>
-      <div class="ing-list">
-        ${pasto.ingredienti.map((ing,idx)=> ingRowHTML(pasto.id, idx, ing)).join('')}
-      </div>
-      <div class="pasto-total">
-        <span>Totale pasto</span>
-        <span><b class="pt-kcal" data-pt-kcal="${pasto.id}">0 kcal</b> <span data-pt-macro="${pasto.id}"></span></span>
-      </div>
-    </div>
-  `;
+/* ============== ALIMENTAZIONE — dettaglio giorno e registrazione (v2) ==============
+   Riprende l'idea di fondo di Beat Yourself (l'app del tuo ragazzo): ogni
+   pasto ha piu' opzioni intercambiabili tra cui scegliere, invece di una
+   quantita' di ingredienti da scrivere a mano ogni volta. Qui pero' le
+   opzioni non sono ricette nuove: sono le stesse ricette delle 7 varianti
+   storiche del piano (ALIM_GIORNI, invariate), semplicemente raggruppate
+   per tipo di pasto invece che per giornata intera — la variante scelta
+   all'inizio resta solo il "punto di partenza" (quali opzioni sono
+   precompilate), ma ogni pasto singolo resta liberamente sostituibile con
+   la stessa ricetta usata in una qualsiasi delle altre varianti.
+   Il rispetto del target (ALIM_TARGET, invariato) si vede sempre in tempo
+   reale nel riepilogo macro sopra ai pasti, qualunque combinazione tu
+   scelga — non serve imporre fasce di equivalenza rigide tra le opzioni. */
+const ALIM_PASTI_ORDINE = ['colazione','spuntinoAM','pranzo','spuntinoPM','cena'];
+const ALIM_PASTI_LABEL = { colazione:'Colazione', spuntinoAM:'Spuntino mattutino', pranzo:'Pranzo', spuntinoPM:'Spuntino pomeridiano', cena:'Cena' };
+const ALIM_PASTI_ICONA = { colazione:'🌅', spuntinoAM:'🍎', pranzo:'🍝', spuntinoPM:'🥤', cena:'🍽️' };
+
+function pastoIngTotals(pasto){
+  const t = { kcal:0, p:0, c:0, g:0 };
+  (pasto.ingredienti||[]).forEach(ing=>{ t.kcal+=ing.kcal||0; t.p+=ing.p||0; t.c+=ing.c||0; t.g+=ing.g||0; });
+  return t;
 }
-/* La spunta segna l'alimento come "mangiato" e precompila la quantita' con
-   quella consigliata dal piano (comoda quando hai seguito il piano alla
-   lettera); il campo numerico resta comunque libero, cosi' se hai mangiato
-   una quantita' diversa la correggi a mano — la spunta si aggiorna da sola
-   in base al fatto che il campo sia 0 o meno. La quantita' consigliata resta
-   sempre visibile come riferimento sotto al nome, dato che il campo NON
-   parte piu' precompilato con quel valore. */
-function ingRowHTML(pastoId, idx, ing){
-  const key = pastoId+'-'+idx;
+let ALIM_OPZIONI_CACHE = null;
+/* Costruisce una sola volta il "catalogo opzioni" per ciascun tipo di
+   pasto, leggendo le 7 varianti (ALIM_GIORNI, dati invariati). Alcune
+   ricette si ripetono identiche in piu' varianti (es. "Burritos di pollo"):
+   qui vengono deduplicate (stesso pasto + stesso titolo + stesse kcal),
+   cosi' compaiono una volta sola nel selettore invece di ripetersi. */
+function opzioniPerPasto(){
+  if(ALIM_OPZIONI_CACHE) return ALIM_OPZIONI_CACHE;
+  const out = {};
+  ALIM_PASTI_ORDINE.forEach(pid=> out[pid]=[]);
+  const visti = {};
+  ALIM_GIORNI.forEach(giorno=>{
+    giorno.pasti.forEach(pasto=>{
+      if(!out[pasto.id]) return;
+      const t = pastoIngTotals(pasto);
+      /* La chiave di deduplicazione NON include piu' le kcal: ora che le
+         quantita' di ogni ingrediente si possono correggere a mano (vedi
+         grammiIngrediente/qtyOverride piu' sotto), avere piu' opzioni con
+         lo stesso nome e gli stessi ingredienti ma quantita' leggermente
+         diverse tra una variante e l'altra e' solo rumore — sono la stessa
+         ricetta, cambia solo "quanta". Due opzioni restano distinte solo
+         se hanno un nome diverso oppure ingredienti diversi. */
+      const firmaIngredienti = pasto.ingredienti.map(i=>i.n).slice().sort().join('|');
+      const chiave = pasto.id+'|'+pasto.nome+'|'+firmaIngredienti;
+      if(visti[chiave]) return;
+      visti[chiave] = true;
+      out[pasto.id].push({
+        id: 'op-'+pasto.id+'-'+(out[pasto.id].length+1),
+        pastoId: pasto.id,
+        titolo: pasto.nome,
+        letteraOrigine: giorno.lettera,
+        ingredienti: pasto.ingredienti,
+        kcal: Math.round(t.kcal), p: Math.round(t.p*10)/10, c: Math.round(t.c*10)/10, g: Math.round(t.g*10)/10,
+      });
+    });
+  });
+  ALIM_OPZIONI_CACHE = out;
+  return out;
+}
+function trovaOpzione(pastoId, opzioneId){
+  return (opzioniPerPasto()[pastoId]||[]).find(o=>o.id===opzioneId) || null;
+}
+function opzioneDefaultDiGiorno(giorno, pastoId){
+  const pasto = giorno.pasti.find(p=>p.id===pastoId);
+  if(!pasto) return null;
+  return (opzioniPerPasto()[pastoId]||[]).find(o=> o.titolo===pasto.nome) || null;
+}
+/* Totali del giorno: somma le opzioni dei pasti segnati "fatto" (a meno che
+   siano stati segnati tramite un alimento extra, vedi sotto — in quel caso
+   l'extra sostituisce l'opzione di piano, non si somma a essa) piu' tutti
+   gli alimenti extra registrati oggi. Ogni pasto puo' avere un "fattore"
+   di porzione diverso da 1 (vedi adattaPortionaAlTarget piu' sotto): serve
+   a scalare la quantita' — non solo a scegliere quale ricetta, ma anche
+   "quanta" — per avvicinarsi meglio all'obiettivo del giorno. */
+/* Grammi effettivi di un ingrediente per un dato pasto: se hai modificato a
+   mano quell'ingrediente (es. "solo 50g di yogurt") uso quel valore esatto;
+   altrimenti uso la quantita' di piano scalata dal "fattore" di porzione
+   (1 = porzione intera, es. 0,9 se hai usato "Adatta al target"). Cosi'
+   puoi correggere un singolo ingrediente senza perdere lo scaling generale
+   degli altri. */
+function grammiIngrediente(ing, idx, pastoId, entry){
+  const ov = entry.qtyOverride && entry.qtyOverride[pastoId];
+  if(ov && ov[idx]!=null) return ov[idx];
+  const f = (entry.fattori && entry.fattori[pastoId]!=null) ? entry.fattori[pastoId] : 1;
+  return Math.round(ing.def*f*10)/10;
+}
+/* Totale di un'opzione tenendo conto di eventuali grammature modificate a
+   mano ingrediente per ingrediente (vedi grammiIngrediente sopra). */
+function pastoOpTotals(op, pastoId, entry){
+  const t = { kcal:0, p:0, c:0, g:0 };
+  if(!op) return t;
+  op.ingredienti.forEach((ing,idx)=>{
+    const grammi = grammiIngrediente(ing, idx, pastoId, entry);
+    const c = ingContribution(ing, grammi);
+    t.kcal+=c.kcal; t.p+=c.p; t.c+=c.c; t.g+=c.g;
+  });
+  return t;
+}
+function entryTotals(entry){
+  const t = { kcal:0, p:0, c:0, g:0 };
+  if(!entry) return t;
+  ALIM_PASTI_ORDINE.forEach(pid=>{
+    if(entry.pastiFatti && entry.pastiFatti[pid] && !(entry.pastiViaExtra && entry.pastiViaExtra[pid])){
+      const op = trovaOpzione(pid, entry.opzioni && entry.opzioni[pid]);
+      if(op){ const pt = pastoOpTotals(op, pid, entry); t.kcal+=pt.kcal; t.p+=pt.p; t.c+=pt.c; t.g+=pt.g; }
+    }
+  });
+  (entry.alimentiExtra||[]).forEach(a=>{ t.kcal+=a.kcal; t.p+=a.prot; t.c+=a.carb; t.g+=a.grassi; });
+  return t;
+}
+/* ============== Suggerimento quantita' per restare in target ==============
+   Quota storica di kcal che ciascun pasto rappresenta in media sul totale
+   della giornata, calcolata dalle 7 varianti originali del piano (es. il
+   pranzo pesa in media il 38% del totale, lo spuntino mattutino il 5%).
+   Non e' una regola rigida — la uso solo per distribuire in modo
+   ragionevole il "budget" di kcal ancora disponibile tra i pasti che non
+   hai ancora fatto, invece di dividerlo in parti uguali (cosa che
+   suggerirebbe, ad es., uno spuntino grande quanto un pranzo). */
+const ALIM_PASTI_PESO = { colazione:0.198, spuntinoAM:0.054, pranzo:0.38, spuntinoPM:0.084, cena:0.284 };
+function residuoGiorno(entry){
+  const t = entryTotals(entry);
+  return { kcal: ALIM_TARGET.kcal - t.kcal, p: ALIM_TARGET.p - t.p, c: ALIM_TARGET.c - t.c, g: ALIM_TARGET.g - t.g };
+}
+function pastiNonFatti(entry){
+  return ALIM_PASTI_ORDINE.filter(pid=> !entry.pastiFatti[pid]);
+}
+/* Kcal consigliate per un pasto non ancora fatto: il residuo di oggi,
+   ripartito tra i pasti ancora da fare in proporzione al loro peso
+   storico. Si ricalcola ogni volta che chiami questa funzione, quindi si
+   aggiorna da solo via via che segni i pasti durante la giornata — non è
+   un valore fisso deciso all'inizio. */
+function kcalConsigliatoPasto(entry, pastoId){
+  const nonFatti = pastiNonFatti(entry);
+  if(!nonFatti.length || !nonFatti.includes(pastoId)) return null;
+  const residuo = residuoGiorno(entry);
+  const pesoTot = nonFatti.reduce((s,pid)=> s+ALIM_PASTI_PESO[pid], 0);
+  if(pesoTot<=0) return 0;
+  return Math.max(0, Math.round(residuo.kcal * (ALIM_PASTI_PESO[pastoId]/pesoTot)));
+}
+/* Segna il pasto fatto usando l'opzione attualmente scelta, ma scalando le
+   quantita' (fattore di porzione) in modo che le sue kcal coincidano con
+   quelle consigliate sopra — è la "quantità consigliata" vera e propria:
+   non solo quale ricetta, ma quanta. Il fattore resta comunque tra 0,2 e
+   2,5 (20%-250% della porzione originale): oltre non avrebbe più senso
+   come indicazione pratica di quanto cucinare/pesare. */
+function adattaPortionaAlTarget(pastoId){
+  const entry = state.alimEntry;
+  const op = trovaOpzione(pastoId, entry.opzioni[pastoId]);
+  if(!op) return;
+  const consigliato = kcalConsigliatoPasto(entry, pastoId);
+  let fattore = 1;
+  if(consigliato!=null && op.kcal>0){
+    fattore = Math.max(0.2, Math.min(2.5, consigliato/op.kcal));
+    fattore = Math.round(fattore*100)/100;
+  }
+  if(!entry.fattori) entry.fattori = {};
+  entry.fattori[pastoId] = fattore;
+  if(!entry.qtyOverride) entry.qtyOverride = {};
+  entry.qtyOverride[pastoId] = {}; // un adattamento automatico ripulisce eventuali correzioni manuali precedenti
+  entry.pastiFatti[pastoId] = true;
+  entry.pastiViaExtra[pastoId] = false;
+  renderMealsInto();
+  queueAlimSave();
+}
+/* Riga di un ingrediente con la grammatura modificabile a mano. "scope" è
+   un prefisso ('meal' o 'picker') che tiene distinti gli id nel DOM, perché
+   lo stesso pasto può comparire sia nella scheda del giorno sia nel
+   selettore opzioni aperto sopra di essa. */
+function ingRowEditableHTML(ing, idx, pastoId, grammi, scope){
+  const c = ingContribution(ing, grammi);
+  const pfx = `${scope}Qty-${pastoId}-${idx}`;
   return `
-    <div class="ing-row" data-key="${key}">
-      <button class="ing-check" data-ing-check="${key}" title="Segna come mangiato (quantità consigliata)">${ICO.check}</button>
+    <div class="ing-row">
       <div class="ing-main">
         <div class="ing-name">${ing.n}</div>
-        <div class="ing-suggested">Consigliati <span class="ing-suggested-qty">${fmtMacro(ing.def)} ${ing.unit}</span> · ${fmtKcal(ing.kcal)} kcal (P ${fmtMacro(ing.p)} · C ${fmtMacro(ing.c)} · G ${fmtMacro(ing.g)})</div>
+        <div class="ing-suggested">
+          <input type="number" class="ing-qty-input" inputmode="decimal" min="0" step="1"
+            id="${pfx}-input" data-qty-pasto="${pastoId}" data-qty-idx="${idx}" data-qty-scope="${scope}" value="${grammi}"> ${ing.unit}
+          <button class="ing-qty-confirm" id="${pfx}-confirmBtn" data-qty-confirm-pasto="${pastoId}" data-qty-confirm-idx="${idx}" data-qty-confirm-scope="${scope}" title="Conferma questa quantità" disabled>${ICO.check}</button>
+          · <span id="${pfx}-kcal">${fmtKcal(c.kcal)}</span> kcal
+          (P <span id="${pfx}-p">${fmtMacro(c.p)}</span> · C <span id="${pfx}-c">${fmtMacro(c.c)}</span> · G <span id="${pfx}-g">${fmtMacro(c.g)}</span>)
+        </div>
       </div>
-      <div class="ing-qty-wrap">
-        <input type="number" min="0" step="1" value="0" data-ing-qty="${key}">
-        <span class="ing-unit">${ing.unit}</span>
-      </div>
-      <div class="ing-kcal" data-ing-kcal="${key}">0 kcal</div>
+      <div class="ing-kcal" id="${pfx}-kcalBig">${fmtKcal(c.kcal)} kcal</div>
     </div>
   `;
 }
-/* Card "Integratori": stesso linguaggio visivo dei pasti (per coerenza), ma
-   con una semplice spunta invece di quantita'/kcal, e raggruppata per
-   momento della giornata (Mattina/Pranzo/Sera) cosi' e' chiaro a colpo
-   d'occhio quando prendere cosa. */
+/* Ricalcola dal DOM (senza ridisegnare tutto, per non perdere lo stato
+   aperto/chiuso dei pannelli) il totale di un'opzione sommando i valori
+   correnti dei campi grammatura di un dato pasto+scope. */
+function ricalcolaTotaleDaInputQty(op, pastoId, scope){
+  const t = { kcal:0, p:0, c:0, g:0 };
+  document.querySelectorAll(`.ing-qty-input[data-qty-pasto="${pastoId}"][data-qty-scope="${scope}"]`).forEach(inp=>{
+    const idx = parseInt(inp.dataset.qtyIdx, 10);
+    const ing = op.ingredienti[idx];
+    if(!ing) return;
+    const grammi = parseFloat(String(inp.value).replace(',','.')) || 0;
+    const c = ingContribution(ing, grammi);
+    t.kcal+=c.kcal; t.p+=c.p; t.c+=c.c; t.g+=c.g;
+  });
+  return t;
+}
+/* Collega gli input di grammatura di un pasto (in un dato scope): digitare
+   NON applica piu' nulla da solo — serve toccare la spunta di conferma
+   accanto al campo (o premere Invio), cosi' non rischi di far scattare
+   una modifica solo perche' stai ancora scegliendo il numero. Finche' non
+   confermi, il campo resta evidenziato come "da confermare" e la spunta
+   si accende per farti capire che puoi toccarla. */
+function wireIngQtyInputs(op, pastoId, scope, onChange){
+  const conferma = (inp, btn)=>{
+    let grammi = parseFloat(String(inp.value).replace(',','.'));
+    if(!isFinite(grammi) || grammi<0) grammi = 0;
+    grammi = Math.round(grammi*10)/10;
+    inp.value = grammi;
+    inp.classList.remove('dirty');
+    if(btn) btn.disabled = true;
+    const idx = parseInt(inp.dataset.qtyIdx, 10);
+    const ing = op.ingredienti[idx];
+    if(!ing) return;
+    const entry = state.alimEntry;
+    if(!entry.qtyOverride) entry.qtyOverride = {};
+    if(!entry.qtyOverride[pastoId]) entry.qtyOverride[pastoId] = {};
+    entry.qtyOverride[pastoId][idx] = grammi;
+    const c = ingContribution(ing, grammi);
+    const pfx = `${scope}Qty-${pastoId}-${idx}`;
+    const elKcal = document.getElementById(pfx+'-kcal'); if(elKcal) elKcal.textContent = fmtKcal(c.kcal);
+    const elP = document.getElementById(pfx+'-p'); if(elP) elP.textContent = fmtMacro(c.p);
+    const elC = document.getElementById(pfx+'-c'); if(elC) elC.textContent = fmtMacro(c.c);
+    const elG = document.getElementById(pfx+'-g'); if(elG) elG.textContent = fmtMacro(c.g);
+    const elKcalBig = document.getElementById(pfx+'-kcalBig'); if(elKcalBig) elKcalBig.textContent = fmtKcal(c.kcal)+' kcal';
+    if(typeof onChange === 'function') onChange();
+    queueAlimSave();
+  };
+  document.querySelectorAll(`.ing-qty-input[data-qty-pasto="${pastoId}"][data-qty-scope="${scope}"]`).forEach(inp=>{
+    const idx = inp.dataset.qtyIdx;
+    const btn = document.getElementById(`${scope}Qty-${pastoId}-${idx}-confirmBtn`);
+    inp.addEventListener('input', ()=>{
+      inp.classList.add('dirty');
+      if(btn) btn.disabled = false;
+    });
+    inp.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter'){ e.preventDefault(); conferma(inp, btn); }
+    });
+    if(btn) btn.addEventListener('click', ()=> conferma(inp, btn));
+  });
+}
+/* ============== La logica delicata: alimento extra su un pasto ==============
+   Se aggiungi un alimento extra a un pasto NON ancora segnato fatto, quel
+   pasto viene marcato fatto ma con pastiViaExtra=true: significa che
+   l'extra SOSTITUISCE l'opzione di piano per quel pasto (entryTotals sopra
+   non aggiunge le kcal dell'opzione, solo quelle dell'extra) — altrimenti
+   conteresti due volte lo stesso pasto. Se il pasto era GIA' segnato fatto
+   (tramite piano o tramite un extra precedente), qui non tocchiamo nulla:
+   l'extra si aggiunge e basta, si somma normalmente in entryTotals. */
+function segnaPastoFattoDaExtra(pastoId){
+  const entry = state.alimEntry;
+  if(!entry || !ALIM_PASTI_ORDINE.includes(pastoId)) return;
+  if(entry.pastiFatti[pastoId]) return;
+  entry.pastiFatti[pastoId] = true;
+  entry.pastiViaExtra[pastoId] = true;
+}
+
+function macroSummaryHTML(totals){
+  const items = [
+    { key:'kcal', label:'Kcal',        val:totals.kcal, target:ALIM_TARGET.kcal, unit:'' },
+    { key:'p',    label:'Proteine',    val:totals.p,     target:ALIM_TARGET.p,     unit:'g' },
+    { key:'c',    label:'Carboidrati', val:totals.c,     target:ALIM_TARGET.c,     unit:'g' },
+    { key:'g',    label:'Grassi',      val:totals.g,     target:ALIM_TARGET.g,     unit:'g' },
+  ];
+  return items.map(it=>{
+    const delta = it.val - it.target;
+    const pct = Math.abs(delta) / it.target;
+    const color = pct <= 0.08 ? 'var(--success)' : (pct <= 0.18 ? 'var(--teal)' : 'var(--danger)');
+    const deltaStr = (delta >= 0 ? '+' : '') + fmtMacro(delta);
+    const valStr = it.key === 'kcal' ? fmtKcal(it.val) : fmtMacro(it.val);
+    const targetStr = it.key === 'kcal' ? fmtKcal(it.target) : fmtMacro(it.target);
+    return `
+      <div class="macro-card">
+        <div class="mc-val" style="color:${color};">${valStr}${it.unit}</div>
+        <div class="mc-lbl">${it.label}</div>
+        <div class="mc-target">target ${targetStr}${it.unit} (${deltaStr}${it.unit})</div>
+      </div>
+    `;
+  }).join('');
+}
 function integratoriCardHTML(){
   const momenti = [];
   INTEGRATORI_GIORNALIERI.forEach(it=>{
@@ -4182,62 +4564,279 @@ function wireIntegratoriInputs(){
     btn.addEventListener('click', ()=>{
       const id = btn.dataset.integCheck;
       const isOn = btn.classList.contains('on');
-      state.alimIntegratori[id] = !isOn;
+      state.alimEntry.integratori[id] = !isOn;
       btn.classList.toggle('on', !isOn);
-      queueAlimSave(currentAlimGiorno);
+      queueAlimSave();
     });
   });
 }
 function applyIntegratoriState(){
   app.querySelectorAll('[data-integ-check]').forEach(btn=>{
     const id = btn.dataset.integCheck;
-    btn.classList.toggle('on', !!state.alimIntegratori[id]);
+    btn.classList.toggle('on', !!state.alimEntry.integratori[id]);
   });
 }
-function macroSummaryHTML(totals){
-  const items = [
-    { key:'kcal', label:'Kcal',        val:totals.kcal, target:ALIM_TARGET.kcal, unit:'' },
-    { key:'p',    label:'Proteine',    val:totals.p,     target:ALIM_TARGET.p,     unit:'g' },
-    { key:'c',    label:'Carboidrati', val:totals.c,     target:ALIM_TARGET.c,     unit:'g' },
-    { key:'g',    label:'Grassi',      val:totals.g,     target:ALIM_TARGET.g,     unit:'g' },
-  ];
-  return items.map(it=>{
-    const delta = it.val - it.target;
-    const pct = Math.abs(delta) / it.target;
-    const color = pct <= 0.08 ? 'var(--success)' : (pct <= 0.18 ? 'var(--teal)' : 'var(--danger)');
-    const deltaStr = (delta >= 0 ? '+' : '') + fmtMacro(delta);
-    const valStr = it.key === 'kcal' ? fmtKcal(it.val) : fmtMacro(it.val);
-    const targetStr = it.key === 'kcal' ? fmtKcal(it.target) : fmtMacro(it.target);
+
+/* ---- riga di un pasto nella schermata di registrazione ---- */
+function mealRowHTML(pastoId, entry){
+  const opId = entry.opzioni[pastoId];
+  const op = trovaOpzione(pastoId, opId);
+  const fatto = !!entry.pastiFatti[pastoId];
+  const viaExtra = fatto && !!entry.pastiViaExtra[pastoId];
+  const extraDiQuestoPasto = (entry.alimentiExtra||[]).filter(a=>a.pasto===pastoId);
+  const kcalExtra = extraDiQuestoPasto.reduce((s,a)=>s+a.kcal,0);
+  const fattore = (entry.fattori && entry.fattori[pastoId]!=null) ? entry.fattori[pastoId] : 1;
+  const titolo = viaExtra
+    ? (extraDiQuestoPasto.length===1 ? extraDiQuestoPasto[0].nome : `${extraDiQuestoPasto.length} alimenti extra`)
+    : (op ? op.titolo : '—');
+  const kcalRiga = viaExtra ? kcalExtra : (op ? Math.round(pastoOpTotals(op, pastoId, entry).kcal) : 0);
+  /* Suggerimento kcal per un pasto non ancora fatto: quanto "varrebbe"
+     mangiare a questo pasto per restare in target, in base a quanto e'
+     gia' stato consumato oggi e a quanti pasti restano. Si aggiorna da
+     solo ad ogni render, quindi segue in automatico i pasti gia' spuntati. */
+  const consigliato = (!fatto && op) ? kcalConsigliatoPasto(entry, pastoId) : null;
+  const showConsiglio = consigliato!=null && Math.abs(consigliato - op.kcal) >= 15;
+  const showPorzione = fatto && !viaExtra && fattore!==1;
+  const showQtyPanel = fatto && !viaExtra && op;
+  return `
+    <div class="pasto-card meal-row-card${fatto?' done':''}" data-pasto="${pastoId}" style="margin-bottom:10px;">
+      <div class="meal-row">
+        <button class="ing-check${fatto?' on':''}" data-meal-check="${pastoId}" title="${fatto?'Segna come non fatto':'Segna come fatto'}">${ICO.check}</button>
+        <div class="meal-row-main" data-meal-open="${pastoId}">
+          <div class="meal-row-icon">${ALIM_PASTI_ICONA[pastoId]}</div>
+          <div class="meal-row-info">
+            <div class="meal-row-name">${ALIM_PASTI_LABEL[pastoId]}</div>
+            <div class="meal-row-opt">${viaExtra?'🔁 ':''}${titolo}${op&&!viaExtra?` <span class="meal-row-var">variante ${op.letteraOrigine}</span>`:''}${showPorzione?` <span class="meal-row-porzione">porzione ${Math.round(fattore*100)}%</span>`:''}</div>
+            ${showConsiglio ? `<div class="meal-row-consigliato">Per restare in target ti conviene circa ${consigliato} kcal qui (invece di ${op.kcal})</div>` : ''}
+          </div>
+          <div class="meal-row-kcal" id="mealKcalTotal-${pastoId}">${kcalRiga}<span>kcal</span></div>
+          <div class="hc-arrow">${ICO.chev}</div>
+        </div>
+      </div>
+      ${showConsiglio ? `<button class="meal-row-adatta" data-adatta-target="${pastoId}">🎯 Adatta la porzione a ${consigliato} kcal</button>` : ''}
+      ${showQtyPanel ? `
+        <button class="meal-row-qty-toggle" data-meal-qty-toggle="${pastoId}">Quantità da mangiare — tocca i grammi per modificarli ▾</button>
+        <div class="meal-row-qty-detail" id="mealQtyDetail-${pastoId}">
+          <div class="ing-list" style="padding:0;">
+            ${op.ingredienti.map((ing,idx)=>ingRowEditableHTML(ing, idx, pastoId, grammiIngrediente(ing, idx, pastoId, entry), 'meal')).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+function extraGroupsHTML(entry){
+  const extra = entry.alimentiExtra || [];
+  if(!extra.length) return `<p style="font-size:12px;color:var(--text-faint);margin:2px 2px 14px;">Nessun alimento extra registrato oggi.</p>`;
+  return ALIM_PASTI_ORDINE.map(pid=>{
+    const voci = extra.filter(a=>a.pasto===pid);
+    if(!voci.length) return '';
+    const subKcal = voci.reduce((s,a)=>s+a.kcal,0);
     return `
-      <div class="macro-card">
-        <div class="mc-val" style="color:${color};">${valStr}${it.unit}</div>
-        <div class="mc-lbl">${it.label}</div>
-        <div class="mc-target">target ${targetStr}${it.unit} (${deltaStr}${it.unit})</div>
+      <div class="pasto-card" style="margin-bottom:10px;">
+        <div class="pasto-head" style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="pasto-title" style="text-transform:none;font-size:12.5px;color:var(--text);font-weight:700;">${ALIM_PASTI_ICONA[pid]} ${ALIM_PASTI_LABEL[pid]}</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;">${subKcal} kcal</div>
+        </div>
+        <div class="ing-list">
+          ${voci.map(a=>`
+            <div class="ing-row">
+              <div class="ing-main">
+                <div class="ing-name">${a.nome}${a.marca?` <span style="color:var(--text-faint);font-weight:400;">· ${a.marca}</span>`:''}</div>
+                <div class="ing-suggested">${a.grammi} g · P ${fmtMacro(a.prot)} · C ${fmtMacro(a.carb)} · G ${fmtMacro(a.grassi)}</div>
+              </div>
+              <div class="ing-kcal">${a.kcal} kcal</div>
+              <button class="ing-check ing-check-del" data-extra-del="${a.id}" title="Elimina" style="border-color:var(--danger);color:var(--danger);flex-shrink:0;">${ICO.trash}</button>
+            </div>
+          `).join('')}
+        </div>
       </div>
     `;
   }).join('');
 }
-function recomputeAlimTotals(giorno){
-  giorno.pasti.forEach(pasto=>{
-    pasto.ingredienti.forEach((ing,idx)=>{
-      const key = pasto.id+'-'+idx;
-      const qty = (state.alimQuantities[key] !== undefined) ? state.alimQuantities[key] : 0;
-      const c = ingContribution(ing, qty);
-      const kcalEl = app.querySelector(`[data-ing-kcal="${key}"]`);
-      if(kcalEl) kcalEl.textContent = `${fmtKcal(c.kcal)} kcal`;
-    });
-    const pt = pastoTotals(pasto, state.alimQuantities);
-    const ptKcalEl = app.querySelector(`[data-pt-kcal="${pasto.id}"]`);
-    const ptMacroEl = app.querySelector(`[data-pt-macro="${pasto.id}"]`);
-    if(ptKcalEl) ptKcalEl.textContent = `${fmtKcal(pt.kcal)} kcal`;
-    if(ptMacroEl) ptMacroEl.textContent = `· P ${fmtMacro(pt.p)} · C ${fmtMacro(pt.c)} · G ${fmtMacro(pt.g)}`;
-  });
-  const totals = giornoTotals(giorno, state.alimQuantities);
+function renderMealsInto(){
+  const entry = state.alimEntry;
+  const totals = entryTotals(entry);
   const summaryEl = document.getElementById('macroSummary');
   if(summaryEl) summaryEl.innerHTML = macroSummaryHTML(totals);
+  const mealsEl = document.getElementById('mealsBody');
+  if(mealsEl){
+    mealsEl.innerHTML = ALIM_PASTI_ORDINE.map(pid=>mealRowHTML(pid, entry)).join('');
+    wireMealsInputs();
+  }
+  const extraEl = document.getElementById('extraBody');
+  if(extraEl){
+    extraEl.innerHTML = extraGroupsHTML(entry);
+    wireExtraInputs();
+  }
 }
+function wireMealsInputs(){
+  document.querySelectorAll('[data-meal-check]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); toggleMealDone(btn.dataset.mealCheck); });
+  });
+  document.querySelectorAll('[data-meal-open]').forEach(el=>{
+    el.addEventListener('click', ()=> apriSelettoreOpzione(el.dataset.mealOpen));
+  });
+  document.querySelectorAll('[data-adatta-target]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); adattaPortionaAlTarget(btn.dataset.adattaTarget); });
+  });
+  document.querySelectorAll('[data-meal-qty-toggle]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const pid = btn.dataset.mealQtyToggle;
+      const detail = document.getElementById('mealQtyDetail-'+pid);
+      if(!detail) return;
+      const open = detail.classList.toggle('open');
+      btn.textContent = open ? 'Nascondi quantità ▴' : 'Quantità da mangiare — tocca i grammi per modificarli ▾';
+    });
+  });
+  /* Ogni pasto gia' segnato fatto (non via extra) mostra i grammi
+     modificabili: collega ciascuno al ricalcolo live del totale del pasto
+     e del riepilogo giornaliero, senza ridisegnare tutta la schermata. */
+  const entry = state.alimEntry;
+  ALIM_PASTI_ORDINE.forEach(pid=>{
+    if(entry.pastiFatti[pid] && !entry.pastiViaExtra[pid]){
+      const op = trovaOpzione(pid, entry.opzioni[pid]);
+      if(!op) return;
+      wireIngQtyInputs(op, pid, 'meal', ()=>{
+        const t = ricalcolaTotaleDaInputQty(op, pid, 'meal');
+        const kcalEl = document.getElementById('mealKcalTotal-'+pid);
+        if(kcalEl) kcalEl.innerHTML = `${fmtKcal(t.kcal)}<span>kcal</span>`;
+        const summaryEl = document.getElementById('macroSummary');
+        if(summaryEl) summaryEl.innerHTML = macroSummaryHTML(entryTotals(state.alimEntry));
+      });
+    }
+  });
+}
+function wireExtraInputs(){
+  document.querySelectorAll('[data-extra-del]').forEach(btn=>{
+    btn.addEventListener('click', ()=> rimuoviAlimentoExtra(btn.dataset.extraDel));
+  });
+}
+function toggleMealDone(pastoId){
+  const entry = state.alimEntry;
+  const isOn = !!entry.pastiFatti[pastoId];
+  if(!entry.fattori) entry.fattori = {};
+  if(isOn){
+    entry.pastiFatti[pastoId] = false;
+    entry.pastiViaExtra[pastoId] = false;
+    entry.fattori[pastoId] = 1; // torna alla porzione intera, pronto per un nuovo "adatta al target"
+    if(!entry.qtyOverride) entry.qtyOverride = {};
+    entry.qtyOverride[pastoId] = {}; // rimuove eventuali grammature corrette a mano
+  } else {
+    entry.pastiFatti[pastoId] = true;
+    entry.pastiViaExtra[pastoId] = false; // segnato a mano: segue il piano, non e' un extra a sostituirlo
+  }
+  renderMealsInto();
+  queueAlimSave();
+}
+function rimuoviAlimentoExtra(id){
+  const entry = state.alimEntry;
+  const voce = (entry.alimentiExtra||[]).find(a=>a.id===id);
+  entry.alimentiExtra = (entry.alimentiExtra||[]).filter(a=>a.id!==id);
+  if(voce && voce.pasto!=null){
+    const rimasti = entry.alimentiExtra.filter(a=>a.pasto===voce.pasto);
+    /* Se non restano altri extra su questo pasto e il pasto era segnato
+       fatto solo grazie all'extra appena rimosso, torna "non fatto" —
+       altrimenti risulterebbe un pasto fatto con 0 kcal, fantasma. */
+    if(!rimasti.length && entry.pastiViaExtra[voce.pasto]){
+      entry.pastiFatti[voce.pasto] = false;
+      entry.pastiViaExtra[voce.pasto] = false;
+    }
+  }
+  renderMealsInto();
+  queueAlimSave();
+}
+function opzioneSheetHTML(){
+  return `
+    <div class="picker-sheet" id="pickerSheetOpzione">
+      <div class="picker-sheet-inner">
+        <div class="picker-head"><h3 id="pickerOpzioneTitle">Scegli opzione</h3><button id="pickerCloseOpzione">${ICO.close}</button></div>
+        <div class="picker-scroll" id="pickerOpzioneScroll"></div>
+      </div>
+    </div>
+  `;
+}
+function renderPickerOpzioneBody(pastoId){
+  const scroll = document.getElementById('pickerOpzioneScroll');
+  if(!scroll) return;
+  const opzioni = opzioniPerPasto()[pastoId] || [];
+  const selId = state.alimEntry.opzioni[pastoId];
+  const entry = state.alimEntry;
+  scroll.innerHTML = `
+    <p style="padding:0 12px;margin:0 0 10px;font-size:11.5px;color:var(--text-faint);line-height:1.5;">Sono le versioni di questo pasto usate nelle varianti del piano — intercambiabili, ognuna con il proprio apporto. Tocca "Ingredienti" per vedere le quantità: per quella in uso puoi anche correggere i grammi (es. solo 50g di yogurt).</p>
+    <div class="picker-group">
+      ${opzioni.map(o=>{
+        const sel = o.id===selId;
+        return `
+        <div class="opz-item-card ${sel?'sel':''}" data-opid="${o.id}">
+          <button class="opz-item-select" data-select-opid="${o.id}">
+            <div class="opz-item-row">
+              <span class="opz-item-titolo">${o.titolo}${sel?' <span class="opz-item-badge">In uso</span>':''}</span>
+              <span class="opz-item-kcal" id="${sel?`opzKcalTotal-${o.id}`:''}">${sel?Math.round(pastoOpTotals(o,pastoId,entry).kcal):o.kcal} kcal</span>
+            </div>
+            <div class="opz-item-macro"><span id="${sel?`opzMacroTotal-${o.id}`:''}">${sel?(()=>{const t=pastoOpTotals(o,pastoId,entry);return `P ${fmtMacro(t.p)}g · C ${fmtMacro(t.c)}g · G ${fmtMacro(t.g)}g`;})():`P ${o.p}g · C ${o.c}g · G ${o.g}g`}</span> · <span class="opz-item-var">variante ${o.letteraOrigine}</span></div>
+          </button>
+          <button class="opz-item-toggle" data-toggle-opid="${o.id}">${sel?'Ingredienti e quantità — modificabili ▾':'Ingredienti e quantità ▾'}</button>
+          <div class="opz-item-detail" id="opzDetail-${o.id}">
+            <div class="ing-list" style="padding:0;">
+              ${sel
+                ? o.ingredienti.map((ing,idx)=>ingRowEditableHTML(ing, idx, pastoId, grammiIngrediente(ing, idx, pastoId, entry), 'picker')).join('')
+                : o.ingredienti.map(ing=>ingRowReadOnlyHTML(ing)).join('')}
+            </div>
+          </div>
+        </div>
+      `;}).join('')}
+    </div>
+  `;
+  scroll.querySelectorAll('.opz-item-select').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const opid = btn.dataset.selectOpid;
+      state.alimEntry.opzioni[pastoId] = opid;
+      if(!state.alimEntry.fattori) state.alimEntry.fattori = {};
+      state.alimEntry.fattori[pastoId] = 1; // nuova opzione scelta a mano: porzione intera finche' non si "adatta al target"
+      if(!state.alimEntry.qtyOverride) state.alimEntry.qtyOverride = {};
+      state.alimEntry.qtyOverride[pastoId] = {}; // niente correzioni manuali residue dall'opzione precedente
+      document.getElementById('pickerSheetOpzione').classList.remove('open');
+      renderMealsInto();
+      queueAlimSave();
+    });
+  });
+  scroll.querySelectorAll('.opz-item-toggle').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const id = btn.dataset.toggleOpid;
+      const detail = document.getElementById('opzDetail-'+id);
+      const open = detail.classList.toggle('open');
+      const isSel = id===selId;
+      btn.textContent = open
+        ? 'Nascondi ingredienti ▴'
+        : (isSel ? 'Ingredienti e quantità — modificabili ▾' : 'Ingredienti e quantità ▾');
+    });
+  });
+  const selOp = opzioni.find(o=>o.id===selId);
+  if(selOp){
+    wireIngQtyInputs(selOp, pastoId, 'picker', ()=>{
+      const t = ricalcolaTotaleDaInputQty(selOp, pastoId, 'picker');
+      const kcalEl = document.getElementById(`opzKcalTotal-${selOp.id}`);
+      if(kcalEl) kcalEl.textContent = `${fmtKcal(t.kcal)} kcal`;
+      const macroEl = document.getElementById(`opzMacroTotal-${selOp.id}`);
+      if(macroEl) macroEl.textContent = `P ${fmtMacro(t.p)}g · C ${fmtMacro(t.c)}g · G ${fmtMacro(t.g)}g`;
+      const mealKcalEl = document.getElementById('mealKcalTotal-'+pastoId);
+      if(mealKcalEl) mealKcalEl.innerHTML = `${fmtKcal(t.kcal)}<span>kcal</span>`;
+      const summaryEl = document.getElementById('macroSummary');
+      if(summaryEl) summaryEl.innerHTML = macroSummaryHTML(entryTotals(state.alimEntry));
+    });
+  }
+}
+function apriSelettoreOpzione(pastoId){
+  document.getElementById('pickerOpzioneTitle').textContent = ALIM_PASTI_LABEL[pastoId];
+  renderPickerOpzioneBody(pastoId);
+  document.getElementById('pickerSheetOpzione').classList.add('open');
+}
+
 let alimSaveTimeout = null;
-let currentAlimGiorno = null; /* usato da wireIntegratoriInputs per richiamare queueAlimSave */
+let currentAlimGiorno = null; /* variante di partenza del giorno aperto: serve per tornare indietro dalla ricerca alimenti */
 function flashAlimSavePill(){
   const pill = document.getElementById('alimSavePill');
   if(!pill) return;
@@ -4245,116 +4844,523 @@ function flashAlimSavePill(){
   clearTimeout(flashAlimSavePill._t);
   flashAlimSavePill._t = setTimeout(()=> pill.classList.remove('show'), 1200);
 }
-function queueAlimSave(giorno){
+/* Salvataggio con debounce (700ms), sempre come bozza (finalized:false) —
+   stessa identica scelta della versione precedente dell'app: solo il
+   pulsante "Salva registrazione" marca la giornata come conclusa. */
+let alimSavePending = false;
+function queueAlimSave(){
   clearTimeout(alimSaveTimeout);
+  alimSavePending = true;
   alimSaveTimeout = setTimeout(async ()=>{
+    alimSaveTimeout = null;
     try{
-      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities, false, state.alimIntegratori);
+      await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:false });
       flashAlimSavePill();
     }catch(e){ showToast('Errore salvataggio'); }
+    finally{ alimSavePending = false; }
   }, 700);
 }
-function setAlimQty(giorno, key, qty){
-  state.alimQuantities[key] = qty;
-  const input = app.querySelector(`[data-ing-qty="${key}"]`);
-  if(input) input.value = qty;
-  const checkBtn = app.querySelector(`[data-ing-check="${key}"]`);
-  if(checkBtn) checkBtn.classList.toggle('on', qty > 0);
+/* Se torni indietro (o esci in qualunque altro modo) entro i 700ms del
+   debounce, senza questo la modifica appena fatta (es. i grammi corretti
+   a mano) non farebbe in tempo a salvarsi: uscendo, la schermata da cui
+   vieni ricarica i dati dal server e ti ritroveresti quelli vecchi.
+   Per questo ogni uscita dalla schermata del giorno aspetta prima che
+   il salvataggio in sospeso sia davvero completato. */
+async function flushAlimSaveNow(){
+  if(!alimSavePending) return;
+  clearTimeout(alimSaveTimeout);
+  alimSaveTimeout = null;
+  alimSavePending = false;
+  try{
+    await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:false });
+    flashAlimSavePill();
+  }catch(e){ showToast('Errore salvataggio'); }
 }
-function wireAlimInputs(giorno){
-  app.querySelectorAll('[data-ing-qty]').forEach(input=>{
-    input.addEventListener('input', ()=>{
-      const key = input.dataset.ingQty;
-      const v = parseFloat(input.value);
-      const qty = isNaN(v) ? 0 : v;
-      state.alimQuantities[key] = qty;
-      const checkBtn = app.querySelector(`[data-ing-check="${key}"]`);
-      if(checkBtn) checkBtn.classList.toggle('on', qty > 0);
-      recomputeAlimTotals(giorno);
-      queueAlimSave(giorno);
-    });
-  });
-  app.querySelectorAll('[data-ing-check]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const key = btn.dataset.ingCheck;
-      const isOn = btn.classList.contains('on');
-      if(isOn){
-        setAlimQty(giorno, key, 0);
-      } else {
-        const ing = findIngredientByKey(giorno, key);
-        setAlimQty(giorno, key, ing ? ing.def : 0);
-      }
-      recomputeAlimTotals(giorno);
-      queueAlimSave(giorno);
-    });
-  });
-}
-async function loadExistingAlimEntry(giorno, forDate){
-  const entry = await loadAlimEntry(forDate);
-  if(state.alimDate !== forDate) return; // l'utente ha gia' cambiato data: non sovrascrivere
-  if(entry && entry.giornoId === giorno.id && entry.quantities){
-    state.alimQuantities = { ...entry.quantities };
-    Object.keys(state.alimQuantities).forEach(key=> setAlimQty(giorno, key, state.alimQuantities[key]));
-    recomputeAlimTotals(giorno);
-  }
-  if(entry && entry.giornoId === giorno.id && entry.integratori){
-    state.alimIntegratori = { ...entry.integratori };
-    applyIntegratoriState();
-  }
-}
-/* forDate: se presente, apre il giorno gia' compilato con i dati salvati per
-   quella data specifica (modifica da Storico) invece che con i valori a 0 di
-   una nuova registrazione; state.alimReturnTo ricorda dove tornare indietro. */
-function renderGiornoAlimentare(giornoId, forDate){
+/* nuovaEntryDaGiorno e' definita piu' sopra (usata anche da startAlimVariant). */
+async function renderGiornoAlimentare(giornoId, forDate){
   state.screen = 'alimGiorno';
   closeAllOverlays();
   setTimerBarVisible(false);
-  const giorno = ALIM_GIORNI.find(g=>g.id===giornoId);
+  const giorno = giornoOrLibero(giornoId);
   if(!giorno){ renderAlimentazione(); return; }
+  const isLibero = giorno.id === ALIM_LIBERO_ID;
   const today = todayLocalISO();
   const useDate = forDate || today;
   state.alimDate = useDate;
-  state.alimQuantities = {};
-  state.alimIntegratori = {};
   state.alimReturnTo = forDate ? 'storico' : 'alimentazione';
   currentAlimGiorno = giorno;
-  const goBack = ()=> state.alimReturnTo === 'storico' ? renderStoricoAlimentazione() : renderAlimentazione();
+  const goBack = async ()=>{
+    await flushAlimSaveNow();
+    state.alimReturnTo === 'storico' ? renderStoricoAlimentazione() : renderAlimentazione();
+  };
+
+  const esistente = await loadAlimEntry(useDate);
+  state.alimEntry = (esistente && esistente.giornoBaseId === giorno.id) ? esistente : nuovaEntryDaGiorno(giorno);
+  if(!state.alimEntry.pastiFatti) state.alimEntry.pastiFatti = {};
+  if(!state.alimEntry.pastiViaExtra) state.alimEntry.pastiViaExtra = {};
+  if(!state.alimEntry.alimentiExtra) state.alimEntry.alimentiExtra = [];
+  if(!state.alimEntry.integratori) state.alimEntry.integratori = {};
+  if(!state.alimEntry.fattori) state.alimEntry.fattori = {};
+  if(!state.alimEntry.qtyOverride) state.alimEntry.qtyOverride = {};
+
+  const totals = entryTotals(state.alimEntry);
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><div class="eyebrow">VARIANTE ${giorno.lettera}</div><h1>${giorno.cardSub}</h1></div>
+      <div class="titles"><div class="eyebrow">${isLibero ? 'GIORNO LIBERO' : `VARIANTE ${giorno.lettera} · di partenza`}</div><h1>${giorno.cardSub}</h1></div>
     </div>
     <div class="wrap">
       <div class="date-bar">
         <div><label>Data</label><input type="date" id="alimDateInput" value="${useDate}"></div>
         <span class="save-pill" id="alimSavePill">salvato</span>
       </div>
-      ${giorno.note ? `<div class="warmup-note" style="border-color:rgba(63,199,184,0.25);">${ICO.info}<span>${giorno.note}</span></div>` : ''}
+      <div class="warmup-note">${ICO.info}<span>Ogni pasto è intercambiabile: tocca il nome per scegliere tra le versioni usate nelle varianti del piano. La spunta lo segna come fatto con l'opzione scelta.</span></div>
       <div class="section-label">Rispetto al target</div>
-      <div class="macro-summary" id="macroSummary"></div>
+      <div class="macro-summary" id="macroSummary">${macroSummaryHTML(totals)}</div>
       <div class="section-label">Integratori — uguali ogni giorno, non dimenticarli</div>
       ${integratoriCardHTML()}
-      <div class="section-label">Pasti — spunta ciò che hai mangiato o scrivi la quantità</div>
-      ${giorno.pasti.map(pasto=>pastoCardHTML(pasto)).join('')}
+      <div class="section-label">Pasti — tocca per cambiare opzione, spunta se fatto</div>
+      <div id="mealsBody">${ALIM_PASTI_ORDINE.map(pid=>mealRowHTML(pid, state.alimEntry)).join('')}</div>
+      <div class="section-label">Fuori piano</div>
+      <div class="pasto-card" style="padding:14px 16px;">
+        <p style="margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.55;">Qualcosa non previsto dal piano? Cercalo e aggiungilo con la grammatura giusta: se il pasto non era ancora segnato fatto lo sostituisce (niente doppio conteggio), se lo era già si somma.</p>
+        <div id="extraBody">${extraGroupsHTML(state.alimEntry)}</div>
+        <button class="cta-next" style="margin-top:4px;" id="btnCercaAlimento">
+          <div class="cta-next-title">+ Cerca e aggiungi alimento</div>
+          <div class="cta-next-sub">Open Food Facts e USDA FoodData Central</div>
+          <div class="cta-next-arrow">${ICO.chev}</div>
+        </button>
+      </div>
       <button class="cta" id="btnSaveAlim">Salva registrazione</button>
     </div>
+    ${opzioneSheetHTML()}
   `;
   document.getElementById('btnBack').onclick = goBack;
-  document.getElementById('alimDateInput').onchange = (e)=>{
-    state.alimDate = e.target.value;
-    queueAlimSave(giorno);
-  };
-  wireAlimInputs(giorno);
+  document.getElementById('alimDateInput').onchange = (e)=>{ state.alimDate = e.target.value; queueAlimSave(); };
+  wireMealsInputs();
+  wireExtraInputs();
   wireIntegratoriInputs();
-  recomputeAlimTotals(giorno);
-  loadExistingAlimEntry(giorno, useDate);
+  applyIntegratoriState();
+  document.getElementById('pickerCloseOpzione').onclick = ()=> document.getElementById('pickerSheetOpzione').classList.remove('open');
+  document.getElementById('pickerSheetOpzione').addEventListener('click',(e)=>{ if(e.target.id==='pickerSheetOpzione') e.currentTarget.classList.remove('open'); });
+  document.getElementById('btnCercaAlimento').onclick = ()=> renderCercaAlimentoExtra();
   document.getElementById('btnSaveAlim').onclick = async ()=>{
+    clearTimeout(alimSaveTimeout);
+    alimSaveTimeout = null;
+    alimSavePending = false;
     try{
-      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities, true, state.alimIntegratori);
+      await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:true });
     }catch(e){ showToast('Errore salvataggio — riprova'); return; }
     showToast('Registrazione salvata ✓');
     goBack();
   };
+}
+
+/* ============== ALIMENTAZIONE > ricerca alimento extra (Open Food Facts + USDA) ==============
+   Stessa identica logica di ricerca usata da "Beat Yourself" (l'app di
+   Antonio): due fonti in parallelo, unite e deduplicate — porzione quasi
+   letterale del suo codice, dato che qui non dipende affatto dal modello
+   dati di questa app, solo da rete e parsing.
+   NOTA DI VERIFICA: nell'ambiente di sviluppo di questa sessione la rete
+   verso openfoodfacts.org e nal.usda.gov e' bloccata (proxy con allowlist,
+   sia lato cloud sia lato Mac) — le chiamate qui sotto sono state verificate
+   dal vivo aprendo la pagina nel browser reale, non da riga di comando: e'
+   il fetch del browser a girare, che non passa da quel proxy. */
+let ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoId:null };
+let alimentiPersonalizzatiCache = null;
+let alimentiRecentiCache = null;
+
+const ALIM_CUSTOM_KEY = 'alim2-alimenti-custom-v1';
+const ALIM_RECENTI_KEY = 'alim2-alimenti-recenti-v1';
+async function loadAlimentiCustom(){
+  try{ const r = await window.storage.get(ALIM_CUSTOM_KEY, false); return (r&&r.value)?JSON.parse(r.value):[]; }catch(e){ return []; }
+}
+async function saveAlimentiCustom(lista){ await window.storage.set(ALIM_CUSTOM_KEY, JSON.stringify(lista), false); }
+async function loadAlimentiRecenti(){
+  try{ const r = await window.storage.get(ALIM_RECENTI_KEY, false); return (r&&r.value)?JSON.parse(r.value):[]; }catch(e){ return []; }
+}
+async function saveAlimentiRecenti(lista){ await window.storage.set(ALIM_RECENTI_KEY, JSON.stringify(lista), false); }
+
+const USDA_API_KEY = 'DEMO_KEY'; // gratuita, senza approvazione: https://fdc.nal.usda.gov/api-key-signup.html — limite 30 richieste/ora, una chiave personale no
+function mappaProdottiOFF(lista){
+  return (lista||[])
+    .filter(p=>p.product_name && p.nutriments && p.nutriments['energy-kcal_100g']!=null)
+    .map(p=>({
+      fonte:'off',
+      nome: p.product_name,
+      marca: p.brands ? p.brands.split(',')[0].trim() : '',
+      kcal100: Math.round(p.nutriments['energy-kcal_100g']||0),
+      prot100: Math.round((p.nutriments['proteins_100g']||0)*10)/10,
+      carb100: Math.round((p.nutriments['carbohydrates_100g']||0)*10)/10,
+      grassi100: Math.round((p.nutriments['fat_100g']||0)*10)/10,
+    }));
+}
+async function cercaSuOpenFoodFactsLegacy(query){
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=24&sort_by=unique_scans_n&fields=product_name,brands,nutriments`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('OFF legacy http '+res.status);
+  const data = await res.json();
+  return mappaProdottiOFF(data.products);
+}
+async function cercaSuOpenFoodFacts(query){
+  try{
+    const url = `https://search.openfoodfacts.org/search?q=${encodeURIComponent(query)}&page_size=24&fields=product_name,brands,nutriments&sort_by=-unique_scans_n`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('search-a-licious http '+res.status);
+    const data = await res.json();
+    const hits = data.hits || data.products;
+    if(!Array.isArray(hits)) throw new Error('formato di risposta inatteso');
+    return mappaProdottiOFF(hits);
+  }catch(e){
+    return cercaSuOpenFoodFactsLegacy(query);
+  }
+}
+function titleCaseSeTuttoMaiuscolo(s){
+  if(!s) return s;
+  const lettere = s.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g,'');
+  const maiuscole = s.replace(/[^A-ZÀ-Ö]/g,'');
+  if(lettere.length>3 && maiuscole.length/lettere.length>0.8){
+    return s.toLowerCase().replace(/(^|[\s,\/])([a-zà-ÿ])/g,(m,p1,p2)=>p1+p2.toUpperCase());
+  }
+  return s;
+}
+async function cercaSuUSDA(query){
+  if(!USDA_API_KEY) return [];
+  const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${USDA_API_KEY}&query=${encodeURIComponent(query)}&pageSize=15&dataType=Foundation,SR%20Legacy,Branded`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('USDA http '+res.status);
+  const data = await res.json();
+  return (data.foods||[]).map(f=>{
+    const trovaValore = (nome, unitaAttesa) => {
+      const n = (f.foodNutrients||[]).find(x=> x.nutrientName===nome && (!unitaAttesa || x.unitName===unitaAttesa));
+      return (n && n.value!=null) ? n.value : null;
+    };
+    const kcal100 = trovaValore('Energy','KCAL');
+    if(kcal100==null) return null;
+    return {
+      fonte:'usda',
+      nome: titleCaseSeTuttoMaiuscolo(f.description),
+      marca: f.brandOwner || '',
+      kcal100: Math.round(kcal100),
+      prot100: Math.round((trovaValore('Protein')||0)*10)/10,
+      carb100: Math.round((trovaValore('Carbohydrate, by difference')||0)*10)/10,
+      grassi100: Math.round((trovaValore('Total lipid (fat)')||0)*10)/10,
+    };
+  }).filter(Boolean);
+}
+function dedupRisultatiAlimenti(lista){
+  const visti = new Set();
+  return lista.filter(p=>{
+    const chiave = (p.nome+'|'+(p.marca||'')).toLowerCase().trim();
+    if(visti.has(chiave)) return false;
+    visti.add(chiave);
+    return true;
+  });
+}
+async function eseguiRicercaAlimento(){
+  const input = document.getElementById('foodSearchInput');
+  const query = input ? input.value.trim() : '';
+  if(!query) return;
+  ricercaAlimentoState.query = query;
+  ricercaAlimentoState.loading = true;
+  ricercaAlimentoState.errore = null;
+  ricercaAlimentoState.risultati = [];
+  renderCercaAlimentoExtra();
+  const [off, usda] = await Promise.allSettled([ cercaSuOpenFoodFacts(query), cercaSuUSDA(query) ]);
+  if(off.status==='rejected' && usda.status==='rejected'){
+    ricercaAlimentoState.errore = 'Ricerca non riuscita: controlla la connessione e riprova.';
+  } else {
+    const risultatiOFF = off.status==='fulfilled' ? off.value : [];
+    const risultatiUSDA = usda.status==='fulfilled' ? usda.value : [];
+    ricercaAlimentoState.risultati = dedupRisultatiAlimenti([...risultatiOFF, ...risultatiUSDA]).slice(0,40);
+  }
+  ricercaAlimentoState.loading = false;
+  renderCercaAlimentoExtra();
+}
+function pastoSuggeritoOra(){
+  const FASCE = [ ['colazione',7.5], ['spuntinoAM',11], ['pranzo',14], ['spuntinoPM',18.5], ['cena',20.5] ];
+  const ora = new Date(); const h = ora.getHours()+ora.getMinutes()/60;
+  let best = FASCE[0][0], bestDist = Infinity;
+  FASCE.forEach(([pid,r])=>{ const d=Math.abs(h-r); if(d<bestDist){ bestDist=d; best=pid; } });
+  return best;
+}
+function selezionaAlimentoRicerca(i){
+  ricercaAlimentoState.selezionato = ricercaAlimentoState.risultati[i];
+  ricercaAlimentoState.grammi = 100;
+  ricercaAlimentoState.pastoId = pastoSuggeritoOra();
+  renderCercaAlimentoExtra();
+}
+function selezionaAlimentoPersonalizzato(i){
+  const p = (alimentiPersonalizzatiCache||[])[i];
+  if(!p) return;
+  ricercaAlimentoState.selezionato = { nome:p.nome, marca:'personalizzato', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100 };
+  ricercaAlimentoState.grammi = 100;
+  ricercaAlimentoState.pastoId = pastoSuggeritoOra();
+  renderCercaAlimentoExtra();
+}
+function selezionaAlimentoRecente(i){
+  const p = (alimentiRecentiCache||[])[i];
+  if(!p) return;
+  ricercaAlimentoState.selezionato = p;
+  ricercaAlimentoState.grammi = 100;
+  ricercaAlimentoState.pastoId = pastoSuggeritoOra();
+  renderCercaAlimentoExtra();
+}
+function sceglieCategoriaPastoExtra(pid){ ricercaAlimentoState.pastoId = pid; renderCercaAlimentoExtra(); }
+async function registraAlimentoRecente(p){
+  const chiave = a=>(a.nome+'|'+(a.marca||'')).toLowerCase();
+  let lista = await loadAlimentiRecenti();
+  lista = lista.filter(a=>chiave(a)!==chiave(p));
+  lista.unshift({ nome:p.nome, marca:p.marca||'', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100 });
+  lista = lista.slice(0,8);
+  alimentiRecentiCache = lista;
+  try{ await saveAlimentiRecenti(lista); }catch(e){}
+}
+function eliminaAlimentoPersonalizzato(id){
+  showConfirm('Eliminare questo alimento/ricetta personalizzato?', async ()=>{
+    try{
+      const lista = (alimentiPersonalizzatiCache||[]).filter(p=>p.id!==id);
+      alimentiPersonalizzatiCache = lista;
+      await saveAlimentiCustom(lista);
+      renderCercaAlimentoExtra();
+    }catch(e){ showToast('Errore — riprova'); }
+  }, 'Elimina', 'Annulla');
+}
+async function renderCercaAlimentoExtra(){
+  state.screen = 'alimCercaExtra';
+  closeAllOverlays();
+  setTimerBarVisible(false);
+  if(alimentiPersonalizzatiCache===null) alimentiPersonalizzatiCache = await loadAlimentiCustom();
+  if(alimentiRecentiCache===null) alimentiRecentiCache = await loadAlimentiRecenti();
+  const s = ricercaAlimentoState;
+  const goBack = async ()=>{
+    await flushAlimSaveNow(); // se avevi corretto una quantita' prima di aprire la ricerca, non deve perdersi tornando indietro
+    renderGiornoAlimentare(currentAlimGiorno.id, state.alimReturnTo==='storico'?state.alimDate:undefined);
+  };
+
+  if(s.selezionato){
+    const p = s.selezionato;
+    const g = s.grammi||0;
+    const fattore = g/100;
+    const kcal = Math.round(p.kcal100*fattore);
+    const prot = Math.round(p.prot100*fattore*10)/10;
+    const carb = Math.round(p.carb100*fattore*10)/10;
+    const grassi = Math.round(p.grassi100*fattore*10)/10;
+    const pastoChipsHtml = ALIM_PASTI_ORDINE.map(pid=>
+      `<div class="chip${pid===s.pastoId?' active':''}" data-pid="${pid}">${ALIM_PASTI_ICONA[pid]} ${ALIM_PASTI_LABEL[pid]}</div>`
+    ).join('');
+    app.innerHTML = `
+      <div class="topbar"><button class="back" id="btnBack">${ICO.back}</button><div class="titles"><h1>${p.nome}</h1></div></div>
+      <div class="wrap">
+        ${p.marca?`<p style="color:var(--text-faint);font-size:12.5px;margin:-6px 0 14px;">${p.marca}</p>`:''}
+        <div class="field"><label>In quale pasto lo aggiungi?</label><div class="chip-row" id="pastoChips">${pastoChipsHtml}</div></div>
+        <div class="field"><label>Quantità (grammi)</label><input type="number" min="1" id="foodGrammiInput" value="${g}"></div>
+        <div class="pasto-card" style="padding:14px 16px;margin-bottom:16px;">
+          <div class="ing-row" style="border-bottom:none;">
+            <div class="ing-main">
+              <div class="ing-suggested">P <b id="fpProt" style="color:var(--text);">${prot}g</b> · C <b id="fpCarb" style="color:var(--text);">${carb}g</b> · G <b id="fpGrassi" style="color:var(--text);">${grassi}g</b></div>
+            </div>
+            <div class="ing-kcal" id="fpKcalLine" style="width:auto;">${kcal} kcal</div>
+          </div>
+        </div>
+        <button class="cta" id="btnConfermaExtra">Aggiungi a oggi</button>
+        <button class="text-link-btn" id="btnTornaRicerca">← Torna alla ricerca</button>
+      </div>
+    `;
+    document.getElementById('btnBack').onclick = goBack;
+    document.getElementById('btnTornaRicerca').onclick = ()=>{ ricercaAlimentoState.selezionato=null; renderCercaAlimentoExtra(); };
+    document.querySelectorAll('#pastoChips .chip').forEach(chip=>{
+      chip.addEventListener('click', ()=> sceglieCategoriaPastoExtra(chip.dataset.pid));
+    });
+    document.getElementById('foodGrammiInput').addEventListener('input', (e)=>{
+      const gg = Math.max(0, Number(e.target.value)||0);
+      ricercaAlimentoState.grammi = gg;
+      const f = gg/100;
+      document.getElementById('fpProt').textContent = (Math.round(p.prot100*f*10)/10)+'g';
+      document.getElementById('fpCarb').textContent = (Math.round(p.carb100*f*10)/10)+'g';
+      document.getElementById('fpGrassi').textContent = (Math.round(p.grassi100*f*10)/10)+'g';
+      document.getElementById('fpKcalLine').textContent = Math.round(p.kcal100*f)+' kcal';
+    });
+    document.getElementById('btnConfermaExtra').onclick = ()=> confermaAggiungiAlimentoExtra();
+    return;
+  }
+
+  let risultatiHtml = '';
+  if(s.loading){
+    risultatiHtml = `<div class="cron-empty">Cerco…</div>`;
+  } else if(s.errore){
+    risultatiHtml = `<div class="cron-empty">${s.errore}</div>`;
+  } else if(s.risultati.length){
+    risultatiHtml = s.risultati.map((p,i)=>`
+      <button class="week-day-row" data-i="${i}" style="text-align:left;">
+        <div class="wdr-info">
+          <div class="wdr-variant" style="color:var(--text);">${p.nome}</div>
+          <div class="wdr-sub">${p.marca ? p.marca : (p.fonte==='usda' ? 'USDA · nome in inglese' : 'Open Food Facts')} · ${p.kcal100} kcal /100g</div>
+        </div>
+        <div class="hc-arrow">${ICO.chev}</div>
+      </button>
+    `).join('');
+  } else if(s.query){
+    risultatiHtml = `<div class="cron-empty">Nessun risultato per "${s.query}".<br>Prova un nome più semplice o generico.</div>`;
+  }
+
+  const recentiHtml = (!s.query && alimentiRecentiCache.length) ? `
+    <div class="section-label">Aggiunti di recente</div>
+    ${alimentiRecentiCache.map((p,i)=>`
+      <button class="week-day-row" data-recente="${i}" style="text-align:left;">
+        <div class="wdr-info"><div class="wdr-variant" style="color:var(--text);">${p.nome}</div><div class="wdr-sub">${p.marca||''} · ${p.kcal100} kcal /100g</div></div>
+        <div class="hc-arrow">${ICO.chev}</div>
+      </button>
+    `).join('')}
+  ` : '';
+  const personalizzatiHtml = (!s.query && alimentiPersonalizzatiCache.length) ? `
+    <div class="section-label">I tuoi alimenti e ricette</div>
+    ${alimentiPersonalizzatiCache.map((p,i)=>`
+      <div class="week-day-row" style="cursor:default;">
+        <div class="wdr-info" data-personalizzato="${i}" style="cursor:pointer;flex:1;"><div class="wdr-variant" style="color:var(--text);">${p.nome}</div><div class="wdr-sub">Personalizzato · ${p.kcal100} kcal /100g</div></div>
+        <button class="ing-check ing-check-del" data-elimina-custom="${p.id}" title="Elimina" style="border-color:var(--danger);color:var(--danger);">${ICO.trash}</button>
+      </div>
+    `).join('')}
+  ` : '';
+
+  app.innerHTML = `
+    <div class="topbar"><button class="back" id="btnBack">${ICO.back}</button><div class="titles"><h1>Cerca alimento</h1></div></div>
+    <div class="wrap">
+      <div class="field"><label>Cerca un alimento</label><input type="text" id="foodSearchInput" placeholder="Es. yogurt greco, pasta, mela…" value="${s.query}"></div>
+      <button class="cta" id="btnCerca" style="margin-bottom:6px;">Cerca</button>
+      <p style="font-size:11.5px;color:var(--text-faint);margin:0 0 18px;line-height:1.5;">I dati arrivano da Open Food Facts (prodotti confezionati) e USDA FoodData Central (alimenti generici come frutta, verdura, carne — nomi in inglese).</p>
+      ${risultatiHtml}
+      ${!s.query ? `<button class="text-link-btn" id="btnCreaCustom" style="margin:14px 0 6px;">➕ Crea alimento o ricetta personalizzata</button>` : ''}
+      ${personalizzatiHtml}
+      ${recentiHtml}
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = goBack;
+  document.getElementById('btnCerca').onclick = ()=> eseguiRicercaAlimento();
+  document.getElementById('foodSearchInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter') eseguiRicercaAlimento(); });
+  document.querySelectorAll('[data-i]').forEach(btn=> btn.addEventListener('click', ()=> selezionaAlimentoRicerca(parseInt(btn.dataset.i))));
+  document.querySelectorAll('[data-recente]').forEach(btn=> btn.addEventListener('click', ()=> selezionaAlimentoRecente(parseInt(btn.dataset.recente))));
+  document.querySelectorAll('[data-personalizzato]').forEach(el=> el.addEventListener('click', ()=> selezionaAlimentoPersonalizzato(parseInt(el.dataset.personalizzato))));
+  document.querySelectorAll('[data-elimina-custom]').forEach(btn=> btn.addEventListener('click',(e)=>{ e.stopPropagation(); eliminaAlimentoPersonalizzato(btn.dataset.eliminaCustom); }));
+  const btnCreaCustom = document.getElementById('btnCreaCustom');
+  if(btnCreaCustom) btnCreaCustom.onclick = ()=> renderCreaAlimentoCustom();
+  const input = document.getElementById('foodSearchInput');
+  if(input) setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
+}
+/* Salvataggio immediato (non debounced) prima di tornare a
+   renderGiornoAlimentare: quella funzione ricarica l'entry da Firestore, e
+   se il salvataggio fosse ancora in coda rischieremmo di rileggere la
+   versione vecchia e perdere l'alimento appena aggiunto. */
+async function confermaAggiungiAlimentoExtra(){
+  const p = ricercaAlimentoState.selezionato;
+  const g = ricercaAlimentoState.grammi;
+  const fattore = g/100;
+  const pastoId = ricercaAlimentoState.pastoId || 'colazione';
+  const voce = {
+    id: 'extra-'+Date.now(),
+    nome: p.nome, marca: p.marca||'',
+    grammi: g,
+    kcal: Math.round(p.kcal100*fattore),
+    prot: Math.round(p.prot100*fattore*10)/10,
+    carb: Math.round(p.carb100*fattore*10)/10,
+    grassi: Math.round(p.grassi100*fattore*10)/10,
+    pasto: pastoId,
+  };
+  if(!state.alimEntry.alimentiExtra) state.alimEntry.alimentiExtra = [];
+  state.alimEntry.alimentiExtra.push(voce);
+  segnaPastoFattoDaExtra(pastoId);
+  try{
+    clearTimeout(alimSaveTimeout);
+    alimSaveTimeout = null;
+    alimSavePending = false;
+    await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:false });
+  }catch(e){ showToast('Errore salvataggio — riprova'); }
+  await registraAlimentoRecente(p);
+  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoId:null };
+  renderGiornoAlimentare(currentAlimGiorno.id, state.alimReturnTo==='storico'?state.alimDate:undefined);
+}
+
+/* ============== ALIMENTAZIONE > crea alimento/ricetta personalizzata ==============
+   Per i piatti fatti in casa o non presenti nei due database — stessa idea
+   di Beat Yourself: valori per porzione intera (piu' comodo per una
+   ricetta di cui conosci il totale) oppure per 100g, a scelta. */
+let creaAlimentoModalita = 'porzione';
+function renderCreaAlimentoCustom(){
+  state.screen = 'alimCreaCustom';
+  closeAllOverlays();
+  setTimerBarVisible(false);
+  creaAlimentoModalita = 'porzione';
+  app.innerHTML = `
+    <div class="topbar"><button class="back" id="btnBack">${ICO.back}</button><div class="titles"><h1>Nuovo alimento</h1></div></div>
+    <div class="wrap">
+      <p style="font-size:12px;color:var(--text-faint);margin:0 0 14px;line-height:1.55;">Per un piatto fatto in casa spesso è più comodo inserire i valori dell'intera porzione: il per-100g lo calcolo io, per farlo funzionare come gli altri alimenti nel diario.</p>
+      <div class="field"><label>Nome</label><input type="text" id="caNome" placeholder="Es. Pasta al pomodoro fatta in casa"></div>
+      <div class="chip-row" id="caModalitaChips">
+        <div class="chip active" data-m="porzione">Per porzione intera</div>
+        <div class="chip" data-m="100g">Per 100g</div>
+      </div>
+      <div id="caCampi"></div>
+      <button class="cta" id="salvaAlimentoCustomBtn" style="margin-top:6px;">Salva</button>
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = ()=> renderCercaAlimentoExtra();
+  renderCampiAlimentoCustom();
+  document.querySelectorAll('#caModalitaChips .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('#caModalitaChips .chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      creaAlimentoModalita = chip.dataset.m;
+      renderCampiAlimentoCustom();
+    });
+  });
+  document.getElementById('salvaAlimentoCustomBtn').onclick = ()=> salvaAlimentoCustom();
+}
+function renderCampiAlimentoCustom(){
+  const box = document.getElementById('caCampi');
+  if(creaAlimentoModalita==='porzione'){
+    box.innerHTML = `
+      <div class="field"><label>Peso totale della porzione (g)</label><input type="number" min="1" id="caPeso"></div>
+      <div class="field"><label>Kcal totali</label><input type="number" min="0" id="caKcal"></div>
+      <div class="field"><label>Proteine totali (g)</label><input type="number" min="0" step="0.1" id="caProt"></div>
+      <div class="field"><label>Carboidrati totali (g)</label><input type="number" min="0" step="0.1" id="caCarb"></div>
+      <div class="field"><label>Grassi totali (g)</label><input type="number" min="0" step="0.1" id="caGrassi"></div>`;
+  } else {
+    box.innerHTML = `
+      <div class="field"><label>Kcal per 100g</label><input type="number" min="0" id="caKcal"></div>
+      <div class="field"><label>Proteine per 100g</label><input type="number" min="0" step="0.1" id="caProt"></div>
+      <div class="field"><label>Carboidrati per 100g</label><input type="number" min="0" step="0.1" id="caCarb"></div>
+      <div class="field"><label>Grassi per 100g</label><input type="number" min="0" step="0.1" id="caGrassi"></div>`;
+  }
+}
+async function salvaAlimentoCustom(){
+  const nome = document.getElementById('caNome').value.trim();
+  const btn = document.getElementById('salvaAlimentoCustomBtn');
+  const kcal = Number(document.getElementById('caKcal').value);
+  const prot = Number(document.getElementById('caProt').value);
+  const carb = Number(document.getElementById('caCarb').value);
+  const grassi = Number(document.getElementById('caGrassi').value);
+  if(!nome){ showToast('Dai un nome all\'alimento'); return; }
+  if([kcal,prot,carb,grassi].some(v=>isNaN(v)||v<0)){ showToast('Controlla i valori numerici inseriti'); return; }
+  let kcal100,prot100,carb100,grassi100;
+  if(creaAlimentoModalita==='porzione'){
+    const peso = Number(document.getElementById('caPeso').value);
+    if(isNaN(peso)||peso<=0){ showToast('Inserisci il peso totale della porzione'); return; }
+    const fattore = 100/peso;
+    kcal100=Math.round(kcal*fattore); prot100=Math.round(prot*fattore*10)/10; carb100=Math.round(carb*fattore*10)/10; grassi100=Math.round(grassi*fattore*10)/10;
+  } else {
+    kcal100=kcal; prot100=prot; carb100=carb; grassi100=grassi;
+  }
+  btn.disabled = true; btn.textContent = 'Salvataggio…';
+  try{
+    const lista = await loadAlimentiCustom();
+    lista.push({ id:'custom-'+Date.now(), nome, kcal100, prot100, carb100, grassi100 });
+    await saveAlimentiCustom(lista);
+    alimentiPersonalizzatiCache = lista;
+    renderCercaAlimentoExtra();
+  }catch(e){
+    showToast('Errore: '+e.message);
+    btn.disabled = false; btn.textContent = 'Salva';
+  }
 }
 /* ============== ALIMENTAZIONE — storico ============== */
 async function renderStoricoAlimentazione(){
@@ -4395,9 +5401,11 @@ async function refreshAlimStorico(){
     const label = (MESI_IT[mi] && y) ? `${MESI_IT[mi]} ${y}` : 'Data sconosciuta';
     const rowsSorted = groups[ym].slice().sort((a,b)=> b.date.localeCompare(a.date));
     const rows = rowsSorted.map(e=>{
-      const giorno = ALIM_GIORNI.find(g=>g.id===e.giornoId);
-      const totals = giorno ? giornoTotals(giorno, e.quantities) : { kcal:0, p:0, c:0, g:0 };
+      const giorno = giornoOrLibero(e.giornoBaseId);
+      const totals = entryTotals(e);
       const integCount = INTEGRATORI_GIORNALIERI.filter(it=> e.integratori && e.integratori[it.id]).length;
+      const nPastiFatti = ALIM_PASTI_ORDINE.filter(pid=> e.pastiFatti && e.pastiFatti[pid]).length;
+      const nExtra = (e.alimentiExtra||[]).length;
       const d = new Date(e.date+'T00:00:00');
       return `
         <div class="swipe-wrap" data-date="${e.date}">
@@ -4407,8 +5415,8 @@ async function refreshAlimStorico(){
               <div class="sr-left">
                 <div class="sr-date">${d.getDate()}</div>
                 <div class="sr-info">
-                  <div class="sr-giorno">${giorno ? 'Variante '+giorno.lettera : 'Variante sconosciuta'} · ${fmtKcal(totals.kcal)} kcal</div>
-                  <div class="sr-meta">${fmtDate(e.date)} · P ${fmtMacro(totals.p)} · C ${fmtMacro(totals.c)} · G ${fmtMacro(totals.g)} · Integratori ${integCount}/${INTEGRATORI_GIORNALIERI.length}</div>
+                  <div class="sr-giorno">${giorno ? (giorno.id===ALIM_LIBERO_ID ? 'Giorno libero' : 'Variante '+giorno.lettera) : 'Variante sconosciuta'} · ${fmtKcal(totals.kcal)} kcal</div>
+                  <div class="sr-meta">${fmtDate(e.date)} · P ${fmtMacro(totals.p)} · C ${fmtMacro(totals.c)} · G ${fmtMacro(totals.g)} · ${nPastiFatti}/5 pasti${nExtra?` · ${nExtra} extra`:''} · Integratori ${integCount}/${INTEGRATORI_GIORNALIERI.length}</div>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;">
@@ -4447,7 +5455,9 @@ async function refreshAlimStorico(){
 async function openAlimEntryForEdit(date){
   const entry = await loadAlimEntry(date);
   if(!entry){ showToast('Registrazione non trovata'); return; }
-  renderGiornoAlimentare(entry.giornoId, date);
+  const giorno = giornoOrLibero(entry.giornoBaseId);
+  if(!giorno){ showToast('Variante di questa registrazione non trovata'); return; }
+  renderGiornoAlimentare(giorno.id, date);
 }
 
 /* ============== CICLI: SCHERMATA PRINCIPALE (attuale + precedenti) ============== */
@@ -5763,7 +6773,10 @@ async function refreshCronologia(){
 /* ============== INIT / SESSIONE ============== */
 auth.onAuthStateChanged((user)=>{
   currentUser = user;
-  if(user){ renderHome(); }
+  if(user){
+    renderHome();
+    migrateOldAlimEntriesOnce(); // in background, non blocca il rendering
+  }
   else { renderLogin(); }
 });
 </script>
