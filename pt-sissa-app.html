@@ -247,6 +247,10 @@ input{font-family:inherit;}
 .ing-check svg{width:13px;height:13px;opacity:0;}
 .ing-check.on{background:var(--success);border-color:var(--success);}
 .ing-check.on svg{opacity:1;}
+/* .ing-check di base nasconde l'icona finche' non e' "on" (e' pensata per
+   la spunta "preso/fatto"): i pulsanti che invece eliminano qualcosa
+   riusano lo stesso stile di cornice ma devono mostrare l'icona sempre. */
+.ing-check-del svg{opacity:1;}
 .ing-suggested{font-size:10px;color:var(--text-faint);font-family:var(--mono);margin-top:3px;line-height:1.45;}
 .ing-suggested .ing-suggested-qty{
   display:inline-block;background:var(--accent-dim);color:var(--accent);
@@ -390,6 +394,19 @@ input{font-family:inherit;}
   border:none;border-radius:8px;padding:6px 10px;font-family:var(--mono);font-size:11px;font-weight:700;
 }
 .rec-start svg{width:11px;height:11px;}
+.lato-block{padding:0 16px;}
+.lato-block:first-child{padding-top:4px;}
+.lato-block .set-table{padding:0 0 12px;}
+.lato-block .ex-actions{padding:0 0 16px;}
+.lato-label{
+  font-family:var(--mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;
+  font-weight:700;margin:14px 0 8px;display:flex;align-items:center;gap:10px;
+}
+.lato-label::after{content:"";flex:1;height:1px;background:var(--border);}
+.lato-label.debole{color:var(--accent);}
+.lato-label.debole::after{background:rgba(255,92,57,0.3);}
+.lato-label.forte{color:var(--teal);}
+.lato-label.forte::after{background:rgba(63,199,184,0.3);}
 .set-table{padding:6px 16px 12px;}
 .set-row{
   display:grid;grid-template-columns:22px 1fr 1fr 1fr 34px;gap:6px;align-items:center;
@@ -590,6 +607,16 @@ input{font-family:inherit;}
 }
 .info-block-label svg{width:14px;height:14px;}
 .info-block p{margin:0;font-size:13.5px;line-height:1.6;color:var(--text-muted);}
+.warn-note{
+  display:flex;align-items:flex-start;gap:10px;background:var(--danger-dim);border:1px solid rgba(255,107,107,0.3);
+  border-radius:12px;padding:12px 14px;margin:0 0 18px;font-size:12.5px;color:var(--danger);line-height:1.55;
+}
+.warn-note svg{width:16px;height:16px;flex-shrink:0;margin-top:1px;}
+.equip-note{
+  display:flex;align-items:flex-start;gap:10px;background:var(--teal-dim);border:1px solid rgba(63,199,184,0.25);
+  border-radius:12px;padding:12px 14px;margin:0 0 18px;font-size:12.5px;color:var(--teal);line-height:1.55;
+}
+.equip-note svg{width:16px;height:16px;flex-shrink:0;margin-top:1px;}
 /* CONFIRM MODAL */
 .confirm-overlay{
   position:fixed;inset:0;z-index:200;background:rgba(8,10,10,0.8);
@@ -740,16 +767,60 @@ input{font-family:inherit;}
 .measure-row{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   background:var(--bg-card-hover);border:1px solid var(--border-strong);border-left:3px solid var(--accent);border-radius:12px;
-  padding:13px 14px;margin-bottom:8px;
+  padding:13px 14px;margin-bottom:8px;cursor:pointer;
 }
+.measure-row:active{background:var(--bg-card);}
 .measure-row .mr-date{font-weight:700;font-size:14.5px;color:var(--accent);}
 .measure-row .mr-vals{font-size:11.5px;color:var(--text);font-family:var(--mono);margin-top:2px;}
+.measure-row .sr-del,.measure-row .sr-edit{
+  width:34px;height:34px;border-radius:8px;flex-shrink:0;border:1px solid var(--border-strong);
+  background:var(--bg-elev);color:var(--text-faint);display:flex;align-items:center;justify-content:center;
+}
+.measure-row .sr-del svg,.measure-row .sr-edit svg{width:15px;height:15px;}
 /* TABS */
 .tab-row{display:flex;gap:8px;margin-bottom:20px;background:var(--bg-card);border:1px solid var(--border);border-radius:12px;padding:4px;}
 .tab-btn{flex:1;background:none;border:none;color:var(--text-muted);font-family:var(--mono);font-size:12.5px;font-weight:700;padding:10px;border-radius:9px;text-transform:uppercase;letter-spacing:.04em;}
 .tab-btn.active{background:var(--accent);color:#101314;}
 .tab-btn{transition:background .15s ease, color .15s ease;}
 .tab-btn:active:not(.active){background:var(--bg-card-hover);color:var(--text);}
+
+/* ===== ALIMENTAZIONE v2 — pasti intercambiabili, extra, alimenti personalizzati ===== */
+.meal-row{display:flex;align-items:center;gap:10px;padding:12px 16px;}
+.meal-row-main{flex:1;min-width:0;display:flex;align-items:center;gap:12px;cursor:pointer;}
+.meal-row-icon{font-size:20px;flex-shrink:0;}
+.meal-row-info{flex:1;min-width:0;}
+.meal-row-name{font-size:13.5px;font-weight:700;color:var(--text);}
+.meal-row-opt{font-size:11.5px;color:var(--text-muted);margin-top:2px;}
+.meal-row-var{font-family:var(--mono);color:var(--accent);font-size:10.5px;}
+.meal-row-kcal{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:700;text-align:right;flex-shrink:0;}
+.meal-row-kcal span{display:block;font-size:9px;color:var(--text-faint);font-weight:400;text-transform:uppercase;}
+.meal-row-card.done{border-color:var(--success);}
+.opz-item-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin:0 4px 10px;overflow:hidden;}
+.opz-item-card.sel{border-color:var(--accent);}
+.opz-item-select{width:100%;text-align:left;background:none;border:none;padding:14px 12px 10px;cursor:pointer;color:inherit;display:block;}
+.opz-item-row{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.opz-item-titolo{font-weight:700;color:var(--text);font-size:13.5px;}
+.opz-item-kcal{font-family:var(--mono);color:var(--accent);font-weight:700;font-size:13px;flex-shrink:0;}
+.opz-item-macro{font-size:11px;color:var(--text-faint);font-family:var(--mono);margin-top:4px;}
+.opz-item-var{color:var(--accent);}
+.opz-item-badge{background:var(--accent-dim);color:var(--accent);font-size:9px;padding:2px 6px;border-radius:6px;margin-left:6px;text-transform:uppercase;font-weight:700;vertical-align:middle;}
+.opz-item-toggle{width:100%;text-align:left;background:none;border:none;border-top:1px solid var(--border);padding:10px 12px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
+.opz-item-detail{max-height:0;overflow:hidden;transition:max-height .3s ease;padding:0 12px;}
+.opz-item-detail.open{max-height:1200px;padding:6px 12px 12px;border-top:1px solid var(--border);}
+.chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+.meal-row-porzione{color:var(--accent);font-family:var(--mono);font-size:10.5px;background:var(--accent-dim);padding:1px 6px;border-radius:6px;margin-left:4px;}
+.meal-row-consigliato{font-size:11px;color:var(--text-faint);margin-top:4px;line-height:1.4;}
+.meal-row-adatta{width:calc(100% - 8px);margin:0 4px 10px;text-align:center;background:var(--accent-dim);border:1px dashed var(--accent);border-radius:10px;padding:9px 10px;font-size:11.5px;font-weight:700;color:var(--accent);cursor:pointer;}
+.meal-row-qty-toggle{width:calc(100% - 8px);margin:0 4px;text-align:left;background:none;border:none;border-top:1px solid var(--border);padding:10px 8px;font-size:11px;color:var(--accent);font-weight:700;cursor:pointer;}
+.meal-row-qty-detail{max-height:0;overflow:hidden;transition:max-height .3s ease;padding:0 8px;}
+.meal-row-qty-detail.open{max-height:1200px;padding:4px 8px 10px;}
+.ing-qty-input{width:52px;background:var(--bg-input,var(--bg-card));border:1px solid var(--border);border-radius:6px;color:var(--accent);font-family:var(--mono);font-weight:700;font-size:11.5px;padding:3px 4px;text-align:right;-moz-appearance:textfield;}
+.ing-qty-input::-webkit-outer-spin-button,.ing-qty-input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0;}
+.ing-qty-input.dirty{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent);}
+.ing-qty-confirm{width:24px;height:24px;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;vertical-align:middle;margin:0 2px;padding:0;border-radius:7px;border:1px solid var(--border);background:none;color:var(--text-faint);cursor:pointer;}
+.ing-qty-confirm svg,.ing-qty-confirm img{width:13px;height:13px;}
+.ing-qty-confirm:disabled{opacity:.35;cursor:default;}
+.ing-qty-confirm:not(:disabled){border-color:var(--success);color:var(--success);background:color-mix(in srgb, var(--success) 14%, transparent);}
 </style>
 </head>
 <body>
@@ -848,149 +919,169 @@ function todayLocalISO(){
    Ogni giorno e ogni esercizio ha un "id" stabile e permanente: aggiungere,
    togliere o riordinare esercizi (o passare a un ciclo nuovo) non fa MAI
    perdere o mescolare i dati storici già salvati. */
+/* Lato debole/forte di Silvana, usato per gli esercizi con perLato:true
+   (fatti un lato alla volta): mostriamo sempre prima la sezione del lato
+   debole e subito dopo quella del lato forte, così è impossibile saltare
+   un lato per errore. Vale sia per le gambe sia per il rematore a un braccio. */
+const LATO_DEBOLE = 'Sinistra';
+const LATO_FORTE = 'Destra';
 const CICLI = [
   { id:'set2026', nome:'Ciclo Settembre 2026', periodo:'Settembre – Ottobre 2026', sub:'4 giorni · upper / lower', stato:'attuale',
     giorni:[
     { id:'set2026-g1', label:'Giorno 1', meta:'Lower A', sub:'Quadricipiti e gluteo massimo',
       esercizi:[
         {id:'hack-squat', n:'Hack squat', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
-          info:{setup:"Piedi in appoggio sulla pedana, leggermente più larghi delle spalle, schiena e spalle premute contro lo schienale imbottito.",
-                esec:"Fase eccentrica (discesa): pieghi le ginocchia portando i cuscinetti verso il basso in modo controllato, senza staccare i talloni. Fase concentrica (spinta): spingi con i talloni per tornare su, senza bloccare del tutto le ginocchia in cima.",
-                muscolo:"Lavora soprattutto il quadricipite. Sensazione corretta: bruciore sulla parte frontale della coscia. Errore comune: spingere sulle punte dei piedi, che scarica il lavoro sui polpacci e stressa le ginocchia.",
-                resp:"Inspira durante la discesa, espira spingendo verso l'alto."}},
+          info:{setup:"Piedi in appoggio sulla pedana, leggermente più larghi delle spalle, punte leggermente verso l'esterno, schiena e spalle premute contro lo schienale imbottito. Sblocca i fermi solo dopo esserti posizionata.",
+                esec:"Fase eccentrica (discesa, 2-3 secondi): pieghi le ginocchia portando i cuscinetti verso il basso in modo controllato, senza staccare i talloni, finché le cosce sono parallele al pavimento o poco oltre. Fase concentrica (spinta): spingi con i talloni per tornare su, senza bloccare di scatto le ginocchia in cima. Un segnale utile per capire fin dove scendere: se senti la parte bassa della schiena staccarsi dallo schienale e arrotondarsi, sei scesa troppo — fermati un po' prima, anche se non hai ancora raggiunto il parallelo.",
+                muscolo:"Lavora soprattutto il quadricipite, con gluteo e femorali come sinergici nella fase finale. Sensazione corretta: spinta uniforme su tutto il piede. Errore comune: spingere solo sulle punte, che scarica il lavoro sui polpacci e stressa le ginocchia.",
+                resp:"Inspira durante la discesa, espira spingendo verso l'alto.",
+                attrezzatura:"Hai preferito tenere questa macchina (invece della Super Calf Hack) perché dà più focus sul gluteo insieme al quadricipite."}},
         {id:'leg-press-45', n:'Leg press 45°', s:3, sc:'3×12-15', rpe:'7-8', rec:120, recLabel:'2 min',
-          info:{setup:"Seduta con schiena e bacino ben aderenti al sedile, piedi sulla pedana all'altezza delle spalle, leggermente in avanti rispetto alle ginocchia.",
-                esec:"Discesa (eccentrica): sblocca i fermi e piega le ginocchia verso il petto in modo controllato, senza che il bacino si stacchi dal sedile. Spinta (concentrica): spingi con tutta la pianta del piede fino quasi alla distensione.",
-                muscolo:"Quadricipiti principalmente, con contributo dei glutei. Errore comune: staccare il bacino dal sedile in fondo alla discesa, che scarica sulla schiena bassa.",
+          info:{setup:"Seduta con schiena e bacino ben aderenti al sedile, piedi sulla pedana all'altezza delle spalle, al centro. Sblocca i fermi laterali solo dopo aver posizionato i piedi.",
+                esec:"Discesa (eccentrica): sblocca i fermi e piega le ginocchia verso il petto in modo controllato, senza che il bacino si stacchi dal sedile, fino a circa 90° o dove la schiena resta comoda. Spinta (concentrica): spingi con tutta la pianta del piede fino quasi alla distensione.",
+                muscolo:"Quadricipiti con enfasi maggiore se i piedi sono centrali e alti sulla pedana, glutei come sinergici. Errore comune: staccare il bacino dal sedile in fondo alla discesa — se succede, riduci l'ampiezza.",
                 resp:"Inspira in discesa, espira in spinta."}},
-        {id:'hip-thrust-bilanciere', n:'Hip thrust con bilanciere', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min',
-          info:{setup:"Schiena appoggiata a una panca all'altezza delle scapole, bilanciere sui fianchi (meglio con un cuscinetto), piedi piatti a terra larghezza spalle.",
-                esec:"Parti con i fianchi bassi vicino a terra. Concentrica: spingi con i talloni e contrai i glutei portando i fianchi verso l'alto fino ad allineare spalle-bacino-ginocchia. Eccentrica: scendi controllata senza far rimbalzare il bilanciere.",
-                muscolo:"Target principale: il gluteo massimo. Sensazione corretta: contrazione forte del gluteo in cima, non nella schiena bassa. Errore comune: inarcare troppo la schiena invece di spingere con i glutei.",
-                resp:"Inspira scendendo, espira spingendo in alto."}},
-        {id:'affondi-bulgari', n:'Affondi bulgari con manubri', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'per gamba',
-          info:{setup:"Piede posteriore appoggiato con il collo del piede su una panca dietro di te, gamba anteriore avanti, un manubrio per mano.",
-                esec:"Discesa: piega il ginocchio anteriore scendendo dritto verso il basso. Risalita: spingi con il tallone della gamba anteriore per tornare su.",
-                muscolo:"Quadricipite e gluteo della gamba anteriore, lavorati singolarmente — utile per correggere squilibri tra le due gambe. Errore comune: portare il ginocchio anteriore troppo oltre la punta del piede.",
+        {id:'hip-thrust-macchina', n:'Hip Thrust (macchina)', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min',
+          info:{setup:"Seduta con la schiena appoggiata allo schienale reclinabile imbottito, cuscinetto sul bacino, piedi piantati sulla pedana alla larghezza dei fianchi, ginocchia a circa 90° a fine movimento. Regola schienale e leva prima di caricare il peso.",
+                esec:"Concentrica: spingi con i talloni sollevando il bacino, portando il corpo in linea retta dalle spalle alle ginocchia, contraendo forte i glutei in alto. Eccentrica: scendi controllata senza far cadere di colpo il peso.",
+                muscolo:"Gluteo massimo come motore principale. Sensazione corretta: contrazione forte dei glutei in cima, non nella schiena bassa. Rispetto al bilanciere la macchina guida il movimento e stabilizza il busto.",
+                resp:"Inspira in discesa, espira nella spinta verso l'alto.",
+                attenzione:"Anche con la macchina mantieni lo sguardo verso l'alto/avanti e il mento leggermente rientrato per tutta la serie, senza spingere la testa indietro contro lo schienale. Lo schienale guidato riduce molto il rischio rispetto al bilanciere, ma vista la tua storia di fastidio cervicale è una buona abitudine da mantenere comunque."}},
+        {id:'affondi-bulgari', n:'Affondi bulgari con manubri', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', perLato:true,
+          info:{setup:"Piede posteriore appoggiato con il collo del piede su una panca dietro di te, gamba anteriore avanti a circa un passo e mezzo, un manubrio per mano, busto leggermente inclinato in avanti.",
+                esec:"Discesa: piega il ginocchio anteriore scendendo verticalmente finché il ginocchio posteriore quasi tocca terra, senza far avanzare troppo il ginocchio oltre la punta del piede. Spinta: risali spingendo con tallone e avampiede della gamba anteriore.",
+                muscolo:"Quadricipite e gluteo della gamba anteriore, lavorati singolarmente — utile per correggere squilibri tra le due gambe. Cerca la sensazione di lavoro sulla gamba avanti, non su quella d'appoggio dietro.",
                 resp:"Inspira in discesa, espira in risalita."}},
         {id:'leg-extension', n:'Leg extension', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec',
           info:{setup:"Seduta con schiena aderente allo schienale, caviglie dietro il rullo imbottito, ginocchia allineate al perno della macchina.",
-                esec:"Concentrica: estendi le gambe fino quasi alla distensione completa. Eccentrica: torna giù controllata senza far sbattere i pesi.",
-                muscolo:"Isola il quadricipite. Errore comune: usare lo slancio per partire invece di un movimento controllato.",
-                resp:"Espira estendendo, inspira tornando giù."}},
+                esec:"Concentrica: estendi le gambe fino quasi alla distensione completa, contraendo il quadricipite in cima. Eccentrica: torna giù controllata senza far sbattere i pesi.",
+                muscolo:"Isola il quadricipite in modo puro. Corretto se senti tensione diffusa su tutta la coscia; se senti solo la parte alta vicino all'anca, riduci il carico e rallenta.",
+                resp:"Espira estendendo, inspira tornando giù.",
+                attrezzatura:"Questa macchina fa anche il leg curl seduto del Giorno 3 — stessa stazione, due funzioni."}},
         {id:'calf-raises-piedi', n:'Calf raises in piedi', s:3, sc:'3×15-20', rpe:'8', rec:60, recLabel:'60 sec',
-          info:{setup:"In piedi sulla pedana o su un rialzo, punte dei piedi appoggiate e talloni fuori dal bordo, ginocchia leggermente morbide.",
-                esec:"Concentrica: sali sulle punte il più in alto possibile. Eccentrica: scendi lasciando i talloni andare sotto il livello della pedana per un buon allungamento.",
-                muscolo:"Polpacci. Errore comune: movimento troppo veloce senza scendere completamente, perdendo la parte più efficace dell'esercizio.",
-                resp:"Espira salendo, inspira scendendo."}},
+          info:{setup:"In piedi su un rialzo (step o macchina dedicata) con avampiedi appoggiati e talloni sospesi, mani su un supporto per l'equilibrio.",
+                esec:"Concentrica: sali sulle punte il più in alto possibile, contraendo forte i polpacci. Eccentrica: scendi lentamente lasciando i talloni andare sotto il livello del rialzo per un buon allungamento.",
+                muscolo:"Polpacci (gastrocnemio e soleo). Errore comune: movimento troppo veloce senza scendere completamente, perdendo la parte più efficace dell'esercizio.",
+                resp:"Espira salendo, inspira scendendo.",
+                attrezzatura:"Puoi farli come preferisci: con un manubrio per mano su un rialzo, oppure sul macchinario dedicato (es. Super Calf Hack Machine) — movimento e tecnica restano gli stessi."}},
       ]},
     { id:'set2026-g2', label:'Giorno 2', meta:'Upper A', sub:'Spinta e correzione posturale',
       esercizi:[
-        {id:'lat-machine-larga', n:'Lat machine presa larga', s:4, sc:'4×10-12', rpe:'7-8', rec:120, recLabel:'2 min',
-          info:{setup:"Seduta con le cosce bloccate sotto il cuscinetto, presa sulla barra più larga delle spalle, busto leggermente inclinato indietro.",
-                esec:"Concentrica: tira la barra verso la parte alta del petto portando indietro i gomiti e avvicinando le scapole. Eccentrica: torna su controllata fino a braccia quasi distese.",
-                muscolo:"Dorsali (gran dorsale). Sensazione corretta: tirare 'con i gomiti', non con le braccia. Errore comune: usare lo slancio del busto o tirare solo con i bicipiti.",
-                resp:"Espira tirando la barra giù, inspira tornando su."}},
+        {id:'lat-machine-v', n:'Lat machine presa stretta a V', s:4, sc:'4×10-12', rpe:'7-8', rec:120, recLabel:'2 min',
+          info:{setup:"Seduta con le cosce bloccate sotto il cuscinetto, presa a V (maniglia stretta, palmi l'uno verso l'altro) — quella con cui ti trovi già bene, busto leggermente inclinato indietro, petto in fuori, con un piccolo arco naturale nella schiena bassa. Se ti ritrovi a inclinarti sempre più indietro o ad arrotondare la parte alta della schiena a fine serie, il carico è troppo alto.",
+                esec:"Concentrica: porta la maniglia verso la parte alta del petto, gomiti stretti lungo i fianchi, avvicinando le scapole. Eccentrica: lascia risalire controllata fino a braccia quasi distese.",
+                muscolo:"Gran dorsale con enfasi medio-bassa, bicipiti e trapezio medio come sinergici — la presa stretta e neutra coinvolge un po' di più le braccia. Sensazione corretta: lavoro sotto le ascelle e ai lati della schiena; se senti solo le braccia stai tirando troppo con i bicipiti.",
+                resp:"Espira nella tirata, inspira nel ritorno."}},
         {id:'chest-press-macchina', n:'Chest press (macchina)', s:3, sc:'3×10-12', rpe:'7-8', rec:105, recLabel:'90-120 sec',
-          info:{setup:"Seduta con schiena aderente allo schienale, impugnature all'altezza del petto, piedi ben piantati a terra.",
-                esec:"Concentrica: spingi le impugnature in avanti fino quasi alla distensione. Eccentrica: torna indietro controllata senza far sbattere i pesi.",
-                muscolo:"Petto (grande pettorale) con contributo di tricipiti e spalle. Errore comune: sollevare le spalle verso le orecchie durante la spinta.",
+          info:{setup:"Seduta con schiena aderente allo schienale — non significa schiena completamente piatta, ma con le scapole (le due 'ali' ossee sotto le spalle) tirate indietro e leggermente in basso, come se le portassi verso le tasche posteriori dei pantaloni, e un piccolo arco naturale nella zona lombare (la parte bassa della schiena), non un arco esagerato: questo tiene la spalla in una posizione più sicura e fa lavorare meglio il petto. Il sedere resta sempre appoggiato al sedile. Impugnature all'altezza del petto, gomiti leggermente sotto le impugnature.",
+                esec:"Concentrica: spingi le impugnature in avanti fino quasi alla distensione, senza bloccare di scatto i gomiti. Eccentrica: torna indietro controllata fino a un buon allungamento del petto, senza far sbattere i pesi.",
+                muscolo:"Petto (grande pettorale) con tricipiti e deltoide anteriore come sinergici. Errore comune: sollevare le spalle verso le orecchie durante la spinta.",
                 resp:"Espira spingendo in avanti, inspira tornando indietro."}},
-        {id:'rematore-cavo-basso', n:'Rematore al cavo basso seduto', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
-          info:{setup:"Seduta con ginocchia leggermente flesse, busto dritto, presa sulla maniglia con braccia distese in avanti.",
-                esec:"Concentrica: tira la maniglia verso l'addome portando indietro i gomiti e avvicinando le scapole. Eccentrica: torna avanti controllata senza incurvare la schiena.",
-                muscolo:"Dorsali e romboidi (centro schiena). Sensazione corretta: le scapole si avvicinano a fine tirata. Errore comune: dondolare il busto invece di far lavorare la schiena.",
-                resp:"Espira tirando, inspira tornando avanti."}},
+        {id:'rematore-manubrio-panca', n:'Rematore con manubrio su panca (one-arm dumbbell row)', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec per lato', perLato:true,
+          info:{setup:"Un ginocchio e la mano corrispondente appoggiati su una panca, l'altro piede a terra, un manubrio nella mano libera con braccio disteso verso il basso. Schiena parallela al pavimento nella sua curva naturale (né arrotondata né iperinarcata), sguardo verso il basso/avanti, senza torcere il busto per tirare più su.",
+                esec:"Tirata: tira il manubrio verso il fianco, portando il gomito indietro e in alto, avvicinando la scapola. Ritorno: lascia scendere il manubrio controllato fino a braccia quasi distese.",
+                muscolo:"Gran dorsale e trapezio medio/romboidi, ottimo per il lavoro posturale sulle spalle. Il busto appoggiato alla panca dà più stabilità e comfort rispetto al cavo basso da seduta. Se senti solo il braccio, stai tirando troppo con il bicipite.",
+                resp:"Espira nella tirata, inspira nel ritorno."}},
         {id:'alzate-laterali-manubri', n:'Alzate laterali con manubri', s:3, sc:'3×12-15', rpe:'8', rec:60, recLabel:'60 sec',
           info:{setup:"In piedi, un manubrio per mano lungo i fianchi, gomiti leggermente piegati.",
-                esec:"Concentrica: alza le braccia lateralmente fino all'altezza delle spalle, guidando con i gomiti. Eccentrica: scendi controllata.",
-                muscolo:"Deltoide laterale (parte centrale della spalla). Errore comune: alzare le spalle verso le orecchie o usare lo slancio.",
+                esec:"Concentrica: alza le braccia lateralmente fino all'altezza delle spalle, guidando con i gomiti (non con le mani). Eccentrica: scendi controllata fino quasi a toccare i fianchi.",
+                muscolo:"Deltoide laterale, il muscolo che dà larghezza e 'apertura' visiva alle spalle. Se senti il trapezio lavorare più del deltoide, probabilmente stai sollevando troppo in alto o con troppo carico.",
                 resp:"Espira alzando le braccia, inspira scendendo."}},
         {id:'face-pull-corda', n:'Face pull al cavo con corda', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
-          info:{setup:"In piedi davanti al cavo alto, corda impugnata con i pollici verso di te, busto leggermente indietro.",
-                esec:"Concentrica: tira la corda verso il viso separando le mani, gomiti alti. Eccentrica: torna avanti controllata.",
-                muscolo:"Deltoide posteriore e muscoli tra le scapole, utili per la postura. Errore comune: tirare con i gomiti bassi invece che all'altezza delle spalle.",
-                resp:"Espira tirando, inspira tornando avanti."}},
+          info:{setup:"Cavo regolato all'altezza del viso, presa sulla corda con i pollici verso di te, un passo indietro dalla colonna del cavo, busto leggermente indietro.",
+                esec:"Tirata: tira la corda verso il viso separando le due estremità, gomiti alti e indietro, ruotando le spalle verso l'esterno. Ritorno: lascia tornare le braccia in avanti controllate.",
+                muscolo:"Deltoide posteriore ed extrarotatori della spalla: l'esercizio più utile in scheda contro le spalle chiuse in avanti da lavoro al computer. Cerca la sensazione dietro le spalle e tra le scapole.",
+                resp:"Espira nella tirata, inspira nel ritorno."}},
         {id:'pushdown-tricipiti', n:'Pushdown tricipiti', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'Superset con hammer curl · 60″ tra i due, 90″ dopo il giro',
           info:{setup:"In piedi davanti al cavo alto, presa sulla barra o corda, gomiti fissi ai lati del busto.",
-                esec:"Concentrica: estendi gli avambracci verso il basso senza muovere i gomiti. Eccentrica: torna su controllata.",
-                muscolo:"Tricipite. Errore comune: allontanare i gomiti dal busto durante la discesa.",
+                esec:"Concentrica: estendi gli avambracci verso il basso senza muovere i gomiti, contraendo il tricipite in fondo. Eccentrica: torna su controllata fino a circa 90° di flessione del gomito.",
+                muscolo:"Tricipite in isolamento. Se senti le spalle lavorare più delle braccia, i gomiti si stanno allontanando dai fianchi.",
                 resp:"Espira estendendo verso il basso, inspira tornando su."}},
         {id:'hammer-curl-manubri', n:'Hammer curl con manubri', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'Superset con pushdown · 60″ tra i due, 90″ dopo il giro',
-          info:{setup:"In piedi, un manubrio per mano con presa neutra (palmi rivolti l'uno verso l'altro), gomiti vicini al busto.",
-                esec:"Concentrica: piega i gomiti portando i manubri verso le spalle. Eccentrica: scendi controllata senza oscillare il busto.",
-                muscolo:"Bicipite e brachiale (parte esterna del braccio). Errore comune: usare lo slancio della schiena.",
+          info:{setup:"In piedi, un manubrio per mano con presa neutra (palmi l'uno verso l'altro), gomiti vicini al busto.",
+                esec:"Concentrica: piega i gomiti portando i manubri verso le spalle, senza oscillare il busto. Eccentrica: scendi controllata fino quasi alla distensione completa.",
+                muscolo:"Bicipite e brachiale, con la presa neutra che coinvolge di più l'avambraccio rispetto al curl tradizionale. Con un carico ancora leggero su questo esercizio, l'obiettivo è costruire tecnica pulita prima di aggiungere peso.",
                 resp:"Espira salendo, inspira scendendo."}},
       ]},
     { id:'set2026-g3', label:'Giorno 3', meta:'Lower B', sub:'Femorali e gluteo medio/piccolo',
       esercizi:[
         {id:'stacco-rumeno-rdl', n:'Stacco rumeno (RDL) con bilanciere', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
-          info:{setup:"In piedi, bilanciere davanti alle cosce, presa poco più larga dei fianchi, ginocchia leggermente flesse e fisse per tutto il movimento.",
-                esec:"Eccentrica: spingi i fianchi indietro (non piegare le ginocchia) facendo scorrere il bilanciere lungo le gambe, schiena dritta, finché senti tensione sui femorali. Concentrica: torna su spingendo i fianchi in avanti e contraendo i glutei.",
-                muscolo:"Femorali e gluteo. Sensazione corretta: forte tensione dietro la coscia in fondo al movimento. Errore comune: arrotondare la schiena bassa o piegare troppo le ginocchia trasformandolo in uno squat.",
-                resp:"Inspira scendendo, espira tornando su."}},
+          info:{setup:"In piedi, bilanciere appoggiato sulle cosce, presa poco più larga delle spalle, ginocchia leggermente piegate e fisse per tutto il movimento, schiena neutra.",
+                esec:"Eccentrica: spingi i fianchi indietro facendo scorrere il bilanciere lungo le cosce, schiena dritta, finché senti un buon allungamento dei femorali (di solito poco sotto il ginocchio). Concentrica: spingi i fianchi in avanti tornando eretta, contraendo i glutei in cima.",
+                muscolo:"Femorali e gluteo massimo, con la schiena bassa come stabilizzatore isometrico. Sensazione corretta: stiramento intenso dietro la coscia. Errore comune: arrotondare la schiena o piegare troppo le ginocchia.",
+                resp:"Inspira in discesa, espira nella risalita.",
+                attrezzatura:"Puoi farlo anche con due manubri (uno per mano, lungo i fianchi invece che davanti alle cosce): stesso movimento e stessi muscoli, con un po' più di libertà nella traiettoria — usa quello con cui ti trovi meglio."}},
         {id:'hyperextension-glutei', n:'Hyperextension focus glutei', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:"discesa lenta in 3″",
-          info:{setup:"Su panca per iperestensioni, bacino appoggiato sul cuscinetto, caviglie bloccate, busto piegato in avanti a 90°.",
-                esec:"Discesa lenta in 3 secondi: scendi controllata piegandoti sui fianchi. Concentrica: risali contraendo i glutei fino ad allineare il busto con le gambe, senza andare oltre la linea retta.",
-                muscolo:"Gluteo. La discesa lenta aumenta il tempo sotto tensione, cioè quanto il muscolo resta sotto sforzo durante la serie. Errore comune: iperestendere la schiena in cima invece di fermarsi in linea retta.",
-                resp:"Inspira scendendo, espira risalendo."}},
+          info:{setup:"Sulla macchina, fianchi appoggiati sul cuscinetto, caviglie bloccate, busto piegato in avanti a circa 90°.",
+                esec:"Risalita: solleva il busto contraendo forte i glutei fino ad allineare il corpo, senza iperestendere oltre la linea retta. Discesa lenta in 3 secondi: qui è la chiave dell'esercizio, mantenendo la tensione sui glutei fino in fondo.",
+                muscolo:"Gluteo massimo. La discesa lenta aumenta il tempo sotto tensione, cioè quanto il muscolo resta sotto sforzo durante la serie — molto efficace per stimolare la crescita. Se senti la schiena bassa più dei glutei, stringili consapevolmente prima di iniziare.",
+                resp:"Espira in risalita, inspira nella discesa lenta."}},
         {id:'abductor-machine', n:'Abductor machine', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec',
-          info:{setup:"Seduta con schiena aderente allo schienale, esterno coscia contro i cuscinetti, ginocchia leggermente flesse.",
-                esec:"Concentrica: apri le gambe verso l'esterno. Eccentrica: richiudi controllata senza far sbattere i pesi.",
-                muscolo:"Gluteo medio (parte esterna del gluteo, importante per la stabilità del bacino). Errore comune: slancio invece di movimento lento e controllato.",
-                resp:"Espira aprendo le gambe, inspira richiudendo."}},
-        {id:'cable-kickback', n:'Cable kickback', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'per gamba',
-          info:{setup:"In piedi davanti al cavo basso, cavigliera al piede da lavorare, busto leggermente inclinato in avanti con supporto per equilibrio.",
-                esec:"Concentrica: spingi la gamba indietro contraendo il gluteo, senza inarcare la schiena. Eccentrica: torna avanti controllata.",
-                muscolo:"Gluteo massimo, isolato su una gamba per volta. Errore comune: usare la schiena per generare slancio.",
-                resp:"Espira spingendo indietro, inspira tornando avanti."}},
-        {id:'monster-walk-fascia', n:'Monster walk con fascia elastica', s:3, sc:'3×10 passi', rpe:'-', rec:60, recLabel:'60 sec', note:'per lato',
-          info:{setup:"Fascia elastica sopra le caviglie o sopra le ginocchia, leggera flessione di ginocchia e fianchi, busto dritto.",
-                esec:"Cammina lateralmente a piccoli passi mantenendo tensione costante sulla fascia, senza far toccare i piedi tra loro.",
-                muscolo:"Gluteo medio, utile per la stabilità dell'anca in camminata e corsa. Errore comune: raddrizzare troppo le ginocchia perdendo tensione sulla fascia.",
-                resp:"Respira in modo naturale e continuo durante il movimento."}},
-        {id:'leg-curl-sdraiato', n:'Leg curl sdraiato', s:3, sc:'3×12-15', rpe:'8', rec:75, recLabel:'60-90 sec',
-          info:{setup:"Sdraiata a pancia in giù, caviglie sotto il rullo imbottito, ginocchia appena fuori dal bordo della panca.",
-                esec:"Concentrica: piega le ginocchia portando i talloni verso i glutei. Eccentrica: torna giù controllata senza far sbattere i pesi.",
-                muscolo:"Femorali (parte posteriore della coscia). Errore comune: sollevare il bacino dalla panca per aiutarsi con lo slancio.",
-                resp:"Espira piegando le ginocchia, inspira tornando giù."}},
+          info:{setup:"Seduta con schiena aderente allo schienale, esterno delle ginocchia contro i cuscinetti mobili.",
+                esec:"Apertura: spingi le gambe verso l'esterno il più possibile, contraendo il fianco. Ritorno: lascia richiudere le gambe controllate, senza far sbattere le placche.",
+                muscolo:"Gluteo medio e piccolo — le porzioni del gluteo centrali per l'obiettivo di 'glutei alti': il gluteo medio dà la forma rotonda ai fianchi vista di lato. Corretto se senti il lavoro sul lato esterno dell'anca, non sulle ginocchia.",
+                resp:"Espira nell'apertura, inspira nel ritorno."}},
+        {id:'pendulum-kickback', n:'Pendulum Kick Back (macchina guidata)', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', perLato:true,
+          info:{setup:"In ginocchio/appoggiata sulla macchina, piede agganciato al braccio a pendolo, mani sulle maniglie anteriori per stabilità, busto leggermente in avanti.",
+                esec:"Spinta: spingi la gamba indietro e verso l'alto seguendo l'arco guidato del pendolo, contraendo forte il gluteo in fondo. Ritorno: riporta la gamba in avanti controllata, seguendo la stessa traiettoria guidata.",
+                muscolo:"Gluteo massimo in isolamento. Il braccio a pendolo guida la traiettoria al posto tuo, quindi il rischio di compensare con la schiena bassa è molto più basso rispetto alla versione al cavo — ideale per iniziare, non avendo mai fatto il kickback ai cavi.",
+                resp:"Espira nella spinta, inspira nel ritorno."}},
+        {id:'kneeling-glute-isolator', n:'Kneeling Glute Isolator', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', perLato:true,
+          info:{setup:"In ginocchio sulla macchina, un ginocchio appoggiato sul cuscinetto imbottito, l'altra gamba agganciata alla leva con la pianta del piede, mani sulle maniglie anteriori solo per l'equilibrio.",
+                esec:"Spinta: spingi la gamba agganciata indietro e verso l'alto, estendendo l'anca e contraendo forte il gluteo. Ritorno: riporta la gamba in avanti controllata, senza far scattare il peso.",
+                muscolo:"Gluteo massimo in isolamento puro — questa posizione limita ancora di più la possibilità di compensare con la schiena rispetto agli altri esercizi glutei in scheda: un'ottima aggiunta vista la tua priorità sui glutei.",
+                resp:"Espira nella spinta, inspira nel ritorno.",
+                attrezzatura:"Non tirare con le braccia sulle maniglie durante il movimento (te lo segnala anche l'etichetta della macchina) — servono solo a stabilizzarti, il lavoro deve venire dal gluteo. È un esercizio nuovo per te: nelle prime sessioni parti leggera per imparare bene la traiettoria."}},
+        {id:'multi-abductor-3d', n:'3D Multi Abductor in piedi', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec', perLato:true,
+          info:{setup:"In piedi sulla macchina, caviglia agganciata alla leva regolabile, mani sulle maniglie anteriori per stabilità, busto fermo ed eretto per tutta la serie.",
+                esec:"Apertura: spingi la gamba lateralmente verso l'esterno contro la resistenza della macchina, senza inclinare il busto. Ritorno: riporta la gamba al centro controllata, senza far ricadere di scatto il peso.",
+                muscolo:"Gluteo medio come motore principale — stesso muscolo target del monster walk che sostituisce, ma qui il lavoro è isolato su una gamba con un carico regolabile sulla macchina invece della resistenza di una fascia elastica: puoi aumentare il peso nel tempo in modo misurabile.",
+                resp:"Espira nell'apertura, inspira nel ritorno."}},
+        {id:'leg-curl-seduto', n:'Leg curl seduto (macchina)', s:3, sc:'3×12-15', rpe:'8', rec:75, recLabel:'60-90 sec',
+          info:{setup:"Seduta sulla macchina con schiena appoggiata allo schienale, gambe distese in avanti con le caviglie sopra il rullo imbottito, cosce bloccate sotto il cuscinetto superiore, ginocchia allineate al perno della macchina.",
+                esec:"Concentrica: piega le ginocchia portando il rullo verso il basso e indietro, sotto il sedile, contraendo i femorali in fondo al movimento. Eccentrica: distendi le gambe controllata fino alla posizione di partenza, senza far ricadere di scatto il peso.",
+                muscolo:"Femorali in isolamento. Rispetto alla versione sdraiata a pancia in giù, qui l'anca resta piegata per tutto il movimento invece che distesa — una differenza tecnica che può far sentire il lavoro leggermente diverso, ma il muscolo target resta lo stesso. Corretto se senti il lavoro lungo tutta la parte posteriore della coscia; se il bacino si solleva dal sedile durante lo sforzo, il carico è eccessivo per il controllo attuale.",
+                resp:"Espira piegando le ginocchia, inspira tornando giù.",
+                attrezzatura:"Stessa macchina del leg extension del Giorno 1 (macchina combinata \"Dual Leg Extension / Seated Leg Curling\") — due funzioni sulla stessa stazione, entrambe da seduta."}},
       ]},
     { id:'set2026-g4', label:'Giorno 4', meta:'Upper B', sub:'Tirata e spalle/postura',
       esercizi:[
-        {id:'trazioni-assistite-neutra', n:'Trazioni assistite presa neutra', s:4, sc:'4×8-10', rpe:'7-8', rec:120, recLabel:'2 min',
-          info:{setup:"In ginocchio o seduta sulla pedana della macchina assistita, presa sulle maniglie parallele (palmi l'uno verso l'altro), peso di assistenza impostato in base al livello.",
-                esec:"Concentrica: tira il corpo verso l'alto fino a portare il mento sopra le mani. Eccentrica: scendi controllata fino a braccia quasi distese.",
-                muscolo:"Dorsali e bicipiti. Sensazione corretta: percepire il lavoro soprattutto nella schiena, non solo nelle braccia. Errore comune: usare tutto lo slancio delle gambe sulla pedana.",
-                resp:"Espira tirando su, inspira scendendo."}},
-        {id:'seated-row-larga', n:'Pulley / seated row presa larga', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
-          info:{setup:"Seduta con ginocchia leggermente flesse, presa larga sulla barra, busto dritto e leggermente inclinato in avanti a inizio movimento.",
-                esec:"Concentrica: tira la barra verso l'addome aprendo i gomiti verso l'esterno e avvicinando le scapole. Eccentrica: torna avanti controllata.",
-                muscolo:"Dorsali e parte alta della schiena. Errore comune: dondolare il busto avanti e indietro invece di lasciar lavorare solo braccia e schiena.",
-                resp:"Espira tirando, inspira tornando avanti."}},
+        {id:'lat-machine-larga', n:'Lat machine presa larga', s:4, sc:'4×8-10', rpe:'7-8', rec:120, recLabel:'2 min',
+          info:{setup:"Seduta con cosce bloccate sotto l'imbottitura, presa larga sulla barra oltre la larghezza delle spalle — presa prona se la macchina ha solo la barra dritta, va bene anche una barra larga a impugnature neutre. Busto leggermente inclinato indietro con un piccolo arco naturale nella schiena bassa, petto in fuori: se inizi a inclinarti sempre di più o ad arrotondare la parte alta della schiena per completare la tirata, il carico è troppo alto.",
+                esec:"Tirata: porta la barra verso la parte alta del petto avvicinando le scapole, gomiti verso il basso e leggermente indietro. Ritorno: lascia risalire controllata fino a braccia quasi distese.",
+                muscolo:"Gran dorsale con enfasi sulla parte alta ed esterna della schiena (la 'larghezza' vista da dietro) e più lavoro del trapezio medio, con meno bicipiti rispetto alla presa a V del Giorno 2 — un buono stimolo diverso rispetto al solito.",
+                resp:"Espira nella tirata, inspira nel ritorno.",
+                attrezzatura:"Essendo un esercizio nuovo per te con questa presa più larga, parti con un carico leggermente più leggero rispetto alla maniglia a V nelle prime sessioni, finché non prendi confidenza con l'angolo diverso."}},
+        {id:'pulley-row-stretta', n:'Pulley (seated row) presa stretta/neutra', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
+          info:{setup:"Seduta con ginocchia leggermente piegate, piedi sul supporto, busto eretto con un piccolo arco naturale nella schiena bassa (non incollato dritto come un righello), presa stretta/neutra su una maniglia a V (invece della barra larga).",
+                esec:"Tirata: tira la maniglia verso l'addome portando i gomiti stretti lungo i fianchi, avvicinando le scapole. Ritorno: lascia tornare le braccia in avanti con una leggera flessione del busto per un buon allungamento. Due errori comuni da evitare: inclinarti troppo indietro nella tirata usando lo slancio del busto invece della schiena, e arrotondare la parte bassa della schiena in avanti nel ritorno per guadagnare qualche centimetro — il busto si flette leggermente in avanti dai fianchi, mantenendo la curva naturale della schiena, non piegando la colonna.",
+                muscolo:"Trapezio medio e romboidi (tra le scapole), utili per il tuo obiettivo di aprire le spalle e migliorare la postura. La presa stretta/neutra coinvolge un po' di più la parte bassa del dorso e i bicipiti rispetto alla presa larga, ed è più comoda se non ti trovi bene con le spalle molto aperte.",
+                resp:"Espira nella tirata, inspira nel ritorno."}},
         {id:'shoulder-press-manubri', n:'Shoulder press con manubri da seduta', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec',
-          info:{setup:"Seduta con schiena appoggiata, un manubrio per mano all'altezza delle spalle, palmi rivolti in avanti.",
-                esec:"Concentrica: spingi i manubri verso l'alto fino quasi a distendere le braccia sopra la testa. Eccentrica: scendi controllata fino all'altezza delle spalle.",
-                muscolo:"Deltoidi (spalle) con contributo di tricipiti. Errore comune: inarcare troppo la schiena bassa durante la spinta.",
-                resp:"Espira spingendo in alto, inspira scendendo."}},
-        {id:'rear-delt-fly', n:'Rear delt fly', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
-          info:{setup:"Seduta con busto inclinato in avanti (o su macchina dedicata), un manubrio per mano, braccia leggermente piegate.",
-                esec:"Concentrica: apri le braccia lateralmente all'indietro portando le scapole verso il centro. Eccentrica: torna avanti controllata.",
-                muscolo:"Deltoide posteriore. Errore comune: usare slancio del busto invece di isolare il movimento delle braccia.",
-                resp:"Espira aprendo le braccia, inspira tornando avanti."}},
+          info:{setup:"Seduta su panca con schienale verticale o leggermente inclinato, un manubrio per mano all'altezza delle spalle, palmi rivolti in avanti. Scapole leggermente indietro e basse contro lo schienale (non sollevate verso le orecchie), per dare stabilità alla spalla durante la spinta sopra la testa.",
+                esec:"Concentrica: spingi i manubri verso l'alto fino quasi alla distensione completa, senza inarcare eccessivamente la schiena. Eccentrica: scendi controllata fino a portare i manubri di nuovo all'altezza delle spalle.",
+                muscolo:"Deltoide anteriore e mediale, con tricipiti come sinergici. Se senti fatica nella schiena bassa, probabilmente stai inarcando troppo per compensare una spinta poco controllata: riduci il carico.",
+                resp:"Espira nella spinta, inspira in discesa.",
+                attenzione:"Mantieni lo sguardo fisso avanti e il mento leggermente rientrato per tutta la serie, senza spingere la testa in avanti o indietro nel momento di massimo sforzo. È un esercizio overhead: se anche solo un accenno di tensione al collo compare in una ripetizione, fermati e passa alla variante con schienale più inclinato, con carico più leggero, o alla Super Deltoid Press qui sotto."}},
+        {id:'rear-delt-fly-macchina', n:'Rear delt fly (macchina)', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
+          info:{setup:"Seduta sulla macchina Peck Back lato rear delt, petto contro lo schienale imbottito, maniglie impugnate davanti a te all'altezza delle spalle, braccia leggermente piegate.",
+                esec:"Apertura: apri le braccia lateralmente e indietro, portando le maniglie il più indietro possibile, contraendo le scapole. Ritorno: torna in avanti controllata senza far sbattere le placche.",
+                muscolo:"Deltoide posteriore, un tassello importante contro le spalle chiuse in avanti. Rispetto ai manubri, il percorso guidato e lo schienale stabilizzano il busto: meno probabilità di usare slancio o alzare le spalle verso le orecchie.",
+                resp:"Espira nell'apertura, inspira nel ritorno."}},
         {id:'alzate-laterali-panca-30', n:'Alzate laterali su panca 30°', s:3, sc:'3×12', rpe:'8', rec:60, recLabel:'60 sec',
-          info:{setup:"Sdraiata su un fianco su una panca inclinata a 30°, un manubrio nella mano superiore, braccio leggermente piegato.",
-                esec:"Concentrica: alza il braccio lateralmente fino all'altezza della spalla. Eccentrica: scendi controllata.",
-                muscolo:"Deltoide laterale, con maggiore isolamento rispetto alla versione in piedi grazie all'appoggio. Errore comune: ruotare il busto per aiutarsi con lo slancio.",
-                resp:"Espira alzando il braccio, inspira scendendo."}},
+          info:{setup:"Sdraiata su un fianco su panca inclinata a circa 30°, un manubrio nella mano del braccio in alto, braccio leggermente piegato lungo il fianco.",
+                esec:"Salita: solleva il manubrio lateralmente fino all'altezza della spalla, guidando con il gomito. Discesa: scendi controllata senza far toccare il manubrio alla gamba tra una ripetizione e l'altra.",
+                muscolo:"Deltoide laterale — l'inclinazione della panca elimina lo slancio del busto e isola meglio la spalla rispetto alla versione in piedi del Giorno 2. Corretto se senti un forte affaticamento localizzato già dopo poche ripetizioni.",
+                resp:"Espira in salita, inspira in discesa."}},
         {id:'french-press-manubri', n:'French press con manubri', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60-90 sec', note:'Superset con biceps curl · 60-90″ dopo il giro',
-          info:{setup:"Sdraiata su panca (o seduta), manubri tenuti sopra la testa con gomiti puntati verso l'alto e vicini tra loro.",
-                esec:"Eccentrica: piega i gomiti abbassando i manubri dietro la testa. Concentrica: estendi i gomiti tornando su.",
-                muscolo:"Tricipite (capo lungo). Errore comune: allargare i gomiti durante il movimento, che toglie lavoro al tricipite.",
+          info:{setup:"Sdraiata su panca (o seduta), manubri tenuti sopra la testa con gomiti puntati verso l'alto e vicini tra loro. Se sei sdraiata, schiena e bacino restano appoggiati alla panca nella loro curva naturale per tutta la serie, senza inarcarti per aiutarti a spingere: se senti i fianchi sollevarsi dalla panca, il peso è troppo alto.",
+                esec:"Eccentrica: piega i gomiti abbassando il manubrio dietro la testa, gomiti fermi e puntati verso il soffitto. Concentrica: estendi le braccia tornando su, contraendo i tricipiti.",
+                muscolo:"Tricipite (soprattutto il capo lungo, che si allunga di più con le braccia sopra la testa). Se senti le spalle lavorare più delle braccia, i gomiti si stanno allargando: tienili puntati avanti/in alto.",
                 resp:"Inspira scendendo, espira estendendo verso l'alto."}},
         {id:'biceps-curl-panca-45', n:'Biceps curl panca 45°', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', note:'Superset con french press · 60-90″ dopo il giro',
-          info:{setup:"Sdraiata a pancia in giù su una panca inclinata a 45°, braccia pendenti con un manubrio per mano.",
-                esec:"Concentrica: piega i gomiti portando i manubri verso le spalle. Eccentrica: scendi controllata fino a braccia quasi distese.",
-                muscolo:"Bicipite, con isolamento maggiore grazie alla panca che impedisce di usare slancio. Errore comune: sollevare le spalle o staccarle dalla panca.",
+          info:{setup:"Seduta su panca inclinata a 45° (o sdraiata a pancia in giù), schiena ben appoggiata, braccia che pendono libere lungo i fianchi, un manubrio per mano.",
+                esec:"Concentrica: piega i gomiti portando i manubri verso le spalle, senza staccare i gomiti dal corpo né usare slancio. Eccentrica: distendi controllata fino a braccia quasi distese, sfruttando l'inclinazione per un buon allungamento.",
+                muscolo:"Bicipite in isolamento, con l'inclinazione della panca che aumenta l'allungamento rispetto al curl in piedi. Con un carico ancora leggero su questo esercizio, l'obiettivo è costruire forza con tecnica pulita prima di rincorrere il peso.",
                 resp:"Espira salendo, inspira scendendo."}},
       ]},
   ]},
@@ -1061,40 +1152,7 @@ const WARMUP_BY_GIORNO = {
 function warmupForGiorno(giornoId){ return WARMUP_BY_GIORNO[giornoId] || null; }
 /* ============== STATE ============== */
 let state = { screen:'home', cicloId:null, giornoId:null, sessionId:null, log: null, returnTo:'cicli' };
-let timer = { total:90, remaining:90, running:false, intervalId:null, endTime:null };
-/* Il conteggio del timer si basa sull'orario reale (endTime), non sul numero
-   di "tick" del setInterval: quando l'app va in background (es. passi su
-   Instagram), i browser rallentano o sospendono i timer JS, quindi un
-   countdown che si limita a decrementare ad ogni tick andrebbe indietro
-   rispetto al tempo vero. Calcolando invece il tempo rimanente come
-   "endTime - adesso" ad ogni tick e soprattutto al rientro in app
-   (visibilitychange/focus), il timer si "recupera" da solo e mostra il
-   valore corretto — e se il tempo era gia' scaduto mentre eri fuori
-   dall'app, scatta suono/vibrazione non appena rientri. */
-function recalcTimerFromEndTime(){
-  if(!timer.running || !timer.endTime) return;
-  const remain = Math.max(0, Math.round((timer.endTime - Date.now())/1000));
-  timer.remaining = remain;
-  if(remain <= 0) finishTimer();
-  else { updateRing(); renderTimerBar(); }
-}
-document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'visible') recalcTimerFromEndTime(); });
-window.addEventListener('focus', recalcTimerFromEndTime);
-/* AudioContext condiviso e riutilizzato invece di crearne uno nuovo ad ogni
-   suono: su iOS/Safari un AudioContext puo' riprodurre suono in modo
-   affidabile solo se e' stato "sbloccato" da un gesto diretto dell'utente
-   (un tap). Creandolo/riattivandolo al tap che avvia il timer (vedi
-   startTimer) invece che al momento dello scadere (che arriva da un
-   setInterval, non da un tap), il suono di fine recupero ha molte piu'
-   probabilita' di sentirsi davvero, anche con le cuffie e musica in corso. */
-let sharedAudioCtx = null;
-function unlockAudioCtx(){
-  try{
-    if(!sharedAudioCtx) sharedAudioCtx = new (window.AudioContext||window.webkitAudioContext)();
-    if(sharedAudioCtx.state === 'suspended') sharedAudioCtx.resume().catch(()=>{});
-  }catch(e){}
-  return sharedAudioCtx;
-}
+let timer = { total:90, remaining:90, running:false, intervalId:null };
 let saveTimeout = null;
 const app = document.getElementById('app');
 const toastEl = document.getElementById('toast');
@@ -1263,15 +1321,24 @@ const ICO_SETUP = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
 const ICO_MOVE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
 const ICO_MUSCLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg>';
 const ICO_BREATH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12a6 6 0 1 0 12 0 6 6 0 1 0-12 0"/><path d="M12 8v8"/></svg>';
+const ICO_WARN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+const ICO_TOOL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>';
 function openExerciseInfo(ex){
   document.getElementById('infoTitle').textContent = ex.n;
   const info = ex.info || {};
-  document.getElementById('infoScroll').innerHTML = `
+  let html = `
     <div class="info-block"><div class="info-block-label">${ICO_SETUP} Setup</div><p>${info.setup||'—'}</p></div>
     <div class="info-block"><div class="info-block-label">${ICO_MOVE} Esecuzione</div><p>${info.esec||'—'}</p></div>
     <div class="info-block"><div class="info-block-label">${ICO_MUSCLE} Muscolo target</div><p>${info.muscolo||'—'}</p></div>
     <div class="info-block"><div class="info-block-label">${ICO_BREATH} Respirazione</div><p>${info.resp||'—'}</p></div>
   `;
+  if(info.attenzione){
+    html += `<div class="warn-note">${ICO_WARN}<div>${info.attenzione}</div></div>`;
+  }
+  if(info.attrezzatura){
+    html += `<div class="equip-note">${ICO_TOOL}<div>${info.attrezzatura}</div></div>`;
+  }
+  document.getElementById('infoScroll').innerHTML = html;
   document.getElementById('infoSheet').classList.add('open');
 }
 document.getElementById('infoClose').onclick = ()=>document.getElementById('infoSheet').classList.remove('open');
@@ -1294,9 +1361,16 @@ function sessionTimeLabel(sessionId){
    cambia (o passa a un nuovo ciclo), questa sessione ricorderà per sempre cos'era
    stato effettivamente svolto. */
 function blankLog(giorno){
-  const log = { date:todayLocalISO(), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, cicloId:giorno.cicloId, finalized:false, esercizi:{} };
+  const log = { date:todayLocalISO(), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, cicloId:giorno.cicloId, esercizi:{} };
   giorno.esercizi.forEach(ex=>{
-    log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets: Array.from({length:ex.s},()=>({kg:'',reps:'',rpe:'',done:false})) };
+    // Gli esercizi perLato (un lato alla volta) hanno il doppio delle serie:
+    // le prime ex.s sono etichettate 'debole', le successive ex.s 'forte' —
+    // così in Workout compaiono come due sezioni separate, nell'ordine
+    // debole poi forte, e non si rischia di saltare un lato.
+    const sets = ex.perLato
+      ? Array.from({length:ex.s*2},(_, i)=>({kg:'',reps:'',rpe:'',done:false, lato: i<ex.s?'debole':'forte'}))
+      : Array.from({length:ex.s},()=>({kg:'',reps:'',rpe:'',done:false}));
+    log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets };
   });
   return log;
 }
@@ -1394,10 +1468,13 @@ const MISURE_FIELD_TIPS = {
   peso: "Sempre nella stessa condizione (es. mattina a digiuno) — guarda la tendenza su 3-4 settimane, non il singolo giorno.",
 };
 function measureKey(id){ return `misure-${id}`; }
-async function saveMeasureEntry(date, values){
-  const id = 'm'+Date.now();
-  await window.storage.set(measureKey(id), JSON.stringify({ date, values }), false);
-  return id;
+/* Se si passa existingKey (la chiave di una rilevazione già salvata), i nuovi
+   valori sovrascrivono quella stessa rilevazione invece di crearne una nuova
+   — è così che "modifica" di una misura in Storico non genera un duplicato. */
+async function saveMeasureEntry(date, values, existingKey){
+  const key = existingKey || measureKey('m'+Date.now());
+  await window.storage.set(key, JSON.stringify({ date, values }), false);
+  return key;
 }
 async function listMeasureEntries(){
   try{
@@ -1635,12 +1712,11 @@ function renderAllenamento(){
     </div>
     <div class="wrap">
       <button class="cta-next" id="btnNext" style="display:none;">
-        <div class="cta-next-eyebrow" id="ctaNextEyebrow">Prossimo allenamento</div>
+        <div class="cta-next-eyebrow">Prossimo allenamento</div>
         <div class="cta-next-title" id="ctaNextTitle">—</div>
         <div class="cta-next-sub" id="ctaNextSub">—</div>
         <div class="cta-next-arrow">${ICO.chev}</div>
       </button>
-      <button class="text-link-btn" id="btnRestartAllenamento" style="display:none;">Non è la sessione giusta? Elimina bozza e ricomincia</button>
       <div class="home-grid">
         <button class="home-card" data-go="cicli">
           <div class="hc-ico">${ICO.muscleHome}</div>
@@ -1689,46 +1765,10 @@ function renderAllenamento(){
   });
   loadAllenamentoSummary();
 }
-/* Cerca, tra tutte le sessioni salvate (di tutti i giorni/cicli), una bozza
-   non ancora conclusa (finalized:false). Il controllo e' scritto in positivo
-   (=== false, non !== true): una sessione salvata da PRIMA che questo campo
-   esistesse non ha la chiave "finalized" e va trattata come gia' conclusa,
-   non come bozza aperta — altrimenti ogni sessione storica pre-esistente
-   comparirebbe come "da riprendere". Se ce ne sono piu' d'una (caso raro),
-   prende la piu' recente: getAllSessionsRaw ordina gia' per data e sessionId
-   decrescenti. */
-async function findOpenSession(){
-  try{
-    const raw = await getAllSessionsRaw();
-    return raw.find(s => s.log && s.log.finalized === false) || null;
-  }catch(e){ return null; }
-}
 async function loadAllenamentoSummary(){
   const btnNext = document.getElementById('btnNext');
-  const btnRestart = document.getElementById('btnRestartAllenamento');
-  if(!btnNext) return;
-  const open = await findOpenSession();
-  if(open){
-    document.getElementById('ctaNextEyebrow').textContent = 'Stai registrando';
-    document.getElementById('ctaNextTitle').textContent = `${open.giorno.label} — ${open.giorno.meta}`;
-    document.getElementById('ctaNextSub').textContent = 'Tocca per continuare a registrare';
-    btnNext.style.display = '';
-    btnNext.onclick = ()=> openExistingSession(open.giornoId, open.sessionId, 'allenamento');
-    if(btnRestart){
-      btnRestart.style.display = '';
-      btnRestart.onclick = ()=>{
-        showConfirm('Eliminare la sessione in corso? I dati inseriti finora andranno persi.', async ()=>{
-          try{ await deleteSession(open.giornoId, open.sessionId); loadAllenamentoSummary(); }
-          catch(e){ showToast('Errore — riprova'); }
-        }, 'Elimina', 'Annulla');
-      };
-    }
-    return;
-  }
-  if(btnRestart) btnRestart.style.display = 'none';
-  document.getElementById('ctaNextEyebrow').textContent = 'Prossimo allenamento';
   const ciclo = cicloAttuale();
-  if(!ciclo || !ciclo.giorni.length){ btnNext.style.display = 'none'; return; }
+  if(!ciclo || !ciclo.giorni.length || !btnNext) return;
   const withLast = await Promise.all(ciclo.giorni.map(async g=>({
     giorno:g, last: await lastSessionDate(g.id)
   })));
@@ -1752,6 +1792,17 @@ async function loadAllenamentoSummary(){
    unit '%' cosi' l'utente puo' comunque segnalare di averne mangiata solo
    una parte, riusando esattamente la stessa logica di calcolo. */
 const ALIM_TARGET = { kcal:1900, p:100, c:240, g:60 };
+/* Integratori giornalieri: fissi, uguali in ogni variante (a differenza dei
+   pasti, non cambiano da un giorno all'altro del piano) — per questo sono
+   una lista a parte e non fanno parte di ALIM_GIORNI. Non contano nel calcolo
+   di kcal/macro: sono solo un promemoria da spuntare per non dimenticarli. */
+const INTEGRATORI_GIORNALIERI = [
+  { id:'multivitaminico', nome:'Multivitaminico', momento:'Mattina' },
+  { id:'vitaminaD',       nome:'Vitamina D',       momento:'Pranzo' },
+  { id:'omega3',          nome:'Omega-3',          momento:'Pranzo' },
+  { id:'creatina',        nome:'Creatina',         momento:'Pranzo' },
+  { id:'zma',             nome:'ZMA',              momento:'Sera (dopo cena)' },
+];
 /* Metadati per lo screen "Statistiche" di Alimentazione: per ciascun
    macro tracciato, come chiamarlo nella tab, nel titolo del grafico e
    quale unita' di misura mostrare accanto al valore. */
@@ -3306,24 +3357,49 @@ const ALIM_GIORNI = [
     "lettera": "F"
   }
 ];
-function alimKey(date){ return `alim-v1-${date}`; }
+/* Sentinella per la scheda "Cosa mangi stasera?": un giorno senza alcuna
+   variante di partenza, per quando non vuoi seguire nessuna delle 7
+   combinazioni pronte ma comporre liberamente ogni pasto, pescando dal
+   paniere di tutte le opzioni intercambiabili (vedi opzioniPerPasto piu'
+   sotto). Non fa parte di ALIM_GIORNI di proposito: non deve comparire ne'
+   nel Menu delle varianti ne' in "Componi la tua settimana", dove serve
+   invece un pasto reale per generare la lista della spesa. */
+const ALIM_LIBERO_ID = '__libero__';
+const ALIM_GIORNO_LIBERO = { id: ALIM_LIBERO_ID, lettera:'—', cardSub:'Componi tu ogni pasto, dal paniere di tutte le opzioni', pasti: [] };
+function giornoOrLibero(id){
+  if(id === ALIM_LIBERO_ID) return ALIM_GIORNO_LIBERO;
+  return ALIM_GIORNI.find(g=>g.id===id) || null;
+}
+/* ============== ALIMENTAZIONE — registrazione giornaliera (v2) ==============
+   Chiave di storage "alim2-v1-" (invece della vecchia "alim-v1-"): il nuovo
+   modello dati (opzioni intercambiabili per pasto, correzioni manuali per
+   ingrediente, "Giorno libero") salva l'intera "entry" del giorno come un
+   unico oggetto, con una forma diversa da quella storica (che salvava
+   {giornoId, quantities} per una scheda a varianti fisse). Le vecchie
+   registrazioni restano leggibili sotto "alim-v1-" e vengono migrate una
+   sola volta in questo nuovo formato da migrateOldAlimEntriesOnce() qui
+   sotto, cosi' lo Storico resta completo. "Componi la tua settimana" invece
+   resta sulla chiave originale (alim-settimana-v1, invariata piu' sotto):
+   quella funzione non e' cambiata, quindi condivide i dati con quella
+   storica senza bisogno di migrazione. */
+function alimKey(date){ return `alim2-v1-${date}`; }
 async function loadAlimEntry(date){
   try{
     const r = await window.storage.get(alimKey(date), false);
     return (r && r.value) ? JSON.parse(r.value) : null;
   }catch(e){ return null; }
 }
-/* finalized=false (default) per il salvataggio automatico mentre compili durante
-   la giornata: la voce resta una "bozza" e riapre la stessa variante se chiudi e
-   riapri l'app. finalized=true solo quando premi "Salva registrazione": da quel
-   momento la giornata e' considerata conclusa e non viene piu' riproposta in
-   automatico (resta comunque modificabile dallo Storico). */
-async function saveAlimEntry(date, giornoId, quantities, finalized){
-  await window.storage.set(alimKey(date), JSON.stringify({ date, giornoId, quantities, finalized: !!finalized }), false);
+/* L'intera "entry" del giorno (opzioni scelte per pasto, cosa e' segnato
+   fatto, alimenti extra, integratori) viene salvata come un unico oggetto
+   JSON, invece delle "quantities" per singolo ingrediente della vecchia
+   versione: e' la stessa idea di fondo del modello di Beat Yourself
+   (opzione selezionata + extra), adattata alla forma dati di questa app. */
+async function saveAlimEntry(date, entry){
+  await window.storage.set(alimKey(date), JSON.stringify({ ...entry, date }), false);
 }
 async function listAlimEntries(){
   try{
-    const res = await window.storage.list('alim-v1-', false);
+    const res = await window.storage.list('alim2-v1-', false);
     if(!res || !res.keys) return [];
     const results = await Promise.all(res.keys.map(async (k)=>{
       try{
@@ -3337,6 +3413,74 @@ async function listAlimEntries(){
 }
 async function deleteAlimEntry(date){
   await window.storage.delete(alimKey(date), false);
+}
+/* ============== MIGRAZIONE UNA TANTUM — vecchio diario (alim-v1-) ==============
+   La versione precedente dell'Alimentazione salvava ogni giorno come
+   { date, giornoId, quantities, finalized, integratori }, con "quantities"
+   chiave pastoId+'-'+idx -> grammi effettivamente mangiati (0 = non
+   mangiato). Le varianti A-G di allora sono le stesse di oggi (dati
+   invariati in ALIM_GIORNI), quindi per ogni pasto della vecchia variante
+   l'opzione "di default" nel nuovo catalogo (opzioneDefaultDiGiorno) e' la
+   ricetta identica, con gli ingredienti nello stesso identico ordine: le
+   vecchie chiavi pastoId+'-'+idx restano valide come correzioni manuali
+   (qtyOverride) nel nuovo formato. Un pasto per cui almeno un ingrediente
+   aveva grammi > 0 viene considerato "fatto" nel nuovo modello.
+   Gira una sola volta per utente (flag ALIM_MIGRAZIONE_KEY): non sovrascrive
+   mai una entry nuova gia' presente per quella data, e non tocca ne'
+   cancella i vecchi dati "alim-v1-", che restano come backup. */
+const ALIM_MIGRAZIONE_KEY = 'alim-migrazione-v2-fatta';
+function vecchiaEntryAMuovaEntry(old){
+  const giorno = ALIM_GIORNI.find(g=>g.id===old.giornoId);
+  if(!giorno) return null; // variante sconosciuta (es. cancellata) — non migrabile
+  const entry = nuovaEntryDaGiorno(giorno);
+  const quantities = old.quantities || {};
+  giorno.pasti.forEach(pasto=>{
+    const pid = pasto.id;
+    let pastoFatto = false;
+    const overrides = {};
+    pasto.ingredienti.forEach((ing, idx)=>{
+      const key = pid+'-'+idx;
+      const qty = quantities[key];
+      if(qty !== undefined && qty !== null){
+        overrides[idx] = qty;
+        if(qty > 0) pastoFatto = true;
+      }
+    });
+    if(pastoFatto){
+      /* Le correzioni ai grammi hanno senso solo per un pasto davvero
+         mangiato: se il vecchio pasto era tutto a 0 (saltato), non lo
+         segnamo "fatto" e non portiamo con noi grammature a zero, che nel
+         nuovo selettore verrebbero altrimenti mostrate come "0 g" al posto
+         della porzione di piano finche' non tocchi la spunta. */
+      entry.qtyOverride[pid] = overrides;
+      entry.pastiFatti[pid] = true;
+    }
+  });
+  entry.integratori = old.integratori || {};
+  entry.finalized = !!old.finalized;
+  return entry;
+}
+async function migrateOldAlimEntriesOnce(){
+  try{
+    const flag = await window.storage.get(ALIM_MIGRAZIONE_KEY, false);
+    if(flag && flag.value === 'ok') return;
+    const res = await window.storage.list('alim-v1-', false);
+    const keys = (res && res.keys) ? res.keys : [];
+    for(const key of keys){
+      try{
+        const date = key.slice('alim-v1-'.length);
+        if(!date) continue;
+        const gia = await loadAlimEntry(date); // gia' nel nuovo formato per questa data?
+        if(gia) continue; // non sovrascrivere mai una entry nuova esistente
+        const r = await window.storage.get(key, false);
+        if(!r || !r.value) continue;
+        const old = JSON.parse(r.value);
+        const migrata = vecchiaEntryAMuovaEntry(old);
+        if(migrata) await saveAlimEntry(date, migrata);
+      }catch(e){ /* una singola data non migrabile non deve bloccare le altre */ }
+    }
+    await window.storage.set(ALIM_MIGRAZIONE_KEY, 'ok', false);
+  }catch(e){ /* la migrazione e' best-effort: nessun blocco dell'app se fallisce */ }
 }
 /* "Componi la tua settimana": un unico piano settimanale ricorrente (non
    legato a una data precisa) che Silvana riscrive ogni sabato quando fa la
@@ -3633,14 +3777,36 @@ function alimPranzoName(giorno){
   const pranzo = giorno.pasti.find(p=>p.id==='pranzo');
   return pranzo ? pranzo.nome : '';
 }
-/* Salva subito una bozza (quantita' vuote, finalized:false) nel momento in cui
-   scegli la cena, cosi' la scelta e' persistita fin da subito: se chiudi l'app
-   senza scrivere nulla, al rientro trovi comunque la variante gia' scelta ad
-   attenderti invece che la domanda "Cosa mangi stasera?" da capo. */
+/* Costruisce la entry di un nuovo giorno a partire da una variante scelta
+   come punto di partenza: precompila, per ogni pasto, l'opzione "di serie"
+   di quella variante (cosi' chi non tocca nulla ottiene lo stesso risultato
+   di prima), ma nessun pasto e' ancora segnato "fatto" — esattamente come
+   nella versione precedente, dove scegliere una variante non segnava nulla
+   in automatico, andava spuntato/scritto a mano pasto per pasto. */
+function nuovaEntryDaGiorno(giorno){
+  const opzioni = {};
+  ALIM_PASTI_ORDINE.forEach(pid=>{
+    const op = opzioneDefaultDiGiorno(giorno, pid);
+    if(op) opzioni[pid] = op.id;
+  });
+  return {
+    giornoBaseId: giorno.id,
+    opzioni,
+    pastiFatti: {},
+    pastiViaExtra: {},
+    alimentiExtra: [],
+    integratori: {},
+    fattori: {},
+    qtyOverride: {},
+    finalized: false,
+  };
+}
 async function startAlimVariant(giornoId){
+  const giorno = giornoOrLibero(giornoId);
+  if(!giorno) return;
   const today = todayLocalISO();
   try{
-    await saveAlimEntry(today, giornoId, {}, false);
+    await saveAlimEntry(today, nuovaEntryDaGiorno(giorno));
   }catch(e){ showToast('Errore salvataggio — riprova'); return; }
   renderGiornoAlimentare(giornoId);
 }
@@ -3650,21 +3816,11 @@ async function renderAlimentazione(){
   closeAllOverlays();
   setTimerBarVisible(false);
   const today = todayLocalISO();
-  /* Una bozza non ancora salvata in via definitiva (finalized:false) fa
-     saltare la domanda "Cosa mangi stasera?" e riporta dritta al punto in
-     cui avevi lasciato la registrazione di oggi. Il controllo e' scritto in
-     positivo (=== false, non !== true): una voce salvata da versioni
-     precedenti dell'app, che non hanno mai scritto il campo "finalized",
-     viene trattata come gia' conclusa invece che come bozza aperta — altrimenti
-     un test fatto prima che questa funzione esistesse bloccherebbe per sempre
-     la schermata sulla ripresa anziche' mostrare la scelta della cena. */
   const draft = await loadAlimEntry(today);
   const hasDraft = !!(draft && draft.finalized === false);
-  const draftGiorno = hasDraft ? ALIM_GIORNI.find(g=>g.id===draft.giornoId) : null;
+  const draftGiorno = hasDraft ? giornoOrLibero(draft.giornoBaseId) : null;
+  const draftIsLibero = !!draftGiorno && draftGiorno.id === ALIM_LIBERO_ID;
   const showResume = hasDraft && !!draftGiorno;
-  /* Se oggi hai gia' salvato una registrazione conclusa (finalized:true) e
-     scegli comunque un'altra variante, chiediamo conferma prima di
-     sovrascriverla: la vecchia registrazione di oggi andrebbe persa. */
   const hasFinalizedToday = !!(draft && draft.finalized === true);
   const settimana = await loadAlimSettimana();
   const nome = displayNameOf(currentUser);
@@ -3698,7 +3854,7 @@ async function renderAlimentazione(){
       ${showResume ? `
         <div class="section-label">Stai registrando oggi</div>
         <button class="cta-next" id="btnResumeAlim">
-          <div class="cta-next-eyebrow">Variante ${draftGiorno.lettera} · cena: ${alimCenaName(draftGiorno)}</div>
+          <div class="cta-next-eyebrow">${draftIsLibero ? 'Giorno libero' : `Variante ${draftGiorno.lettera} · cena: ${alimCenaName(draftGiorno)}`}</div>
           <div class="cta-next-title">Continua a registrare</div>
           <div class="cta-next-sub">Tocca per completare i pasti di oggi</div>
           <div class="cta-next-arrow">${ICO.chev}</div>
@@ -3716,7 +3872,6 @@ async function renderAlimentazione(){
         <div class="week-strip">
           ${ALIM_SETTIMANA_GIORNI.map(d=>{
             const gid = settimana[d.key];
-            // "Niente" e' una scelta consapevole quanto una variante vera: conta come "assegnato" (pallino pieno).
             return `
               <div class="week-day-chip ${gid ? 'filled' : ''}">
                 <div class="wdc-day">${d.label.slice(0,3)}</div>
@@ -3732,6 +3887,10 @@ async function renderAlimentazione(){
         <div class="picker-head"><h3>Cosa mangi stasera?</h3><button id="pickerCloseAlim">${ICO.close}</button></div>
         <div class="picker-scroll">
           <div class="picker-group">
+            <button class="picker-item" data-gid="${ALIM_LIBERO_ID}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;border-color:var(--accent);">
+              <span style="font-weight:700;color:var(--accent);">🎯 Giorno libero</span>
+              <span style="font-size:11.5px;color:var(--text-faint);">Nessuna variante di partenza: scegli tu ogni pasto dal paniere di tutte le opzioni</span>
+            </button>
             ${ALIM_GIORNI.map(gi=>`
               <button class="picker-item" data-gid="${gi.id}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;">
                 <span style="font-weight:700;color:var(--text);">Variante ${gi.lettera} — ${alimCenaName(gi)}</span>
@@ -3853,22 +4012,16 @@ let statsAlimPoints = [];
 let statsAlimRange = { from:null, to:null };
 async function getAlimMacroHistory(macroType){
   const entries = await listAlimEntries();
-  /* Come nel resto della sezione Alimentazione: una registrazione senza il
-     campo "finalized" e' una voce storica precedente a quel concetto e va
-     considerata conclusa; solo finalized===false e' una bozza aperta, che
-     qui escludiamo perche' rappresenterebbe una giornata a meta'. */
   const points = entries
     .filter(e=> e.finalized !== false)
     .map(e=>{
-      const giorno = ALIM_GIORNI.find(g=>g.id===e.giornoId);
-      if(!giorno) return null;
-      const totals = giornoTotals(giorno, e.quantities);
+      const totals = entryTotals(e);
       return { date: e.date, cm: Math.round(totals[macroType]*10)/10 };
-    })
-    .filter(Boolean);
+    });
   points.sort((a,b)=> a.date.localeCompare(b.date));
   return points;
 }
+
 async function renderStatsAlimentazione(){
   state.screen = 'alimStats';
   closeAllOverlays();
@@ -4091,48 +4244,270 @@ async function loadAlimHomeSummary(){
       : `Ultima volta: <b>${fmtDate(last.date)}</b>`;
   });
 }
-/* ============== ALIMENTAZIONE — dettaglio giorno e registrazione ============== */
-function pastoCardHTML(pasto){
-  return `
-    <div class="pasto-card" data-pasto="${pasto.id}">
-      <div class="pasto-head">
-        <div class="pasto-title">${pasto.label}${pasto.variante ? ' · variante '+pasto.variante : ''}</div>
-        <div class="pasto-name">${pasto.nome}</div>
-      </div>
-      <div class="ing-list">
-        ${pasto.ingredienti.map((ing,idx)=> ingRowHTML(pasto.id, idx, ing)).join('')}
-      </div>
-      <div class="pasto-total">
-        <span>Totale pasto</span>
-        <span><b class="pt-kcal" data-pt-kcal="${pasto.id}">0 kcal</b> <span data-pt-macro="${pasto.id}"></span></span>
-      </div>
-    </div>
-  `;
+/* ============== ALIMENTAZIONE — dettaglio giorno e registrazione (v2) ==============
+   Riprende l'idea di fondo di Beat Yourself (l'app del tuo ragazzo): ogni
+   pasto ha piu' opzioni intercambiabili tra cui scegliere, invece di una
+   quantita' di ingredienti da scrivere a mano ogni volta. Qui pero' le
+   opzioni non sono ricette nuove: sono le stesse ricette delle 7 varianti
+   storiche del piano (ALIM_GIORNI, invariate), semplicemente raggruppate
+   per tipo di pasto invece che per giornata intera — la variante scelta
+   all'inizio resta solo il "punto di partenza" (quali opzioni sono
+   precompilate), ma ogni pasto singolo resta liberamente sostituibile con
+   la stessa ricetta usata in una qualsiasi delle altre varianti.
+   Il rispetto del target (ALIM_TARGET, invariato) si vede sempre in tempo
+   reale nel riepilogo macro sopra ai pasti, qualunque combinazione tu
+   scelga — non serve imporre fasce di equivalenza rigide tra le opzioni. */
+const ALIM_PASTI_ORDINE = ['colazione','spuntinoAM','pranzo','spuntinoPM','cena'];
+const ALIM_PASTI_LABEL = { colazione:'Colazione', spuntinoAM:'Spuntino mattutino', pranzo:'Pranzo', spuntinoPM:'Spuntino pomeridiano', cena:'Cena' };
+const ALIM_PASTI_ICONA = { colazione:'🌅', spuntinoAM:'🍎', pranzo:'🍝', spuntinoPM:'🥤', cena:'🍽️' };
+
+function pastoIngTotals(pasto){
+  const t = { kcal:0, p:0, c:0, g:0 };
+  (pasto.ingredienti||[]).forEach(ing=>{ t.kcal+=ing.kcal||0; t.p+=ing.p||0; t.c+=ing.c||0; t.g+=ing.g||0; });
+  return t;
 }
-/* La spunta segna l'alimento come "mangiato" e precompila la quantita' con
-   quella consigliata dal piano (comoda quando hai seguito il piano alla
-   lettera); il campo numerico resta comunque libero, cosi' se hai mangiato
-   una quantita' diversa la correggi a mano — la spunta si aggiorna da sola
-   in base al fatto che il campo sia 0 o meno. La quantita' consigliata resta
-   sempre visibile come riferimento sotto al nome, dato che il campo NON
-   parte piu' precompilato con quel valore. */
-function ingRowHTML(pastoId, idx, ing){
-  const key = pastoId+'-'+idx;
+let ALIM_OPZIONI_CACHE = null;
+/* Costruisce una sola volta il "catalogo opzioni" per ciascun tipo di
+   pasto, leggendo le 7 varianti (ALIM_GIORNI, dati invariati). Alcune
+   ricette si ripetono identiche in piu' varianti (es. "Burritos di pollo"):
+   qui vengono deduplicate (stesso pasto + stesso titolo + stesse kcal),
+   cosi' compaiono una volta sola nel selettore invece di ripetersi. */
+function opzioniPerPasto(){
+  if(ALIM_OPZIONI_CACHE) return ALIM_OPZIONI_CACHE;
+  const out = {};
+  ALIM_PASTI_ORDINE.forEach(pid=> out[pid]=[]);
+  const visti = {};
+  ALIM_GIORNI.forEach(giorno=>{
+    giorno.pasti.forEach(pasto=>{
+      if(!out[pasto.id]) return;
+      const t = pastoIngTotals(pasto);
+      /* La chiave di deduplicazione NON include piu' le kcal: ora che le
+         quantita' di ogni ingrediente si possono correggere a mano (vedi
+         grammiIngrediente/qtyOverride piu' sotto), avere piu' opzioni con
+         lo stesso nome e gli stessi ingredienti ma quantita' leggermente
+         diverse tra una variante e l'altra e' solo rumore — sono la stessa
+         ricetta, cambia solo "quanta". Due opzioni restano distinte solo
+         se hanno un nome diverso oppure ingredienti diversi. */
+      const firmaIngredienti = pasto.ingredienti.map(i=>i.n).slice().sort().join('|');
+      const chiave = pasto.id+'|'+pasto.nome+'|'+firmaIngredienti;
+      if(visti[chiave]) return;
+      visti[chiave] = true;
+      out[pasto.id].push({
+        id: 'op-'+pasto.id+'-'+(out[pasto.id].length+1),
+        pastoId: pasto.id,
+        titolo: pasto.nome,
+        letteraOrigine: giorno.lettera,
+        ingredienti: pasto.ingredienti,
+        kcal: Math.round(t.kcal), p: Math.round(t.p*10)/10, c: Math.round(t.c*10)/10, g: Math.round(t.g*10)/10,
+      });
+    });
+  });
+  ALIM_OPZIONI_CACHE = out;
+  return out;
+}
+function trovaOpzione(pastoId, opzioneId){
+  return (opzioniPerPasto()[pastoId]||[]).find(o=>o.id===opzioneId) || null;
+}
+function opzioneDefaultDiGiorno(giorno, pastoId){
+  const pasto = giorno.pasti.find(p=>p.id===pastoId);
+  if(!pasto) return null;
+  return (opzioniPerPasto()[pastoId]||[]).find(o=> o.titolo===pasto.nome) || null;
+}
+/* Totali del giorno: somma le opzioni dei pasti segnati "fatto" (a meno che
+   siano stati segnati tramite un alimento extra, vedi sotto — in quel caso
+   l'extra sostituisce l'opzione di piano, non si somma a essa) piu' tutti
+   gli alimenti extra registrati oggi. Ogni pasto puo' avere un "fattore"
+   di porzione diverso da 1 (vedi adattaPortionaAlTarget piu' sotto): serve
+   a scalare la quantita' — non solo a scegliere quale ricetta, ma anche
+   "quanta" — per avvicinarsi meglio all'obiettivo del giorno. */
+/* Grammi effettivi di un ingrediente per un dato pasto: se hai modificato a
+   mano quell'ingrediente (es. "solo 50g di yogurt") uso quel valore esatto;
+   altrimenti uso la quantita' di piano scalata dal "fattore" di porzione
+   (1 = porzione intera, es. 0,9 se hai usato "Adatta al target"). Cosi'
+   puoi correggere un singolo ingrediente senza perdere lo scaling generale
+   degli altri. */
+function grammiIngrediente(ing, idx, pastoId, entry){
+  const ov = entry.qtyOverride && entry.qtyOverride[pastoId];
+  if(ov && ov[idx]!=null) return ov[idx];
+  const f = (entry.fattori && entry.fattori[pastoId]!=null) ? entry.fattori[pastoId] : 1;
+  return Math.round(ing.def*f*10)/10;
+}
+/* Totale di un'opzione tenendo conto di eventuali grammature modificate a
+   mano ingrediente per ingrediente (vedi grammiIngrediente sopra). */
+function pastoOpTotals(op, pastoId, entry){
+  const t = { kcal:0, p:0, c:0, g:0 };
+  if(!op) return t;
+  op.ingredienti.forEach((ing,idx)=>{
+    const grammi = grammiIngrediente(ing, idx, pastoId, entry);
+    const c = ingContribution(ing, grammi);
+    t.kcal+=c.kcal; t.p+=c.p; t.c+=c.c; t.g+=c.g;
+  });
+  return t;
+}
+function entryTotals(entry){
+  const t = { kcal:0, p:0, c:0, g:0 };
+  if(!entry) return t;
+  ALIM_PASTI_ORDINE.forEach(pid=>{
+    if(entry.pastiFatti && entry.pastiFatti[pid] && !(entry.pastiViaExtra && entry.pastiViaExtra[pid])){
+      const op = trovaOpzione(pid, entry.opzioni && entry.opzioni[pid]);
+      if(op){ const pt = pastoOpTotals(op, pid, entry); t.kcal+=pt.kcal; t.p+=pt.p; t.c+=pt.c; t.g+=pt.g; }
+    }
+  });
+  (entry.alimentiExtra||[]).forEach(a=>{ t.kcal+=a.kcal; t.p+=a.prot; t.c+=a.carb; t.g+=a.grassi; });
+  return t;
+}
+/* ============== Suggerimento quantita' per restare in target ==============
+   Quota storica di kcal che ciascun pasto rappresenta in media sul totale
+   della giornata, calcolata dalle 7 varianti originali del piano (es. il
+   pranzo pesa in media il 38% del totale, lo spuntino mattutino il 5%).
+   Non e' una regola rigida — la uso solo per distribuire in modo
+   ragionevole il "budget" di kcal ancora disponibile tra i pasti che non
+   hai ancora fatto, invece di dividerlo in parti uguali (cosa che
+   suggerirebbe, ad es., uno spuntino grande quanto un pranzo). */
+const ALIM_PASTI_PESO = { colazione:0.198, spuntinoAM:0.054, pranzo:0.38, spuntinoPM:0.084, cena:0.284 };
+function residuoGiorno(entry){
+  const t = entryTotals(entry);
+  return { kcal: ALIM_TARGET.kcal - t.kcal, p: ALIM_TARGET.p - t.p, c: ALIM_TARGET.c - t.c, g: ALIM_TARGET.g - t.g };
+}
+function pastiNonFatti(entry){
+  return ALIM_PASTI_ORDINE.filter(pid=> !entry.pastiFatti[pid]);
+}
+/* Kcal consigliate per un pasto non ancora fatto: il residuo di oggi,
+   ripartito tra i pasti ancora da fare in proporzione al loro peso
+   storico. Si ricalcola ogni volta che chiami questa funzione, quindi si
+   aggiorna da solo via via che segni i pasti durante la giornata — non è
+   un valore fisso deciso all'inizio. */
+function kcalConsigliatoPasto(entry, pastoId){
+  const nonFatti = pastiNonFatti(entry);
+  if(!nonFatti.length || !nonFatti.includes(pastoId)) return null;
+  const residuo = residuoGiorno(entry);
+  const pesoTot = nonFatti.reduce((s,pid)=> s+ALIM_PASTI_PESO[pid], 0);
+  if(pesoTot<=0) return 0;
+  return Math.max(0, Math.round(residuo.kcal * (ALIM_PASTI_PESO[pastoId]/pesoTot)));
+}
+/* Segna il pasto fatto usando l'opzione attualmente scelta, ma scalando le
+   quantita' (fattore di porzione) in modo che le sue kcal coincidano con
+   quelle consigliate sopra — è la "quantità consigliata" vera e propria:
+   non solo quale ricetta, ma quanta. Il fattore resta comunque tra 0,2 e
+   2,5 (20%-250% della porzione originale): oltre non avrebbe più senso
+   come indicazione pratica di quanto cucinare/pesare. */
+function adattaPortionaAlTarget(pastoId){
+  const entry = state.alimEntry;
+  const op = trovaOpzione(pastoId, entry.opzioni[pastoId]);
+  if(!op) return;
+  const consigliato = kcalConsigliatoPasto(entry, pastoId);
+  let fattore = 1;
+  if(consigliato!=null && op.kcal>0){
+    fattore = Math.max(0.2, Math.min(2.5, consigliato/op.kcal));
+    fattore = Math.round(fattore*100)/100;
+  }
+  if(!entry.fattori) entry.fattori = {};
+  entry.fattori[pastoId] = fattore;
+  if(!entry.qtyOverride) entry.qtyOverride = {};
+  entry.qtyOverride[pastoId] = {}; // un adattamento automatico ripulisce eventuali correzioni manuali precedenti
+  entry.pastiFatti[pastoId] = true;
+  entry.pastiViaExtra[pastoId] = false;
+  renderMealsInto();
+  queueAlimSave();
+}
+/* Riga di un ingrediente con la grammatura modificabile a mano. "scope" è
+   un prefisso ('meal' o 'picker') che tiene distinti gli id nel DOM, perché
+   lo stesso pasto può comparire sia nella scheda del giorno sia nel
+   selettore opzioni aperto sopra di essa. */
+function ingRowEditableHTML(ing, idx, pastoId, grammi, scope){
+  const c = ingContribution(ing, grammi);
+  const pfx = `${scope}Qty-${pastoId}-${idx}`;
   return `
-    <div class="ing-row" data-key="${key}">
-      <button class="ing-check" data-ing-check="${key}" title="Segna come mangiato (quantità consigliata)">${ICO.check}</button>
+    <div class="ing-row">
       <div class="ing-main">
         <div class="ing-name">${ing.n}</div>
-        <div class="ing-suggested">Consigliati <span class="ing-suggested-qty">${fmtMacro(ing.def)} ${ing.unit}</span> · ${fmtKcal(ing.kcal)} kcal (P ${fmtMacro(ing.p)} · C ${fmtMacro(ing.c)} · G ${fmtMacro(ing.g)})</div>
+        <div class="ing-suggested">
+          <input type="number" class="ing-qty-input" inputmode="decimal" min="0" step="1"
+            id="${pfx}-input" data-qty-pasto="${pastoId}" data-qty-idx="${idx}" data-qty-scope="${scope}" value="${grammi}"> ${ing.unit}
+          <button class="ing-qty-confirm" id="${pfx}-confirmBtn" data-qty-confirm-pasto="${pastoId}" data-qty-confirm-idx="${idx}" data-qty-confirm-scope="${scope}" title="Conferma questa quantità" disabled>${ICO.check}</button>
+          · <span id="${pfx}-kcal">${fmtKcal(c.kcal)}</span> kcal
+          (P <span id="${pfx}-p">${fmtMacro(c.p)}</span> · C <span id="${pfx}-c">${fmtMacro(c.c)}</span> · G <span id="${pfx}-g">${fmtMacro(c.g)}</span>)
+        </div>
       </div>
-      <div class="ing-qty-wrap">
-        <input type="number" min="0" step="1" value="0" data-ing-qty="${key}">
-        <span class="ing-unit">${ing.unit}</span>
-      </div>
-      <div class="ing-kcal" data-ing-kcal="${key}">0 kcal</div>
+      <div class="ing-kcal" id="${pfx}-kcalBig">${fmtKcal(c.kcal)} kcal</div>
     </div>
   `;
 }
+/* Ricalcola dal DOM (senza ridisegnare tutto, per non perdere lo stato
+   aperto/chiuso dei pannelli) il totale di un'opzione sommando i valori
+   correnti dei campi grammatura di un dato pasto+scope. */
+function ricalcolaTotaleDaInputQty(op, pastoId, scope){
+  const t = { kcal:0, p:0, c:0, g:0 };
+  document.querySelectorAll(`.ing-qty-input[data-qty-pasto="${pastoId}"][data-qty-scope="${scope}"]`).forEach(inp=>{
+    const idx = parseInt(inp.dataset.qtyIdx, 10);
+    const ing = op.ingredienti[idx];
+    if(!ing) return;
+    const grammi = parseFloat(String(inp.value).replace(',','.')) || 0;
+    const c = ingContribution(ing, grammi);
+    t.kcal+=c.kcal; t.p+=c.p; t.c+=c.c; t.g+=c.g;
+  });
+  return t;
+}
+/* Collega gli input di grammatura di un pasto (in un dato scope): digitare
+   NON applica piu' nulla da solo — serve toccare la spunta di conferma
+   accanto al campo (o premere Invio), cosi' non rischi di far scattare
+   una modifica solo perche' stai ancora scegliendo il numero. Finche' non
+   confermi, il campo resta evidenziato come "da confermare" e la spunta
+   si accende per farti capire che puoi toccarla. */
+function wireIngQtyInputs(op, pastoId, scope, onChange){
+  const conferma = (inp, btn)=>{
+    let grammi = parseFloat(String(inp.value).replace(',','.'));
+    if(!isFinite(grammi) || grammi<0) grammi = 0;
+    grammi = Math.round(grammi*10)/10;
+    inp.value = grammi;
+    inp.classList.remove('dirty');
+    if(btn) btn.disabled = true;
+    const idx = parseInt(inp.dataset.qtyIdx, 10);
+    const ing = op.ingredienti[idx];
+    if(!ing) return;
+    const entry = state.alimEntry;
+    if(!entry.qtyOverride) entry.qtyOverride = {};
+    if(!entry.qtyOverride[pastoId]) entry.qtyOverride[pastoId] = {};
+    entry.qtyOverride[pastoId][idx] = grammi;
+    const c = ingContribution(ing, grammi);
+    const pfx = `${scope}Qty-${pastoId}-${idx}`;
+    const elKcal = document.getElementById(pfx+'-kcal'); if(elKcal) elKcal.textContent = fmtKcal(c.kcal);
+    const elP = document.getElementById(pfx+'-p'); if(elP) elP.textContent = fmtMacro(c.p);
+    const elC = document.getElementById(pfx+'-c'); if(elC) elC.textContent = fmtMacro(c.c);
+    const elG = document.getElementById(pfx+'-g'); if(elG) elG.textContent = fmtMacro(c.g);
+    const elKcalBig = document.getElementById(pfx+'-kcalBig'); if(elKcalBig) elKcalBig.textContent = fmtKcal(c.kcal)+' kcal';
+    if(typeof onChange === 'function') onChange();
+    queueAlimSave();
+  };
+  document.querySelectorAll(`.ing-qty-input[data-qty-pasto="${pastoId}"][data-qty-scope="${scope}"]`).forEach(inp=>{
+    const idx = inp.dataset.qtyIdx;
+    const btn = document.getElementById(`${scope}Qty-${pastoId}-${idx}-confirmBtn`);
+    inp.addEventListener('input', ()=>{
+      inp.classList.add('dirty');
+      if(btn) btn.disabled = false;
+    });
+    inp.addEventListener('keydown', (e)=>{
+      if(e.key==='Enter'){ e.preventDefault(); conferma(inp, btn); }
+    });
+    if(btn) btn.addEventListener('click', ()=> conferma(inp, btn));
+  });
+}
+/* ============== La logica delicata: alimento extra su un pasto ==============
+   Se aggiungi un alimento extra a un pasto NON ancora segnato fatto, quel
+   pasto viene marcato fatto ma con pastiViaExtra=true: significa che
+   l'extra SOSTITUISCE l'opzione di piano per quel pasto (entryTotals sopra
+   non aggiunge le kcal dell'opzione, solo quelle dell'extra) — altrimenti
+   conteresti due volte lo stesso pasto. Se il pasto era GIA' segnato fatto
+   (tramite piano o tramite un extra precedente), qui non tocchiamo nulla:
+   l'extra si aggiunge e basta, si somma normalmente in entryTotals. */
+function segnaPastoFattoDaExtra(pastoId){
+  const entry = state.alimEntry;
+  if(!entry || !ALIM_PASTI_ORDINE.includes(pastoId)) return;
+  if(entry.pastiFatti[pastoId]) return;
+  entry.pastiFatti[pastoId] = true;
+  entry.pastiViaExtra[pastoId] = true;
+}
+
 function macroSummaryHTML(totals){
   const items = [
     { key:'kcal', label:'Kcal',        val:totals.kcal, target:ALIM_TARGET.kcal, unit:'' },
@@ -4156,26 +4531,315 @@ function macroSummaryHTML(totals){
     `;
   }).join('');
 }
-function recomputeAlimTotals(giorno){
-  giorno.pasti.forEach(pasto=>{
-    pasto.ingredienti.forEach((ing,idx)=>{
-      const key = pasto.id+'-'+idx;
-      const qty = (state.alimQuantities[key] !== undefined) ? state.alimQuantities[key] : 0;
-      const c = ingContribution(ing, qty);
-      const kcalEl = app.querySelector(`[data-ing-kcal="${key}"]`);
-      if(kcalEl) kcalEl.textContent = `${fmtKcal(c.kcal)} kcal`;
-    });
-    const pt = pastoTotals(pasto, state.alimQuantities);
-    const ptKcalEl = app.querySelector(`[data-pt-kcal="${pasto.id}"]`);
-    const ptMacroEl = app.querySelector(`[data-pt-macro="${pasto.id}"]`);
-    if(ptKcalEl) ptKcalEl.textContent = `${fmtKcal(pt.kcal)} kcal`;
-    if(ptMacroEl) ptMacroEl.textContent = `· P ${fmtMacro(pt.p)} · C ${fmtMacro(pt.c)} · G ${fmtMacro(pt.g)}`;
+function integratoriCardHTML(){
+  const momenti = [];
+  INTEGRATORI_GIORNALIERI.forEach(it=>{
+    let m = momenti.find(x=>x.momento===it.momento);
+    if(!m){ m = { momento:it.momento, items:[] }; momenti.push(m); }
+    m.items.push(it);
   });
-  const totals = giornoTotals(giorno, state.alimQuantities);
+  return `
+    <div class="pasto-card">
+      <div class="pasto-head">
+        <div class="pasto-title">Ogni giorno</div>
+        <div class="pasto-name">Integratori</div>
+      </div>
+      <div class="ing-list">
+        ${momenti.map(m=>`
+          <div class="ing-row" style="border-bottom:none;padding-bottom:0;">
+            <div class="ing-main"><div class="ing-suggested" style="margin-top:0;color:var(--accent);font-weight:700;">${m.momento.toUpperCase()}</div></div>
+          </div>
+          ${m.items.map(it=>`
+            <div class="ing-row" data-key="${it.id}" style="justify-content:flex-start;">
+              <button class="ing-check" data-integ-check="${it.id}" title="Segna come preso">${ICO.check}</button>
+              <div class="ing-main">
+                <div class="ing-name">${it.nome}</div>
+              </div>
+            </div>
+          `).join('')}
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+function wireIntegratoriInputs(){
+  app.querySelectorAll('[data-integ-check]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const id = btn.dataset.integCheck;
+      const isOn = btn.classList.contains('on');
+      state.alimEntry.integratori[id] = !isOn;
+      btn.classList.toggle('on', !isOn);
+      queueAlimSave();
+    });
+  });
+}
+function applyIntegratoriState(){
+  app.querySelectorAll('[data-integ-check]').forEach(btn=>{
+    const id = btn.dataset.integCheck;
+    btn.classList.toggle('on', !!state.alimEntry.integratori[id]);
+  });
+}
+
+/* ---- riga di un pasto nella schermata di registrazione ---- */
+function mealRowHTML(pastoId, entry){
+  const opId = entry.opzioni[pastoId];
+  const op = trovaOpzione(pastoId, opId);
+  const fatto = !!entry.pastiFatti[pastoId];
+  const viaExtra = fatto && !!entry.pastiViaExtra[pastoId];
+  const extraDiQuestoPasto = (entry.alimentiExtra||[]).filter(a=>a.pasto===pastoId);
+  const kcalExtra = extraDiQuestoPasto.reduce((s,a)=>s+a.kcal,0);
+  const fattore = (entry.fattori && entry.fattori[pastoId]!=null) ? entry.fattori[pastoId] : 1;
+  const titolo = viaExtra
+    ? (extraDiQuestoPasto.length===1 ? extraDiQuestoPasto[0].nome : `${extraDiQuestoPasto.length} alimenti extra`)
+    : (op ? op.titolo : '—');
+  const kcalRiga = viaExtra ? kcalExtra : (op ? Math.round(pastoOpTotals(op, pastoId, entry).kcal) : 0);
+  /* Suggerimento kcal per un pasto non ancora fatto: quanto "varrebbe"
+     mangiare a questo pasto per restare in target, in base a quanto e'
+     gia' stato consumato oggi e a quanti pasti restano. Si aggiorna da
+     solo ad ogni render, quindi segue in automatico i pasti gia' spuntati. */
+  const consigliato = (!fatto && op) ? kcalConsigliatoPasto(entry, pastoId) : null;
+  const showConsiglio = consigliato!=null && Math.abs(consigliato - op.kcal) >= 15;
+  const showPorzione = fatto && !viaExtra && fattore!==1;
+  const showQtyPanel = fatto && !viaExtra && op;
+  return `
+    <div class="pasto-card meal-row-card${fatto?' done':''}" data-pasto="${pastoId}" style="margin-bottom:10px;">
+      <div class="meal-row">
+        <button class="ing-check${fatto?' on':''}" data-meal-check="${pastoId}" title="${fatto?'Segna come non fatto':'Segna come fatto'}">${ICO.check}</button>
+        <div class="meal-row-main" data-meal-open="${pastoId}">
+          <div class="meal-row-icon">${ALIM_PASTI_ICONA[pastoId]}</div>
+          <div class="meal-row-info">
+            <div class="meal-row-name">${ALIM_PASTI_LABEL[pastoId]}</div>
+            <div class="meal-row-opt">${viaExtra?'🔁 ':''}${titolo}${op&&!viaExtra?` <span class="meal-row-var">variante ${op.letteraOrigine}</span>`:''}${showPorzione?` <span class="meal-row-porzione">porzione ${Math.round(fattore*100)}%</span>`:''}</div>
+            ${showConsiglio ? `<div class="meal-row-consigliato">Per restare in target ti conviene circa ${consigliato} kcal qui (invece di ${op.kcal})</div>` : ''}
+          </div>
+          <div class="meal-row-kcal" id="mealKcalTotal-${pastoId}">${kcalRiga}<span>kcal</span></div>
+          <div class="hc-arrow">${ICO.chev}</div>
+        </div>
+      </div>
+      ${showConsiglio ? `<button class="meal-row-adatta" data-adatta-target="${pastoId}">🎯 Adatta la porzione a ${consigliato} kcal</button>` : ''}
+      ${showQtyPanel ? `
+        <button class="meal-row-qty-toggle" data-meal-qty-toggle="${pastoId}">Quantità da mangiare — tocca i grammi per modificarli ▾</button>
+        <div class="meal-row-qty-detail" id="mealQtyDetail-${pastoId}">
+          <div class="ing-list" style="padding:0;">
+            ${op.ingredienti.map((ing,idx)=>ingRowEditableHTML(ing, idx, pastoId, grammiIngrediente(ing, idx, pastoId, entry), 'meal')).join('')}
+          </div>
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+function extraGroupsHTML(entry){
+  const extra = entry.alimentiExtra || [];
+  if(!extra.length) return `<p style="font-size:12px;color:var(--text-faint);margin:2px 2px 14px;">Nessun alimento extra registrato oggi.</p>`;
+  return ALIM_PASTI_ORDINE.map(pid=>{
+    const voci = extra.filter(a=>a.pasto===pid);
+    if(!voci.length) return '';
+    const subKcal = voci.reduce((s,a)=>s+a.kcal,0);
+    return `
+      <div class="pasto-card" style="margin-bottom:10px;">
+        <div class="pasto-head" style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="pasto-title" style="text-transform:none;font-size:12.5px;color:var(--text);font-weight:700;">${ALIM_PASTI_ICONA[pid]} ${ALIM_PASTI_LABEL[pid]}</div>
+          <div style="font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;">${subKcal} kcal</div>
+        </div>
+        <div class="ing-list">
+          ${voci.map(a=>`
+            <div class="ing-row">
+              <div class="ing-main">
+                <div class="ing-name">${a.nome}${a.marca?` <span style="color:var(--text-faint);font-weight:400;">· ${a.marca}</span>`:''}</div>
+                <div class="ing-suggested">${a.grammi} g · P ${fmtMacro(a.prot)} · C ${fmtMacro(a.carb)} · G ${fmtMacro(a.grassi)}</div>
+              </div>
+              <div class="ing-kcal">${a.kcal} kcal</div>
+              <button class="ing-check ing-check-del" data-extra-del="${a.id}" title="Elimina" style="border-color:var(--danger);color:var(--danger);flex-shrink:0;">${ICO.trash}</button>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+function renderMealsInto(){
+  const entry = state.alimEntry;
+  const totals = entryTotals(entry);
   const summaryEl = document.getElementById('macroSummary');
   if(summaryEl) summaryEl.innerHTML = macroSummaryHTML(totals);
+  const mealsEl = document.getElementById('mealsBody');
+  if(mealsEl){
+    mealsEl.innerHTML = ALIM_PASTI_ORDINE.map(pid=>mealRowHTML(pid, entry)).join('');
+    wireMealsInputs();
+  }
+  const extraEl = document.getElementById('extraBody');
+  if(extraEl){
+    extraEl.innerHTML = extraGroupsHTML(entry);
+    wireExtraInputs();
+  }
 }
+function wireMealsInputs(){
+  document.querySelectorAll('[data-meal-check]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); toggleMealDone(btn.dataset.mealCheck); });
+  });
+  document.querySelectorAll('[data-meal-open]').forEach(el=>{
+    el.addEventListener('click', ()=> apriSelettoreOpzione(el.dataset.mealOpen));
+  });
+  document.querySelectorAll('[data-adatta-target]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); adattaPortionaAlTarget(btn.dataset.adattaTarget); });
+  });
+  document.querySelectorAll('[data-meal-qty-toggle]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const pid = btn.dataset.mealQtyToggle;
+      const detail = document.getElementById('mealQtyDetail-'+pid);
+      if(!detail) return;
+      const open = detail.classList.toggle('open');
+      btn.textContent = open ? 'Nascondi quantità ▴' : 'Quantità da mangiare — tocca i grammi per modificarli ▾';
+    });
+  });
+  /* Ogni pasto gia' segnato fatto (non via extra) mostra i grammi
+     modificabili: collega ciascuno al ricalcolo live del totale del pasto
+     e del riepilogo giornaliero, senza ridisegnare tutta la schermata. */
+  const entry = state.alimEntry;
+  ALIM_PASTI_ORDINE.forEach(pid=>{
+    if(entry.pastiFatti[pid] && !entry.pastiViaExtra[pid]){
+      const op = trovaOpzione(pid, entry.opzioni[pid]);
+      if(!op) return;
+      wireIngQtyInputs(op, pid, 'meal', ()=>{
+        const t = ricalcolaTotaleDaInputQty(op, pid, 'meal');
+        const kcalEl = document.getElementById('mealKcalTotal-'+pid);
+        if(kcalEl) kcalEl.innerHTML = `${fmtKcal(t.kcal)}<span>kcal</span>`;
+        const summaryEl = document.getElementById('macroSummary');
+        if(summaryEl) summaryEl.innerHTML = macroSummaryHTML(entryTotals(state.alimEntry));
+      });
+    }
+  });
+}
+function wireExtraInputs(){
+  document.querySelectorAll('[data-extra-del]').forEach(btn=>{
+    btn.addEventListener('click', ()=> rimuoviAlimentoExtra(btn.dataset.extraDel));
+  });
+}
+function toggleMealDone(pastoId){
+  const entry = state.alimEntry;
+  const isOn = !!entry.pastiFatti[pastoId];
+  if(!entry.fattori) entry.fattori = {};
+  if(isOn){
+    entry.pastiFatti[pastoId] = false;
+    entry.pastiViaExtra[pastoId] = false;
+    entry.fattori[pastoId] = 1; // torna alla porzione intera, pronto per un nuovo "adatta al target"
+    if(!entry.qtyOverride) entry.qtyOverride = {};
+    entry.qtyOverride[pastoId] = {}; // rimuove eventuali grammature corrette a mano
+  } else {
+    entry.pastiFatti[pastoId] = true;
+    entry.pastiViaExtra[pastoId] = false; // segnato a mano: segue il piano, non e' un extra a sostituirlo
+  }
+  renderMealsInto();
+  queueAlimSave();
+}
+function rimuoviAlimentoExtra(id){
+  const entry = state.alimEntry;
+  const voce = (entry.alimentiExtra||[]).find(a=>a.id===id);
+  entry.alimentiExtra = (entry.alimentiExtra||[]).filter(a=>a.id!==id);
+  if(voce && voce.pasto!=null){
+    const rimasti = entry.alimentiExtra.filter(a=>a.pasto===voce.pasto);
+    /* Se non restano altri extra su questo pasto e il pasto era segnato
+       fatto solo grazie all'extra appena rimosso, torna "non fatto" —
+       altrimenti risulterebbe un pasto fatto con 0 kcal, fantasma. */
+    if(!rimasti.length && entry.pastiViaExtra[voce.pasto]){
+      entry.pastiFatti[voce.pasto] = false;
+      entry.pastiViaExtra[voce.pasto] = false;
+    }
+  }
+  renderMealsInto();
+  queueAlimSave();
+}
+function opzioneSheetHTML(){
+  return `
+    <div class="picker-sheet" id="pickerSheetOpzione">
+      <div class="picker-sheet-inner">
+        <div class="picker-head"><h3 id="pickerOpzioneTitle">Scegli opzione</h3><button id="pickerCloseOpzione">${ICO.close}</button></div>
+        <div class="picker-scroll" id="pickerOpzioneScroll"></div>
+      </div>
+    </div>
+  `;
+}
+function renderPickerOpzioneBody(pastoId){
+  const scroll = document.getElementById('pickerOpzioneScroll');
+  if(!scroll) return;
+  const opzioni = opzioniPerPasto()[pastoId] || [];
+  const selId = state.alimEntry.opzioni[pastoId];
+  const entry = state.alimEntry;
+  scroll.innerHTML = `
+    <p style="padding:0 12px;margin:0 0 10px;font-size:11.5px;color:var(--text-faint);line-height:1.5;">Sono le versioni di questo pasto usate nelle varianti del piano — intercambiabili, ognuna con il proprio apporto. Tocca "Ingredienti" per vedere le quantità: per quella in uso puoi anche correggere i grammi (es. solo 50g di yogurt).</p>
+    <div class="picker-group">
+      ${opzioni.map(o=>{
+        const sel = o.id===selId;
+        return `
+        <div class="opz-item-card ${sel?'sel':''}" data-opid="${o.id}">
+          <button class="opz-item-select" data-select-opid="${o.id}">
+            <div class="opz-item-row">
+              <span class="opz-item-titolo">${o.titolo}${sel?' <span class="opz-item-badge">In uso</span>':''}</span>
+              <span class="opz-item-kcal" id="${sel?`opzKcalTotal-${o.id}`:''}">${sel?Math.round(pastoOpTotals(o,pastoId,entry).kcal):o.kcal} kcal</span>
+            </div>
+            <div class="opz-item-macro"><span id="${sel?`opzMacroTotal-${o.id}`:''}">${sel?(()=>{const t=pastoOpTotals(o,pastoId,entry);return `P ${fmtMacro(t.p)}g · C ${fmtMacro(t.c)}g · G ${fmtMacro(t.g)}g`;})():`P ${o.p}g · C ${o.c}g · G ${o.g}g`}</span> · <span class="opz-item-var">variante ${o.letteraOrigine}</span></div>
+          </button>
+          <button class="opz-item-toggle" data-toggle-opid="${o.id}">${sel?'Ingredienti e quantità — modificabili ▾':'Ingredienti e quantità ▾'}</button>
+          <div class="opz-item-detail" id="opzDetail-${o.id}">
+            <div class="ing-list" style="padding:0;">
+              ${sel
+                ? o.ingredienti.map((ing,idx)=>ingRowEditableHTML(ing, idx, pastoId, grammiIngrediente(ing, idx, pastoId, entry), 'picker')).join('')
+                : o.ingredienti.map(ing=>ingRowReadOnlyHTML(ing)).join('')}
+            </div>
+          </div>
+        </div>
+      `;}).join('')}
+    </div>
+  `;
+  scroll.querySelectorAll('.opz-item-select').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      const opid = btn.dataset.selectOpid;
+      state.alimEntry.opzioni[pastoId] = opid;
+      if(!state.alimEntry.fattori) state.alimEntry.fattori = {};
+      state.alimEntry.fattori[pastoId] = 1; // nuova opzione scelta a mano: porzione intera finche' non si "adatta al target"
+      if(!state.alimEntry.qtyOverride) state.alimEntry.qtyOverride = {};
+      state.alimEntry.qtyOverride[pastoId] = {}; // niente correzioni manuali residue dall'opzione precedente
+      document.getElementById('pickerSheetOpzione').classList.remove('open');
+      renderMealsInto();
+      queueAlimSave();
+    });
+  });
+  scroll.querySelectorAll('.opz-item-toggle').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const id = btn.dataset.toggleOpid;
+      const detail = document.getElementById('opzDetail-'+id);
+      const open = detail.classList.toggle('open');
+      const isSel = id===selId;
+      btn.textContent = open
+        ? 'Nascondi ingredienti ▴'
+        : (isSel ? 'Ingredienti e quantità — modificabili ▾' : 'Ingredienti e quantità ▾');
+    });
+  });
+  const selOp = opzioni.find(o=>o.id===selId);
+  if(selOp){
+    wireIngQtyInputs(selOp, pastoId, 'picker', ()=>{
+      const t = ricalcolaTotaleDaInputQty(selOp, pastoId, 'picker');
+      const kcalEl = document.getElementById(`opzKcalTotal-${selOp.id}`);
+      if(kcalEl) kcalEl.textContent = `${fmtKcal(t.kcal)} kcal`;
+      const macroEl = document.getElementById(`opzMacroTotal-${selOp.id}`);
+      if(macroEl) macroEl.textContent = `P ${fmtMacro(t.p)}g · C ${fmtMacro(t.c)}g · G ${fmtMacro(t.g)}g`;
+      const mealKcalEl = document.getElementById('mealKcalTotal-'+pastoId);
+      if(mealKcalEl) mealKcalEl.innerHTML = `${fmtKcal(t.kcal)}<span>kcal</span>`;
+      const summaryEl = document.getElementById('macroSummary');
+      if(summaryEl) summaryEl.innerHTML = macroSummaryHTML(entryTotals(state.alimEntry));
+    });
+  }
+}
+function apriSelettoreOpzione(pastoId){
+  document.getElementById('pickerOpzioneTitle').textContent = ALIM_PASTI_LABEL[pastoId];
+  renderPickerOpzioneBody(pastoId);
+  document.getElementById('pickerSheetOpzione').classList.add('open');
+}
+
 let alimSaveTimeout = null;
+let currentAlimGiorno = null; /* variante di partenza del giorno aperto: serve per tornare indietro dalla ricerca alimenti */
 function flashAlimSavePill(){
   const pill = document.getElementById('alimSavePill');
   if(!pill) return;
@@ -4183,107 +4847,545 @@ function flashAlimSavePill(){
   clearTimeout(flashAlimSavePill._t);
   flashAlimSavePill._t = setTimeout(()=> pill.classList.remove('show'), 1200);
 }
-function queueAlimSave(giorno){
+/* Salvataggio con debounce (700ms), sempre come bozza (finalized:false) —
+   stessa identica scelta della versione precedente dell'app: solo il
+   pulsante "Salva registrazione" marca la giornata come conclusa. */
+let alimSavePending = false;
+function queueAlimSave(){
   clearTimeout(alimSaveTimeout);
+  alimSavePending = true;
   alimSaveTimeout = setTimeout(async ()=>{
+    alimSaveTimeout = null;
     try{
-      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities);
+      await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:false });
       flashAlimSavePill();
     }catch(e){ showToast('Errore salvataggio'); }
+    finally{ alimSavePending = false; }
   }, 700);
 }
-function setAlimQty(giorno, key, qty){
-  state.alimQuantities[key] = qty;
-  const input = app.querySelector(`[data-ing-qty="${key}"]`);
-  if(input) input.value = qty;
-  const checkBtn = app.querySelector(`[data-ing-check="${key}"]`);
-  if(checkBtn) checkBtn.classList.toggle('on', qty > 0);
+/* Se torni indietro (o esci in qualunque altro modo) entro i 700ms del
+   debounce, senza questo la modifica appena fatta (es. i grammi corretti
+   a mano) non farebbe in tempo a salvarsi: uscendo, la schermata da cui
+   vieni ricarica i dati dal server e ti ritroveresti quelli vecchi.
+   Per questo ogni uscita dalla schermata del giorno aspetta prima che
+   il salvataggio in sospeso sia davvero completato. */
+async function flushAlimSaveNow(){
+  if(!alimSavePending) return;
+  clearTimeout(alimSaveTimeout);
+  alimSaveTimeout = null;
+  alimSavePending = false;
+  try{
+    await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:false });
+    flashAlimSavePill();
+  }catch(e){ showToast('Errore salvataggio'); }
 }
-function wireAlimInputs(giorno){
-  app.querySelectorAll('[data-ing-qty]').forEach(input=>{
-    input.addEventListener('input', ()=>{
-      const key = input.dataset.ingQty;
-      const v = parseFloat(input.value);
-      const qty = isNaN(v) ? 0 : v;
-      state.alimQuantities[key] = qty;
-      const checkBtn = app.querySelector(`[data-ing-check="${key}"]`);
-      if(checkBtn) checkBtn.classList.toggle('on', qty > 0);
-      recomputeAlimTotals(giorno);
-      queueAlimSave(giorno);
-    });
-  });
-  app.querySelectorAll('[data-ing-check]').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      const key = btn.dataset.ingCheck;
-      const isOn = btn.classList.contains('on');
-      if(isOn){
-        setAlimQty(giorno, key, 0);
-      } else {
-        const ing = findIngredientByKey(giorno, key);
-        setAlimQty(giorno, key, ing ? ing.def : 0);
-      }
-      recomputeAlimTotals(giorno);
-      queueAlimSave(giorno);
-    });
-  });
-}
-async function loadExistingAlimEntry(giorno, forDate){
-  const entry = await loadAlimEntry(forDate);
-  if(state.alimDate !== forDate) return; // l'utente ha gia' cambiato data: non sovrascrivere
-  if(entry && entry.giornoId === giorno.id && entry.quantities){
-    state.alimQuantities = { ...entry.quantities };
-    Object.keys(state.alimQuantities).forEach(key=> setAlimQty(giorno, key, state.alimQuantities[key]));
-    recomputeAlimTotals(giorno);
-  }
-}
-/* forDate: se presente, apre il giorno gia' compilato con i dati salvati per
-   quella data specifica (modifica da Storico) invece che con i valori a 0 di
-   una nuova registrazione; state.alimReturnTo ricorda dove tornare indietro. */
-function renderGiornoAlimentare(giornoId, forDate){
+/* nuovaEntryDaGiorno e' definita piu' sopra (usata anche da startAlimVariant). */
+async function renderGiornoAlimentare(giornoId, forDate){
   state.screen = 'alimGiorno';
   closeAllOverlays();
   setTimerBarVisible(false);
-  const giorno = ALIM_GIORNI.find(g=>g.id===giornoId);
+  const giorno = giornoOrLibero(giornoId);
   if(!giorno){ renderAlimentazione(); return; }
+  const isLibero = giorno.id === ALIM_LIBERO_ID;
   const today = todayLocalISO();
   const useDate = forDate || today;
   state.alimDate = useDate;
-  state.alimQuantities = {};
   state.alimReturnTo = forDate ? 'storico' : 'alimentazione';
-  const goBack = ()=> state.alimReturnTo === 'storico' ? renderStoricoAlimentazione() : renderAlimentazione();
+  currentAlimGiorno = giorno;
+  const goBack = async ()=>{
+    await flushAlimSaveNow();
+    state.alimReturnTo === 'storico' ? renderStoricoAlimentazione() : renderAlimentazione();
+  };
+
+  const esistente = await loadAlimEntry(useDate);
+  state.alimEntry = (esistente && esistente.giornoBaseId === giorno.id) ? esistente : nuovaEntryDaGiorno(giorno);
+  if(!state.alimEntry.pastiFatti) state.alimEntry.pastiFatti = {};
+  if(!state.alimEntry.pastiViaExtra) state.alimEntry.pastiViaExtra = {};
+  if(!state.alimEntry.alimentiExtra) state.alimEntry.alimentiExtra = [];
+  if(!state.alimEntry.integratori) state.alimEntry.integratori = {};
+  if(!state.alimEntry.fattori) state.alimEntry.fattori = {};
+  if(!state.alimEntry.qtyOverride) state.alimEntry.qtyOverride = {};
+
+  const totals = entryTotals(state.alimEntry);
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><div class="eyebrow">VARIANTE ${giorno.lettera}</div><h1>${giorno.cardSub}</h1></div>
+      <div class="titles"><div class="eyebrow">${isLibero ? 'GIORNO LIBERO' : `VARIANTE ${giorno.lettera} · di partenza`}</div><h1>${giorno.cardSub}</h1></div>
     </div>
     <div class="wrap">
       <div class="date-bar">
         <div><label>Data</label><input type="date" id="alimDateInput" value="${useDate}"></div>
         <span class="save-pill" id="alimSavePill">salvato</span>
       </div>
-      ${giorno.note ? `<div class="warmup-note" style="border-color:rgba(63,199,184,0.25);">${ICO.info}<span>${giorno.note}</span></div>` : ''}
+      <div class="warmup-note">${ICO.info}<span>Ogni pasto è intercambiabile: tocca il nome per scegliere tra le versioni usate nelle varianti del piano. La spunta lo segna come fatto con l'opzione scelta.</span></div>
       <div class="section-label">Rispetto al target</div>
-      <div class="macro-summary" id="macroSummary"></div>
-      <div class="section-label">Pasti — spunta ciò che hai mangiato o scrivi la quantità</div>
-      ${giorno.pasti.map(pasto=>pastoCardHTML(pasto)).join('')}
+      <div class="macro-summary" id="macroSummary">${macroSummaryHTML(totals)}</div>
+      <div class="section-label">Integratori — uguali ogni giorno, non dimenticarli</div>
+      ${integratoriCardHTML()}
+      <div class="section-label">Pasti — tocca per cambiare opzione, spunta se fatto</div>
+      <div id="mealsBody">${ALIM_PASTI_ORDINE.map(pid=>mealRowHTML(pid, state.alimEntry)).join('')}</div>
+      <div class="section-label">Fuori piano</div>
+      <div class="pasto-card" style="padding:14px 16px;">
+        <p style="margin:0 0 12px;font-size:12px;color:var(--text-muted);line-height:1.55;">Qualcosa non previsto dal piano? Cercalo e aggiungilo con la grammatura giusta: se il pasto non era ancora segnato fatto lo sostituisce (niente doppio conteggio), se lo era già si somma.</p>
+        <div id="extraBody">${extraGroupsHTML(state.alimEntry)}</div>
+        <button class="cta-next" style="margin-top:4px;" id="btnCercaAlimento">
+          <div class="cta-next-title">+ Cerca e aggiungi alimento</div>
+          <div class="cta-next-sub">Open Food Facts e USDA FoodData Central</div>
+          <div class="cta-next-arrow">${ICO.chev}</div>
+        </button>
+      </div>
       <button class="cta" id="btnSaveAlim">Salva registrazione</button>
     </div>
+    ${opzioneSheetHTML()}
   `;
   document.getElementById('btnBack').onclick = goBack;
-  document.getElementById('alimDateInput').onchange = (e)=>{
-    state.alimDate = e.target.value;
-    queueAlimSave(giorno);
+  document.getElementById('alimDateInput').onchange = async (e)=>{
+    const nuovaData = e.target.value;
+    const dataPrecedente = state.alimDate;
+    if(nuovaData === dataPrecedente) return;
+    /* Prima di spostare la registrazione su un'altra data, controlliamo che
+       quella data non abbia gia' una sua registrazione: altrimenti il
+       salvataggio la sovrascriverebbe in silenzio con quella che stai
+       modificando ora, perdendo i dati che c'erano gia' li'. */
+    let esistenteAltrove = null;
+    try{ esistenteAltrove = await loadAlimEntry(nuovaData); }catch(e){}
+    if(esistenteAltrove){
+      showConfirm(
+        `Il ${fmtDate(nuovaData)} ha gia' una registrazione salvata. Spostando questa qui la sostituisci: i dati che c'erano andrebbero persi. Continuare?`,
+        ()=>{ state.alimDate = nuovaData; queueAlimSave(); },
+        'Sostituisci',
+        'Annulla',
+        ()=>{ e.target.value = dataPrecedente; }
+      );
+      return;
+    }
+    state.alimDate = nuovaData;
+    queueAlimSave();
   };
-  wireAlimInputs(giorno);
-  recomputeAlimTotals(giorno);
-  loadExistingAlimEntry(giorno, useDate);
+  wireMealsInputs();
+  wireExtraInputs();
+  wireIntegratoriInputs();
+  applyIntegratoriState();
+  document.getElementById('pickerCloseOpzione').onclick = ()=> document.getElementById('pickerSheetOpzione').classList.remove('open');
+  document.getElementById('pickerSheetOpzione').addEventListener('click',(e)=>{ if(e.target.id==='pickerSheetOpzione') e.currentTarget.classList.remove('open'); });
+  document.getElementById('btnCercaAlimento').onclick = ()=> renderCercaAlimentoExtra();
   document.getElementById('btnSaveAlim').onclick = async ()=>{
+    clearTimeout(alimSaveTimeout);
+    alimSaveTimeout = null;
+    alimSavePending = false;
     try{
-      await saveAlimEntry(state.alimDate, giorno.id, state.alimQuantities, true);
+      await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:true });
     }catch(e){ showToast('Errore salvataggio — riprova'); return; }
     showToast('Registrazione salvata ✓');
     goBack();
   };
+}
+
+/* ============== ALIMENTAZIONE > ricerca alimento extra (Open Food Facts + USDA) ==============
+   Stessa identica logica di ricerca usata da "Beat Yourself" (l'app di
+   Antonio): due fonti in parallelo, unite e deduplicate — porzione quasi
+   letterale del suo codice, dato che qui non dipende affatto dal modello
+   dati di questa app, solo da rete e parsing.
+   NOTA DI VERIFICA: nell'ambiente di sviluppo di questa sessione la rete
+   verso openfoodfacts.org e nal.usda.gov e' bloccata (proxy con allowlist,
+   sia lato cloud sia lato Mac) — le chiamate qui sotto sono state verificate
+   dal vivo aprendo la pagina nel browser reale, non da riga di comando: e'
+   il fetch del browser a girare, che non passa da quel proxy. */
+let ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoId:null };
+let alimentiPersonalizzatiCache = null;
+let alimentiRecentiCache = null;
+
+const ALIM_CUSTOM_KEY = 'alim2-alimenti-custom-v1';
+const ALIM_RECENTI_KEY = 'alim2-alimenti-recenti-v1';
+async function loadAlimentiCustom(){
+  try{ const r = await window.storage.get(ALIM_CUSTOM_KEY, false); return (r&&r.value)?JSON.parse(r.value):[]; }catch(e){ return []; }
+}
+async function saveAlimentiCustom(lista){ await window.storage.set(ALIM_CUSTOM_KEY, JSON.stringify(lista), false); }
+async function loadAlimentiRecenti(){
+  try{ const r = await window.storage.get(ALIM_RECENTI_KEY, false); return (r&&r.value)?JSON.parse(r.value):[]; }catch(e){ return []; }
+}
+async function saveAlimentiRecenti(lista){ await window.storage.set(ALIM_RECENTI_KEY, JSON.stringify(lista), false); }
+
+const USDA_API_KEY = 'DEMO_KEY'; // gratuita, senza approvazione: https://fdc.nal.usda.gov/api-key-signup.html — limite 30 richieste/ora, una chiave personale no
+function mappaProdottiOFF(lista){
+  return (lista||[])
+    .filter(p=>p.product_name && p.nutriments && p.nutriments['energy-kcal_100g']!=null)
+    .map(p=>({
+      fonte:'off',
+      nome: p.product_name,
+      marca: p.brands ? p.brands.split(',')[0].trim() : '',
+      kcal100: Math.round(p.nutriments['energy-kcal_100g']||0),
+      prot100: Math.round((p.nutriments['proteins_100g']||0)*10)/10,
+      carb100: Math.round((p.nutriments['carbohydrates_100g']||0)*10)/10,
+      grassi100: Math.round((p.nutriments['fat_100g']||0)*10)/10,
+    }));
+}
+async function cercaSuOpenFoodFactsLegacy(query){
+  const url = `https://world.openfoodfacts.org/cgi/search.pl?search_terms=${encodeURIComponent(query)}&search_simple=1&action=process&json=1&page_size=24&sort_by=unique_scans_n&fields=product_name,brands,nutriments`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('OFF legacy http '+res.status);
+  const data = await res.json();
+  return mappaProdottiOFF(data.products);
+}
+async function cercaSuOpenFoodFacts(query){
+  try{
+    const url = `https://search.openfoodfacts.org/search?q=${encodeURIComponent(query)}&page_size=24&fields=product_name,brands,nutriments&sort_by=-unique_scans_n`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('search-a-licious http '+res.status);
+    const data = await res.json();
+    const hits = data.hits || data.products;
+    if(!Array.isArray(hits)) throw new Error('formato di risposta inatteso');
+    return mappaProdottiOFF(hits);
+  }catch(e){
+    return cercaSuOpenFoodFactsLegacy(query);
+  }
+}
+function titleCaseSeTuttoMaiuscolo(s){
+  if(!s) return s;
+  const lettere = s.replace(/[^A-Za-zÀ-ÖØ-öø-ÿ]/g,'');
+  const maiuscole = s.replace(/[^A-ZÀ-Ö]/g,'');
+  if(lettere.length>3 && maiuscole.length/lettere.length>0.8){
+    return s.toLowerCase().replace(/(^|[\s,\/])([a-zà-ÿ])/g,(m,p1,p2)=>p1+p2.toUpperCase());
+  }
+  return s;
+}
+async function cercaSuUSDA(query){
+  if(!USDA_API_KEY) return [];
+  const url = `https://api.nal.usda.gov/fdc/v1/foods/search?api_key=${USDA_API_KEY}&query=${encodeURIComponent(query)}&pageSize=15&dataType=Foundation,SR%20Legacy,Branded`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('USDA http '+res.status);
+  const data = await res.json();
+  return (data.foods||[]).map(f=>{
+    const trovaValore = (nome, unitaAttesa) => {
+      const n = (f.foodNutrients||[]).find(x=> x.nutrientName===nome && (!unitaAttesa || x.unitName===unitaAttesa));
+      return (n && n.value!=null) ? n.value : null;
+    };
+    const kcal100 = trovaValore('Energy','KCAL');
+    if(kcal100==null) return null;
+    return {
+      fonte:'usda',
+      nome: titleCaseSeTuttoMaiuscolo(f.description),
+      marca: f.brandOwner || '',
+      kcal100: Math.round(kcal100),
+      prot100: Math.round((trovaValore('Protein')||0)*10)/10,
+      carb100: Math.round((trovaValore('Carbohydrate, by difference')||0)*10)/10,
+      grassi100: Math.round((trovaValore('Total lipid (fat)')||0)*10)/10,
+    };
+  }).filter(Boolean);
+}
+function dedupRisultatiAlimenti(lista){
+  const visti = new Set();
+  return lista.filter(p=>{
+    const chiave = (p.nome+'|'+(p.marca||'')).toLowerCase().trim();
+    if(visti.has(chiave)) return false;
+    visti.add(chiave);
+    return true;
+  });
+}
+async function eseguiRicercaAlimento(){
+  const input = document.getElementById('foodSearchInput');
+  const query = input ? input.value.trim() : '';
+  if(!query) return;
+  ricercaAlimentoState.query = query;
+  ricercaAlimentoState.loading = true;
+  ricercaAlimentoState.errore = null;
+  ricercaAlimentoState.risultati = [];
+  renderCercaAlimentoExtra();
+  const [off, usda] = await Promise.allSettled([ cercaSuOpenFoodFacts(query), cercaSuUSDA(query) ]);
+  if(off.status==='rejected' && usda.status==='rejected'){
+    ricercaAlimentoState.errore = 'Ricerca non riuscita: controlla la connessione e riprova.';
+  } else {
+    const risultatiOFF = off.status==='fulfilled' ? off.value : [];
+    const risultatiUSDA = usda.status==='fulfilled' ? usda.value : [];
+    ricercaAlimentoState.risultati = dedupRisultatiAlimenti([...risultatiOFF, ...risultatiUSDA]).slice(0,40);
+  }
+  ricercaAlimentoState.loading = false;
+  renderCercaAlimentoExtra();
+}
+function pastoSuggeritoOra(){
+  const FASCE = [ ['colazione',7.5], ['spuntinoAM',11], ['pranzo',14], ['spuntinoPM',18.5], ['cena',20.5] ];
+  const ora = new Date(); const h = ora.getHours()+ora.getMinutes()/60;
+  let best = FASCE[0][0], bestDist = Infinity;
+  FASCE.forEach(([pid,r])=>{ const d=Math.abs(h-r); if(d<bestDist){ bestDist=d; best=pid; } });
+  return best;
+}
+function selezionaAlimentoRicerca(i){
+  ricercaAlimentoState.selezionato = ricercaAlimentoState.risultati[i];
+  ricercaAlimentoState.grammi = 100;
+  ricercaAlimentoState.pastoId = pastoSuggeritoOra();
+  renderCercaAlimentoExtra();
+}
+function selezionaAlimentoPersonalizzato(i){
+  const p = (alimentiPersonalizzatiCache||[])[i];
+  if(!p) return;
+  ricercaAlimentoState.selezionato = { nome:p.nome, marca:'personalizzato', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100 };
+  ricercaAlimentoState.grammi = 100;
+  ricercaAlimentoState.pastoId = pastoSuggeritoOra();
+  renderCercaAlimentoExtra();
+}
+function selezionaAlimentoRecente(i){
+  const p = (alimentiRecentiCache||[])[i];
+  if(!p) return;
+  ricercaAlimentoState.selezionato = p;
+  ricercaAlimentoState.grammi = 100;
+  ricercaAlimentoState.pastoId = pastoSuggeritoOra();
+  renderCercaAlimentoExtra();
+}
+function sceglieCategoriaPastoExtra(pid){ ricercaAlimentoState.pastoId = pid; renderCercaAlimentoExtra(); }
+async function registraAlimentoRecente(p){
+  const chiave = a=>(a.nome+'|'+(a.marca||'')).toLowerCase();
+  let lista = await loadAlimentiRecenti();
+  lista = lista.filter(a=>chiave(a)!==chiave(p));
+  lista.unshift({ nome:p.nome, marca:p.marca||'', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100 });
+  lista = lista.slice(0,8);
+  alimentiRecentiCache = lista;
+  try{ await saveAlimentiRecenti(lista); }catch(e){}
+}
+function eliminaAlimentoPersonalizzato(id){
+  showConfirm('Eliminare questo alimento/ricetta personalizzato?', async ()=>{
+    try{
+      const lista = (alimentiPersonalizzatiCache||[]).filter(p=>p.id!==id);
+      alimentiPersonalizzatiCache = lista;
+      await saveAlimentiCustom(lista);
+      renderCercaAlimentoExtra();
+    }catch(e){ showToast('Errore — riprova'); }
+  }, 'Elimina', 'Annulla');
+}
+async function renderCercaAlimentoExtra(){
+  state.screen = 'alimCercaExtra';
+  closeAllOverlays();
+  setTimerBarVisible(false);
+  if(alimentiPersonalizzatiCache===null) alimentiPersonalizzatiCache = await loadAlimentiCustom();
+  if(alimentiRecentiCache===null) alimentiRecentiCache = await loadAlimentiRecenti();
+  const s = ricercaAlimentoState;
+  const goBack = async ()=>{
+    await flushAlimSaveNow(); // se avevi corretto una quantita' prima di aprire la ricerca, non deve perdersi tornando indietro
+    renderGiornoAlimentare(currentAlimGiorno.id, state.alimReturnTo==='storico'?state.alimDate:undefined);
+  };
+
+  if(s.selezionato){
+    const p = s.selezionato;
+    const g = s.grammi||0;
+    const fattore = g/100;
+    const kcal = Math.round(p.kcal100*fattore);
+    const prot = Math.round(p.prot100*fattore*10)/10;
+    const carb = Math.round(p.carb100*fattore*10)/10;
+    const grassi = Math.round(p.grassi100*fattore*10)/10;
+    const pastoChipsHtml = ALIM_PASTI_ORDINE.map(pid=>
+      `<div class="chip${pid===s.pastoId?' active':''}" data-pid="${pid}">${ALIM_PASTI_ICONA[pid]} ${ALIM_PASTI_LABEL[pid]}</div>`
+    ).join('');
+    app.innerHTML = `
+      <div class="topbar"><button class="back" id="btnBack">${ICO.back}</button><div class="titles"><h1>${p.nome}</h1></div></div>
+      <div class="wrap">
+        ${p.marca?`<p style="color:var(--text-faint);font-size:12.5px;margin:-6px 0 14px;">${p.marca}</p>`:''}
+        <div class="field"><label>In quale pasto lo aggiungi?</label><div class="chip-row" id="pastoChips">${pastoChipsHtml}</div></div>
+        <div class="field"><label>Quantità (grammi)</label><input type="number" min="1" id="foodGrammiInput" value="${g}"></div>
+        <div class="pasto-card" style="padding:14px 16px;margin-bottom:16px;">
+          <div class="ing-row" style="border-bottom:none;">
+            <div class="ing-main">
+              <div class="ing-suggested">P <b id="fpProt" style="color:var(--text);">${prot}g</b> · C <b id="fpCarb" style="color:var(--text);">${carb}g</b> · G <b id="fpGrassi" style="color:var(--text);">${grassi}g</b></div>
+            </div>
+            <div class="ing-kcal" id="fpKcalLine" style="width:auto;">${kcal} kcal</div>
+          </div>
+        </div>
+        <button class="cta" id="btnConfermaExtra">Aggiungi a oggi</button>
+        <button class="text-link-btn" id="btnTornaRicerca">← Torna alla ricerca</button>
+      </div>
+    `;
+    document.getElementById('btnBack').onclick = goBack;
+    document.getElementById('btnTornaRicerca').onclick = ()=>{ ricercaAlimentoState.selezionato=null; renderCercaAlimentoExtra(); };
+    document.querySelectorAll('#pastoChips .chip').forEach(chip=>{
+      chip.addEventListener('click', ()=> sceglieCategoriaPastoExtra(chip.dataset.pid));
+    });
+    document.getElementById('foodGrammiInput').addEventListener('input', (e)=>{
+      const gg = Math.max(0, Number(e.target.value)||0);
+      ricercaAlimentoState.grammi = gg;
+      const f = gg/100;
+      document.getElementById('fpProt').textContent = (Math.round(p.prot100*f*10)/10)+'g';
+      document.getElementById('fpCarb').textContent = (Math.round(p.carb100*f*10)/10)+'g';
+      document.getElementById('fpGrassi').textContent = (Math.round(p.grassi100*f*10)/10)+'g';
+      document.getElementById('fpKcalLine').textContent = Math.round(p.kcal100*f)+' kcal';
+    });
+    document.getElementById('btnConfermaExtra').onclick = ()=> confermaAggiungiAlimentoExtra();
+    return;
+  }
+
+  let risultatiHtml = '';
+  if(s.loading){
+    risultatiHtml = `<div class="cron-empty">Cerco…</div>`;
+  } else if(s.errore){
+    risultatiHtml = `<div class="cron-empty">${s.errore}</div>`;
+  } else if(s.risultati.length){
+    risultatiHtml = s.risultati.map((p,i)=>`
+      <button class="week-day-row" data-i="${i}" style="text-align:left;">
+        <div class="wdr-info">
+          <div class="wdr-variant" style="color:var(--text);">${p.nome}</div>
+          <div class="wdr-sub">${p.marca ? p.marca : (p.fonte==='usda' ? 'USDA · nome in inglese' : 'Open Food Facts')} · ${p.kcal100} kcal /100g</div>
+        </div>
+        <div class="hc-arrow">${ICO.chev}</div>
+      </button>
+    `).join('');
+  } else if(s.query){
+    risultatiHtml = `<div class="cron-empty">Nessun risultato per "${s.query}".<br>Prova un nome più semplice o generico.</div>`;
+  }
+
+  const recentiHtml = (!s.query && alimentiRecentiCache.length) ? `
+    <div class="section-label">Aggiunti di recente</div>
+    ${alimentiRecentiCache.map((p,i)=>`
+      <button class="week-day-row" data-recente="${i}" style="text-align:left;">
+        <div class="wdr-info"><div class="wdr-variant" style="color:var(--text);">${p.nome}</div><div class="wdr-sub">${p.marca||''} · ${p.kcal100} kcal /100g</div></div>
+        <div class="hc-arrow">${ICO.chev}</div>
+      </button>
+    `).join('')}
+  ` : '';
+  const personalizzatiHtml = (!s.query && alimentiPersonalizzatiCache.length) ? `
+    <div class="section-label">I tuoi alimenti e ricette</div>
+    ${alimentiPersonalizzatiCache.map((p,i)=>`
+      <div class="week-day-row" style="cursor:default;">
+        <div class="wdr-info" data-personalizzato="${i}" style="cursor:pointer;flex:1;"><div class="wdr-variant" style="color:var(--text);">${p.nome}</div><div class="wdr-sub">Personalizzato · ${p.kcal100} kcal /100g</div></div>
+        <button class="ing-check ing-check-del" data-elimina-custom="${p.id}" title="Elimina" style="border-color:var(--danger);color:var(--danger);">${ICO.trash}</button>
+      </div>
+    `).join('')}
+  ` : '';
+
+  app.innerHTML = `
+    <div class="topbar"><button class="back" id="btnBack">${ICO.back}</button><div class="titles"><h1>Cerca alimento</h1></div></div>
+    <div class="wrap">
+      <div class="field"><label>Cerca un alimento</label><input type="text" id="foodSearchInput" placeholder="Es. yogurt greco, pasta, mela…" value="${s.query}"></div>
+      <button class="cta" id="btnCerca" style="margin-bottom:6px;">Cerca</button>
+      <p style="font-size:11.5px;color:var(--text-faint);margin:0 0 18px;line-height:1.5;">I dati arrivano da Open Food Facts (prodotti confezionati) e USDA FoodData Central (alimenti generici come frutta, verdura, carne — nomi in inglese).</p>
+      ${risultatiHtml}
+      ${!s.query ? `<button class="text-link-btn" id="btnCreaCustom" style="margin:14px 0 6px;">➕ Crea alimento o ricetta personalizzata</button>` : ''}
+      ${personalizzatiHtml}
+      ${recentiHtml}
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = goBack;
+  document.getElementById('btnCerca').onclick = ()=> eseguiRicercaAlimento();
+  document.getElementById('foodSearchInput').addEventListener('keydown',(e)=>{ if(e.key==='Enter') eseguiRicercaAlimento(); });
+  document.querySelectorAll('[data-i]').forEach(btn=> btn.addEventListener('click', ()=> selezionaAlimentoRicerca(parseInt(btn.dataset.i))));
+  document.querySelectorAll('[data-recente]').forEach(btn=> btn.addEventListener('click', ()=> selezionaAlimentoRecente(parseInt(btn.dataset.recente))));
+  document.querySelectorAll('[data-personalizzato]').forEach(el=> el.addEventListener('click', ()=> selezionaAlimentoPersonalizzato(parseInt(el.dataset.personalizzato))));
+  document.querySelectorAll('[data-elimina-custom]').forEach(btn=> btn.addEventListener('click',(e)=>{ e.stopPropagation(); eliminaAlimentoPersonalizzato(btn.dataset.eliminaCustom); }));
+  const btnCreaCustom = document.getElementById('btnCreaCustom');
+  if(btnCreaCustom) btnCreaCustom.onclick = ()=> renderCreaAlimentoCustom();
+  const input = document.getElementById('foodSearchInput');
+  if(input) setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
+}
+/* Salvataggio immediato (non debounced) prima di tornare a
+   renderGiornoAlimentare: quella funzione ricarica l'entry da Firestore, e
+   se il salvataggio fosse ancora in coda rischieremmo di rileggere la
+   versione vecchia e perdere l'alimento appena aggiunto. */
+async function confermaAggiungiAlimentoExtra(){
+  const p = ricercaAlimentoState.selezionato;
+  const g = ricercaAlimentoState.grammi;
+  const fattore = g/100;
+  const pastoId = ricercaAlimentoState.pastoId || 'colazione';
+  const voce = {
+    id: 'extra-'+Date.now(),
+    nome: p.nome, marca: p.marca||'',
+    grammi: g,
+    kcal: Math.round(p.kcal100*fattore),
+    prot: Math.round(p.prot100*fattore*10)/10,
+    carb: Math.round(p.carb100*fattore*10)/10,
+    grassi: Math.round(p.grassi100*fattore*10)/10,
+    pasto: pastoId,
+  };
+  if(!state.alimEntry.alimentiExtra) state.alimEntry.alimentiExtra = [];
+  state.alimEntry.alimentiExtra.push(voce);
+  segnaPastoFattoDaExtra(pastoId);
+  try{
+    clearTimeout(alimSaveTimeout);
+    alimSaveTimeout = null;
+    alimSavePending = false;
+    await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:false });
+  }catch(e){ showToast('Errore salvataggio — riprova'); }
+  await registraAlimentoRecente(p);
+  ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoId:null };
+  renderGiornoAlimentare(currentAlimGiorno.id, state.alimReturnTo==='storico'?state.alimDate:undefined);
+}
+
+/* ============== ALIMENTAZIONE > crea alimento/ricetta personalizzata ==============
+   Per i piatti fatti in casa o non presenti nei due database — stessa idea
+   di Beat Yourself: valori per porzione intera (piu' comodo per una
+   ricetta di cui conosci il totale) oppure per 100g, a scelta. */
+let creaAlimentoModalita = 'porzione';
+function renderCreaAlimentoCustom(){
+  state.screen = 'alimCreaCustom';
+  closeAllOverlays();
+  setTimerBarVisible(false);
+  creaAlimentoModalita = 'porzione';
+  app.innerHTML = `
+    <div class="topbar"><button class="back" id="btnBack">${ICO.back}</button><div class="titles"><h1>Nuovo alimento</h1></div></div>
+    <div class="wrap">
+      <p style="font-size:12px;color:var(--text-faint);margin:0 0 14px;line-height:1.55;">Per un piatto fatto in casa spesso è più comodo inserire i valori dell'intera porzione: il per-100g lo calcolo io, per farlo funzionare come gli altri alimenti nel diario.</p>
+      <div class="field"><label>Nome</label><input type="text" id="caNome" placeholder="Es. Pasta al pomodoro fatta in casa"></div>
+      <div class="chip-row" id="caModalitaChips">
+        <div class="chip active" data-m="porzione">Per porzione intera</div>
+        <div class="chip" data-m="100g">Per 100g</div>
+      </div>
+      <div id="caCampi"></div>
+      <button class="cta" id="salvaAlimentoCustomBtn" style="margin-top:6px;">Salva</button>
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = ()=> renderCercaAlimentoExtra();
+  renderCampiAlimentoCustom();
+  document.querySelectorAll('#caModalitaChips .chip').forEach(chip=>{
+    chip.addEventListener('click', ()=>{
+      document.querySelectorAll('#caModalitaChips .chip').forEach(c=>c.classList.remove('active'));
+      chip.classList.add('active');
+      creaAlimentoModalita = chip.dataset.m;
+      renderCampiAlimentoCustom();
+    });
+  });
+  document.getElementById('salvaAlimentoCustomBtn').onclick = ()=> salvaAlimentoCustom();
+}
+function renderCampiAlimentoCustom(){
+  const box = document.getElementById('caCampi');
+  if(creaAlimentoModalita==='porzione'){
+    box.innerHTML = `
+      <div class="field"><label>Peso totale della porzione (g)</label><input type="number" min="1" id="caPeso"></div>
+      <div class="field"><label>Kcal totali</label><input type="number" min="0" id="caKcal"></div>
+      <div class="field"><label>Proteine totali (g)</label><input type="number" min="0" step="0.1" id="caProt"></div>
+      <div class="field"><label>Carboidrati totali (g)</label><input type="number" min="0" step="0.1" id="caCarb"></div>
+      <div class="field"><label>Grassi totali (g)</label><input type="number" min="0" step="0.1" id="caGrassi"></div>`;
+  } else {
+    box.innerHTML = `
+      <div class="field"><label>Kcal per 100g</label><input type="number" min="0" id="caKcal"></div>
+      <div class="field"><label>Proteine per 100g</label><input type="number" min="0" step="0.1" id="caProt"></div>
+      <div class="field"><label>Carboidrati per 100g</label><input type="number" min="0" step="0.1" id="caCarb"></div>
+      <div class="field"><label>Grassi per 100g</label><input type="number" min="0" step="0.1" id="caGrassi"></div>`;
+  }
+}
+async function salvaAlimentoCustom(){
+  const nome = document.getElementById('caNome').value.trim();
+  const btn = document.getElementById('salvaAlimentoCustomBtn');
+  const kcal = Number(document.getElementById('caKcal').value);
+  const prot = Number(document.getElementById('caProt').value);
+  const carb = Number(document.getElementById('caCarb').value);
+  const grassi = Number(document.getElementById('caGrassi').value);
+  if(!nome){ showToast('Dai un nome all\'alimento'); return; }
+  if([kcal,prot,carb,grassi].some(v=>isNaN(v)||v<0)){ showToast('Controlla i valori numerici inseriti'); return; }
+  let kcal100,prot100,carb100,grassi100;
+  if(creaAlimentoModalita==='porzione'){
+    const peso = Number(document.getElementById('caPeso').value);
+    if(isNaN(peso)||peso<=0){ showToast('Inserisci il peso totale della porzione'); return; }
+    const fattore = 100/peso;
+    kcal100=Math.round(kcal*fattore); prot100=Math.round(prot*fattore*10)/10; carb100=Math.round(carb*fattore*10)/10; grassi100=Math.round(grassi*fattore*10)/10;
+  } else {
+    kcal100=kcal; prot100=prot; carb100=carb; grassi100=grassi;
+  }
+  btn.disabled = true; btn.textContent = 'Salvataggio…';
+  try{
+    const lista = await loadAlimentiCustom();
+    lista.push({ id:'custom-'+Date.now(), nome, kcal100, prot100, carb100, grassi100 });
+    await saveAlimentiCustom(lista);
+    alimentiPersonalizzatiCache = lista;
+    renderCercaAlimentoExtra();
+  }catch(e){
+    showToast('Errore: '+e.message);
+    btn.disabled = false; btn.textContent = 'Salva';
+  }
 }
 /* ============== ALIMENTAZIONE — storico ============== */
 async function renderStoricoAlimentazione(){
@@ -4324,8 +5426,11 @@ async function refreshAlimStorico(){
     const label = (MESI_IT[mi] && y) ? `${MESI_IT[mi]} ${y}` : 'Data sconosciuta';
     const rowsSorted = groups[ym].slice().sort((a,b)=> b.date.localeCompare(a.date));
     const rows = rowsSorted.map(e=>{
-      const giorno = ALIM_GIORNI.find(g=>g.id===e.giornoId);
-      const totals = giorno ? giornoTotals(giorno, e.quantities) : { kcal:0, p:0, c:0, g:0 };
+      const giorno = giornoOrLibero(e.giornoBaseId);
+      const totals = entryTotals(e);
+      const integCount = INTEGRATORI_GIORNALIERI.filter(it=> e.integratori && e.integratori[it.id]).length;
+      const nPastiFatti = ALIM_PASTI_ORDINE.filter(pid=> e.pastiFatti && e.pastiFatti[pid]).length;
+      const nExtra = (e.alimentiExtra||[]).length;
       const d = new Date(e.date+'T00:00:00');
       return `
         <div class="swipe-wrap" data-date="${e.date}">
@@ -4335,8 +5440,8 @@ async function refreshAlimStorico(){
               <div class="sr-left">
                 <div class="sr-date">${d.getDate()}</div>
                 <div class="sr-info">
-                  <div class="sr-giorno">${giorno ? 'Variante '+giorno.lettera : 'Variante sconosciuta'} · ${fmtKcal(totals.kcal)} kcal</div>
-                  <div class="sr-meta">${fmtDate(e.date)} · P ${fmtMacro(totals.p)} · C ${fmtMacro(totals.c)} · G ${fmtMacro(totals.g)}</div>
+                  <div class="sr-giorno">${giorno ? (giorno.id===ALIM_LIBERO_ID ? 'Giorno libero' : 'Variante '+giorno.lettera) : 'Variante sconosciuta'} · ${fmtKcal(totals.kcal)} kcal</div>
+                  <div class="sr-meta">${fmtDate(e.date)} · P ${fmtMacro(totals.p)} · C ${fmtMacro(totals.c)} · G ${fmtMacro(totals.g)} · ${nPastiFatti}/5 pasti${nExtra?` · ${nExtra} extra`:''} · Integratori ${integCount}/${INTEGRATORI_GIORNALIERI.length}</div>
                 </div>
               </div>
               <div style="display:flex;align-items:center;gap:6px;">
@@ -4375,7 +5480,9 @@ async function refreshAlimStorico(){
 async function openAlimEntryForEdit(date){
   const entry = await loadAlimEntry(date);
   if(!entry){ showToast('Registrazione non trovata'); return; }
-  renderGiornoAlimentare(entry.giornoId, date);
+  const giorno = giornoOrLibero(entry.giornoBaseId);
+  if(!giorno){ showToast('Variante di questa registrazione non trovata'); return; }
+  renderGiornoAlimentare(giorno.id, date);
 }
 
 /* ============== CICLI: SCHERMATA PRINCIPALE (attuale + precedenti) ============== */
@@ -4495,19 +5602,25 @@ function fmtDayMonth(iso){
   return d.toLocaleDateString('it-IT',{day:'2-digit',month:'2-digit'});
 }
 /* ============== LE TUE MISURE ============== */
-async function renderMisure(){
+/* editEntry, se presente ({key, date, values}), fa entrare la schermata in
+   modalità "modifica": i campi vengono precompilati con i valori già salvati
+   e il salvataggio aggiorna quella stessa rilevazione (stessa chiave) invece
+   di crearne una nuova — così non si generano duplicati in Storico misure. */
+async function renderMisure(editEntry){
   state.screen = 'misure';
   closeAllOverlays();
   setTimerBarVisible(false);
   const today = todayLocalISO();
+  const isEdit = !!editEntry;
+  const goBack = ()=> isEdit ? renderCronologia() : renderAllenamento();
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><h1>Misure</h1><div class="eyebrow" style="margin-top:3px;">Circonferenze e peso</div></div>
+      <div class="titles"><h1>${isEdit ? 'Modifica misure' : 'Misure'}</h1><div class="eyebrow" style="margin-top:3px;">${isEdit ? 'Stai modificando una rilevazione già salvata' : 'Circonferenze e peso'}</div></div>
     </div>
     <div class="wrap">
       <div class="date-bar">
-        <div><label>Data rilevazione</label><input type="date" id="misureDate" value="${today}"></div>
+        <div><label>Data rilevazione</label><input type="date" id="misureDate" value="${isEdit ? editEntry.date : today}"></div>
       </div>
       ${MISURE_GROUPS.map(g=>`
         <div class="misure-group-label">${g.label} (${g.unit})</div>
@@ -4518,7 +5631,7 @@ async function renderMisure(){
                 <label>${MISURE_LABELS[k]}</label>
               </div>
               <div class="mf-row">
-                <input type="number" inputmode="decimal" step="${g.unit==='%'?'0.1':'0.5'}" placeholder="0" id="mf-${k}">
+                <input type="number" inputmode="decimal" step="${g.unit==='%'?'0.1':'0.5'}" placeholder="0" id="mf-${k}" value="${isEdit && editEntry.values[k]!==undefined ? editEntry.values[k] : ''}">
                 <span class="mf-unit">${g.unit}</span>
               </div>
               <div class="mf-tip" id="tip-${k}">${MISURE_FIELD_TIPS[k]||''}</div>
@@ -4526,10 +5639,10 @@ async function renderMisure(){
           `).join('')}
         </div>
       `).join('')}
-      <button class="cta" id="btnSaveMisure">Salva misure</button>
+      <button class="cta" id="btnSaveMisure">${isEdit ? 'Salva modifiche' : 'Salva misure'}</button>
     </div>
   `;
-  document.getElementById('btnBack').onclick = renderAllenamento;
+  document.getElementById('btnBack').onclick = goBack;
   document.getElementById('btnSaveMisure').onclick = async ()=>{
     const date = document.getElementById('misureDate').value || today;
     const values = {};
@@ -4540,10 +5653,10 @@ async function renderMisure(){
     });
     if(!hasAny){ showToast('Inserisci almeno una misura'); return; }
     try{
-      await saveMeasureEntry(date, values);
+      await saveMeasureEntry(date, values, isEdit ? editEntry.key : undefined);
     }catch(e){ showToast('Errore salvataggio — riprova'); return; }
-    showToast('Misure salvate ✓');
-    renderAllenamento();
+    showToast(isEdit ? 'Misure aggiornate ✓' : 'Misure salvate ✓');
+    goBack();
   };
 }
 async function refreshMisureList(){
@@ -4565,12 +5678,26 @@ async function refreshMisureList(){
               <div class="mr-date">${fmtDate(e.date)}</div>
               <div class="mr-vals">${parts.join(' · ') || '—'}</div>
             </div>
-            <button class="sr-del" data-key="${e.key}">${ICO.trash}</button>
+            <div style="display:flex;align-items:center;gap:6px;">
+              <button class="sr-edit" data-key="${e.key}">${ICO.edit}</button>
+              <button class="sr-del" data-key="${e.key}">${ICO.trash}</button>
+            </div>
           </div>
         </div>
       </div>
     `;
   }).join('');
+  const openEdit = (key)=>{
+    const entry = entries.find(en=>en.key===key);
+    if(!entry){ showToast('Rilevazione non trovata'); return; }
+    renderMisure(entry);
+  };
+  listEl.querySelectorAll('.measure-row').forEach(row=>{
+    row.addEventListener('click', ()=> openEdit(row.dataset.key));
+  });
+  listEl.querySelectorAll('.sr-edit').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{ e.stopPropagation(); openEdit(btn.dataset.key); });
+  });
   const doDelete = (key)=>{
     showConfirm('Eliminare questa rilevazione di misure? L\'operazione non può essere annullata.', async ()=>{
       try{
@@ -4632,10 +5759,10 @@ function beginBlankWorkout(giornoId, giorno){
   state.screen = 'workout';
   renderWorkout();
 }
-async function openExistingSession(giornoId, sessionId, returnTo){
+async function openExistingSession(giornoId, sessionId){
   state.giornoId = giornoId;
   state.sessionId = sessionId;
-  state.returnTo = returnTo || 'cronologia';
+  state.returnTo = 'cronologia';
   try{
     const res = await window.storage.get(logKey(giornoId, sessionId), false);
     state.log = (res && res.value) ? JSON.parse(res.value) : null;
@@ -4713,19 +5840,8 @@ function renderWorkout(){
       </div>
     </div>
   `;
-  document.getElementById('btnBack').onclick = ()=>{
-    if(state.returnTo==='cronologia') renderCronologia();
-    else if(state.returnTo==='allenamento') renderAllenamento();
-    else renderGiorniOfCiclo(state.cicloId);
-  };
+  document.getElementById('btnBack').onclick = ()=>{ state.returnTo==='cronologia' ? renderCronologia() : renderGiorniOfCiclo(state.cicloId); };
   document.getElementById('btnSaveManual').onclick = async ()=>{
-    /* Premere "Salva sessione/modifiche" e' cio' che marca la sessione come
-       conclusa (finalized:true): da questo momento non ricompare piu' come
-       "Continua a registrare" alla riapertura dell'app. Finche' non viene
-       premuto, la sessione resta una bozza — comunque gia' salvata ad ogni
-       modifica tramite l'autosalvataggio (queueSave), cosi' i dati non si
-       perdono mai anche se l'app si chiude a meta' allenamento. */
-    state.log.finalized = true;
     await saveLog(true, isEditingHistory ? 'Modifiche salvate ✓' : 'Sessione salvata ✓');
     /* Salva sempre sulla stessa chiave (giornoId+sessionId): non crea mai un
        duplicato, aggiorna la sessione esistente. Le statistiche, che rileggono
@@ -4765,6 +5881,13 @@ function renderExercise(entry){
   const name = ex ? ex.n : snap.name;
   const sc = ex ? ex.sc : snap.sc;
   const rows = snap.sets;
+  // perLato = esercizio "un lato alla volta" (es. affondi bulgari, rematore a
+  // un braccio): mostriamo due sezioni separate, prima il lato debole e
+  // subito dopo il lato forte, così è impossibile saltarne uno per errore.
+  // Se la sessione è vecchia e le righe non hanno ancora l'etichetta lato
+  // (creata prima di questa funzione), ripieghiamo sulla tabella unica di
+  // sempre invece di rischiare di nascondere delle serie già salvate.
+  const isPerLato = !!(ex && ex.perLato && rows.length && rows.every(r=>r.lato==='debole'||r.lato==='forte'));
   return `
     <div class="ex-card" data-ex="${id}">
       <div class="ex-head">
@@ -4789,13 +5912,36 @@ function renderExercise(entry){
         <button class="rec-start" data-rec="${ex.rec}" data-name="${ex.n}">${ICO.play} avvia</button>
       </div>
       ` : ''}
+      ${isPerLato ? renderLatoBlock('debole', LATO_DEBOLE, rows) + renderLatoBlock('forte', LATO_FORTE, rows) : `
       <div class="set-table">
         <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span>RPE</span><span></span></div>
         <div class="rows-container">${rows.map((r,si)=>renderSetRow(r,si)).join('')}</div>
       </div>
       <div class="ex-actions">
-        <button class="set-btn" data-act="add" data-ex="${id}">+ Aggiungi serie</button>
-        <button class="set-btn" data-act="remove" data-ex="${id}">− Rimuovi ultima</button>
+        <button class="set-btn" data-act="add">+ Aggiungi serie</button>
+        <button class="set-btn" data-act="remove">− Rimuovi ultima</button>
+      </div>
+      `}
+    </div>
+  `;
+}
+/* Sezione di un singolo lato (debole o forte) dentro un esercizio perLato:
+   stessa tabella serie di sempre, ma filtrata sulle sole righe di quel lato
+   (mantenendo l'indice VERO nell'array sets, non quello locale al filtro,
+   così salvataggio/lettura restano invariati) e con i propri pulsanti
+   +/- serie, scoped a quel lato soltanto. */
+function renderLatoBlock(lato, label, rows){
+  const filtered = rows.map((r,i)=>({r,i})).filter(x=>x.r.lato===lato);
+  return `
+    <div class="lato-block" data-lato="${lato}">
+      <div class="lato-label ${lato}">Lato ${lato} — ${label}</div>
+      <div class="set-table">
+        <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span>RPE</span><span></span></div>
+        <div class="rows-container" data-lato="${lato}">${filtered.map(x=>renderSetRow(x.r, x.i)).join('')}</div>
+      </div>
+      <div class="ex-actions">
+        <button class="set-btn" data-act="add" data-lato="${lato}">+ Aggiungi serie</button>
+        <button class="set-btn" data-act="remove" data-lato="${lato}">− Rimuovi ultima</button>
       </div>
     </div>
   `;
@@ -4820,9 +5966,11 @@ function wireExerciseEvents(){
   });
   app.querySelectorAll('.ex-card').forEach(card=>{
     const exId = card.dataset.ex;
-    const rowsContainer = card.querySelector('.rows-container');
+    // bindRows lavora su TUTTE le righe della card (una o due sezioni lato),
+    // usando sempre l'indice vero data-si nell'array sets — così funziona
+    // identico sia per gli esercizi normali sia per quelli perLato.
     function bindRows(){
-      rowsContainer.querySelectorAll('.set-row').forEach(row=>{
+      card.querySelectorAll('.set-row').forEach(row=>{
         const si = parseInt(row.dataset.si);
         row.querySelectorAll('input').forEach(inp=>{
           inp.addEventListener('input', ()=>{
@@ -4832,26 +5980,9 @@ function wireExerciseEvents(){
         });
         const doneBtn = row.querySelector('.set-done');
         doneBtn.addEventListener('click', ()=>{
-          const nowDone = !state.log.esercizi[exId].sets[si].done;
-          state.log.esercizi[exId].sets[si].done = nowDone;
+          state.log.esercizi[exId].sets[si].done = !state.log.esercizi[exId].sets[si].done;
           doneBtn.classList.toggle('on');
           queueSave();
-          /* Flaggare una serie come fatta avvia subito il recupero, senza
-             bisogno di toccare "avvia": usa il tempo di recupero consigliato
-             per l'esercizio (lo stesso del pulsante "avvia" qui sopra), o il
-             tempo generico gia' impostato se l'esercizio non e' piu' in
-             scheda. Se si toglie il flag (errore di tocco), il timer non
-             riparte. */
-          if(nowDone){
-            const exLive = EXBYID[exId];
-            const seconds = (exLive && exLive.rec) ? exLive.rec : timer.total;
-            const label = (exLive && exLive.n) ? exLive.n : 'recupero generico';
-            timer.total = seconds; timer.remaining = seconds;
-            const timerSourceEl = document.getElementById('timerSource');
-            if(timerSourceEl) timerSourceEl.textContent = label;
-            document.getElementById('ringFg')?.classList.remove('done');
-            startTimer();
-          }
         });
       });
     }
@@ -4859,9 +5990,34 @@ function wireExerciseEvents(){
     card.querySelectorAll('.set-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const arr = state.log.esercizi[exId].sets;
-        if(btn.dataset.act === 'add') arr.push({kg:'',reps:'',rpe:'',done:false});
-        else if(btn.dataset.act === 'remove' && arr.length > 1) arr.pop();
-        rowsContainer.innerHTML = arr.map((r,si)=>renderSetRow(r,si)).join('');
+        const lato = btn.dataset.lato; // presente solo per gli esercizi perLato
+        if(btn.dataset.act === 'add'){
+          if(lato){
+            // Inserisce subito dopo l'ultima riga esistente di quel lato
+            // (non semplicemente in fondo all'array, che per il lato
+            // 'debole' finirebbe dopo le righe 'forte').
+            let insertAt = -1;
+            for(let i=arr.length-1;i>=0;i--){ if(arr[i].lato===lato){ insertAt=i+1; break; } }
+            if(insertAt===-1) insertAt = lato==='debole' ? 0 : arr.length;
+            arr.splice(insertAt,0,{kg:'',reps:'',rpe:'',done:false,lato});
+          } else {
+            arr.push({kg:'',reps:'',rpe:'',done:false});
+          }
+        } else if(btn.dataset.act === 'remove'){
+          if(lato){
+            const idxs = arr.map((r,i)=> r.lato===lato ? i : -1).filter(i=>i>=0);
+            if(idxs.length > 1) arr.splice(idxs[idxs.length-1],1);
+          } else if(arr.length > 1){
+            arr.pop();
+          }
+        }
+        // Ri-renderizza tutti i rows-container della card: un inserimento a
+        // metà array cambia l'indice vero anche delle righe successive.
+        card.querySelectorAll('.rows-container').forEach(rc=>{
+          const rcLato = rc.dataset.lato;
+          const filtered = arr.map((r,i)=>({r,i})).filter(x=> rcLato ? x.r.lato===rcLato : true);
+          rc.innerHTML = filtered.map(x=>renderSetRow(x.r, x.i)).join('');
+        });
         bindRows();
         queueSave();
       });
@@ -4946,29 +6102,19 @@ function openTimerSheet(forceStart){
   else renderTimerBar();
 }
 function startTimer(){
-  unlockAudioCtx();
   timer.running = true;
-  timer.endTime = Date.now() + timer.remaining*1000;
   const tcT = document.getElementById('tcToggle'); if(tcT) tcT.innerHTML = ICO.pause;
   const rS1 = document.getElementById('ringStatus'); if(rS1) rS1.textContent = 'recupero';
   clearInterval(timer.intervalId);
-  /* Tick ogni 250ms invece che ogni 1000ms: il valore mostrato non dipende
-     comunque dal conteggio dei tick (si ricalcola sempre da endTime), ma un
-     intervallo piu' frequente riduce lo scarto percepito quando il browser
-     rallenta i timer in background e "recupera" piu' tick vicini insieme. */
   timer.intervalId = setInterval(()=>{
-    const remain = Math.max(0, Math.round((timer.endTime - Date.now())/1000));
-    timer.remaining = remain;
-    if(remain <= 0){ finishTimer(); return; }
+    timer.remaining -= 1;
+    if(timer.remaining <= 0){ timer.remaining = 0; finishTimer(); }
     updateRing();
-  },250);
+  },1000);
   updateRing();
   renderTimerBar();
 }
 function pauseTimer(){
-  if(timer.running && timer.endTime){
-    timer.remaining = Math.max(0, Math.round((timer.endTime - Date.now())/1000));
-  }
   timer.running = false; clearInterval(timer.intervalId);
   const tcT2 = document.getElementById('tcToggle'); if(tcT2) tcT2.innerHTML = ICO.play;
   const rS2 = document.getElementById('ringStatus'); if(rS2) rS2.textContent = 'in pausa';
@@ -4985,7 +6131,6 @@ function resetTimer(){
 function adjustTimer(delta){
   timer.remaining = Math.max(0, timer.remaining + delta);
   timer.total = Math.max(timer.total, timer.remaining);
-  if(timer.running) timer.endTime = Date.now() + timer.remaining*1000;
   updateRing();
   renderTimerBar();
 }
@@ -5001,8 +6146,7 @@ function finishTimer(){
    sente anche se in quel momento non si sta guardando il telefono. */
 function playFinishSound(){
   try{
-    const ctx = unlockAudioCtx();
-    if(!ctx) return;
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
     const DURATION = 2.0, BEEP = 0.26, GAP = 0.2;
     for(let t = 0; t < DURATION; t += BEEP+GAP){
       const start = ctx.currentTime + t;
@@ -5654,7 +6798,10 @@ async function refreshCronologia(){
 /* ============== INIT / SESSIONE ============== */
 auth.onAuthStateChanged((user)=>{
   currentUser = user;
-  if(user){ renderHome(); }
+  if(user){
+    renderHome();
+    migrateOldAlimEntriesOnce(); // in background, non blocca il rendering
+  }
   else { renderLogin(); }
 });
 </script>
