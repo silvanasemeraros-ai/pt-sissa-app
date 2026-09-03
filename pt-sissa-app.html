@@ -4738,57 +4738,77 @@ function pastoCardReadOnlyHTML(pasto){
     </div>
   `;
 }
+/* Elenco delle ricette distinte di un tipo di pasto ('pranzo' o 'cena'),
+   deduplicate per nome: piu' varianti giornaliere (ALIM_GIORNI) possono
+   condividere la stessa ricetta di pranzo, ma qui interessa consultare
+   ogni ricetta una volta sola, non ripetuta per ogni variante che la usa. */
+function ricetteUniche(tipoPasto){
+  const viste = new Set();
+  const elenco = [];
+  ALIM_GIORNI.forEach(g=>{
+    const pasto = g.pasti.find(p=>p.id===tipoPasto);
+    if(pasto && !viste.has(pasto.nome)){
+      viste.add(pasto.nome);
+      elenco.push(pasto);
+    }
+  });
+  return elenco;
+}
+function menuRicettaCardHTML(pasto, tipoPasto){
+  const t = pastoTotalsDefault(pasto);
+  return `
+    <button class="home-card" data-tipo="${tipoPasto}" data-nome="${encodeURIComponent(pasto.nome)}">
+      <div class="hc-ico">${ICO.foodHome}</div>
+      <div class="hc-info">
+        <div class="hc-title">${pasto.nome}</div>
+        <div class="hc-sub">${fmtKcal(t.kcal)} kcal · P ${fmtMacro(t.p)} · C ${fmtMacro(t.c)} · G ${fmtMacro(t.g)}</div>
+      </div>
+      <div class="hc-arrow">${ICO.chev}</div>
+    </button>
+  `;
+}
 async function renderMenuAlimentazione(){
   state.screen = 'alimMenu';
   closeAllOverlays();
   setTimerBarVisible(false);
+  const pranzi = ricetteUniche('pranzo');
+  const cene = ricetteUniche('cena');
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><h1>Menu</h1><div class="eyebrow" style="margin-top:3px;">Le varianti del piano, in consultazione</div></div>
+      <div class="titles"><h1>Menu</h1><div class="eyebrow" style="margin-top:3px;">Le ricette del piano, in consultazione</div></div>
     </div>
     <div class="wrap">
       <div class="warmup-note">${ICO.info}<span>Qui puoi solo consultare: per registrare una giornata usa "Cosa mangi stasera?" dalla schermata principale di Alimentazione.</span></div>
+      <div class="section-label">Pranzi</div>
       <div class="home-grid">
-        ${ALIM_GIORNI.map(gi=>`
-          <button class="home-card" data-gid="${gi.id}">
-            <div class="hc-ico">${ICO.foodHome}</div>
-            <div class="hc-info">
-              <div class="hc-title">Variante ${gi.lettera} — ${alimCenaName(gi)}</div>
-              <div class="hc-sub">Pranzo: ${alimPranzoName(gi)}</div>
-            </div>
-            <div class="hc-arrow">${ICO.chev}</div>
-          </button>
-        `).join('')}
+        ${pranzi.map(p=>menuRicettaCardHTML(p,'pranzo')).join('')}
+      </div>
+      <div class="section-label" style="margin-top:18px;">Cene</div>
+      <div class="home-grid">
+        ${cene.map(c=>menuRicettaCardHTML(c,'cena')).join('')}
       </div>
     </div>
   `;
   document.getElementById('btnBack').onclick = renderAlimentazione;
   app.querySelectorAll('.home-grid .home-card').forEach(btn=>{
-    btn.addEventListener('click', ()=> renderMenuGiornoDetail(btn.dataset.gid));
+    btn.addEventListener('click', ()=> renderMenuRicettaDetail(btn.dataset.tipo, decodeURIComponent(btn.dataset.nome)));
   });
 }
-function renderMenuGiornoDetail(giornoId){
+function renderMenuRicettaDetail(tipoPasto, nomePasto){
   state.screen = 'alimMenuDettaglio';
   closeAllOverlays();
   setTimerBarVisible(false);
-  const giorno = ALIM_GIORNI.find(g=>g.id===giornoId);
-  if(!giorno){ renderMenuAlimentazione(); return; }
-  const totals = giorno.pasti.reduce((acc,p)=>{
-    const t = pastoTotalsDefault(p);
-    return { kcal:acc.kcal+t.kcal, p:acc.p+t.p, c:acc.c+t.c, g:acc.g+t.g };
-  }, { kcal:0, p:0, c:0, g:0 });
+  const pasto = ricetteUniche(tipoPasto).find(p=>p.nome===nomePasto);
+  if(!pasto){ renderMenuAlimentazione(); return; }
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><div class="eyebrow">VARIANTE ${giorno.lettera}</div><h1>${giorno.cardSub}</h1></div>
+      <div class="titles"><div class="eyebrow">${tipoPasto === 'pranzo' ? 'PRANZO' : 'CENA'}</div><h1>${pasto.nome}</h1></div>
     </div>
     <div class="wrap">
       <div class="warmup-note">${ICO.info}<span>Sola consultazione: quantità di riferimento del piano, non modificabili da qui.</span></div>
-      <div class="section-label">Totale giornata (a piano rispettato)</div>
-      <div class="macro-summary">${macroSummaryHTML(totals)}</div>
-      <div class="section-label">Pasti</div>
-      ${giorno.pasti.map(pasto=>pastoCardReadOnlyHTML(pasto)).join('')}
+      ${pastoCardReadOnlyHTML(pasto)}
     </div>
   `;
   document.getElementById('btnBack').onclick = renderMenuAlimentazione;
