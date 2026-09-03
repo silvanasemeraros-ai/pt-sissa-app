@@ -912,9 +912,6 @@ function todayLocalISO(){
   const dd = String(d.getDate()).padStart(2,'0');
   return `${d.getFullYear()}-${mm}-${dd}`;
 }
-/* Stessa logica di todayLocalISO ma per il giorno precedente: usata per
-   proporre "ieri" come data di partenza quando si registra un giorno
-   passato che ci si e' dimenticate di segnare. */
 function yesterdayLocalISO(){
   const d = new Date();
   d.setDate(d.getDate()-1);
@@ -1166,8 +1163,8 @@ const WARMUP_BY_GIORNO = {
 };
 function warmupForGiorno(giornoId){ return WARMUP_BY_GIORNO[giornoId] || null; }
 /* ============== STATE ============== */
-let state = { screen:'home', cicloId:null, giornoId:null, sessionId:null, log: null, returnTo:'cicli' };
-let timer = { total:90, remaining:90, running:false, intervalId:null };
+let state = { screen:'home', cicloId:null, giornoId:null, sessionId:null, log: null, returnTo:'cicli', suggestions:{} };
+let timer = { total:90, remaining:90, running:false, intervalId:null, endAt:null };
 let saveTimeout = null;
 const app = document.getElementById('app');
 const toastEl = document.getElementById('toast');
@@ -1388,6 +1385,46 @@ function blankLog(giorno){
     log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets };
   });
   return log;
+}
+/* Costruisce, per ogni esercizio del nuovo log vuoto, i valori suggeriti
+   (kg/ripetizioni/RPE) presi dall'ultima sessione precedente registrata per
+   lo stesso giorno (prevLog) -- cosi', ricominciando lo stesso allenamento
+   la settimana dopo, i campi vuoti mostrano come placeholder cosa era stato
+   fatto la volta scorsa. Allineamento serie-per-serie per indice; per gli
+   esercizi perLato l'allineamento e' per posizione ALL'INTERNO dello stesso
+   lato (debole con debole, forte con forte), non per indice assoluto,
+   altrimenti con un numero di serie diverso tra le due sessioni i
+   suggerimenti finirebbero sul lato sbagliato. Se l'esercizio e' nuovo, non
+   ha ancora storico, o la struttura non e' confrontabile, semplicemente non
+   c'e' suggerimento per quelle righe (restano i placeholder generici "0"/"–"
+   di sempre). Non scrive mai nulla nei campi: sono solo placeholder, quindi
+   un dato vecchio non puo' mai essere salvato per sbaglio come se fosse di
+   oggi senza che Silvana lo digiti lei stessa. */
+function buildSuggestions(newLog, prevLog){
+  const sug = {};
+  if(!prevLog || !prevLog.esercizi) return sug;
+  Object.keys(newLog.esercizi).forEach(exId=>{
+    const prevEx = prevLog.esercizi[exId];
+    if(!prevEx || !prevEx.sets || !prevEx.sets.length) return;
+    const curSets = newLog.esercizi[exId].sets;
+    const hasLato = curSets.some(s=>s.lato);
+    const arr = curSets.map((s,i)=>{
+      let src;
+      if(hasLato){
+        const sameLato = prevEx.sets.filter(r=>r.lato===s.lato);
+        const posInLato = curSets.slice(0,i+1).filter(r=>r.lato===s.lato).length - 1;
+        src = sameLato[posInLato];
+      } else {
+        src = prevEx.sets[i];
+      }
+      if(!src) return null;
+      const hasVal = (src.kg!=='' && src.kg!=null) || (src.reps!=='' && src.reps!=null);
+      if(!hasVal) return null;
+      return { kg: src.kg||'', reps: src.reps||'', rpe: src.rpe||'' };
+    });
+    if(arr.some(Boolean)) sug[exId] = arr;
+  });
+  return sug;
 }
 /* showBanner=false (default) e' usato dal salvataggio automatico in
    background mentre scrivi kg/ripetizioni/RPE: salva ma NON mostra il
@@ -1840,73 +1877,350 @@ const ALIM_MACRO_META = {
    introdurre numeri che il piano non da' davvero. La chiave e' la stessa
    stringa usata come "nome" della cena in ALIM_GIORNI. */
 const ALIM_CENE_RICETTE = {
-  /* Quantità prese dal ricettario "Sissa Chef" (SIEB091.PDF), già riportate
-     alla tua porzione. La Frittata nel ricettario è segnata "1 persona":
-     non va dimezzata, a differenza delle altre tre che sono "2 persone". */
-  'Frittata di zucchine (tua porzione)': {
-    ingredienti: [
-      { n:'Uova', qty:2, unit:'uova' },
-      { n:'Albume d\'uovo', qty:60, unit:'g' },
-      { n:'Zucchine', qty:100, unit:'g' },
-      { n:'Patate', qty:80, unit:'g' },
-      { n:'Parmigiano Reggiano', qty:15, unit:'g' },
-      { n:'Prosciutto cotto', qty:120, unit:'g' },
-      { n:'Olio EVO', qty:13, unit:'g' },
+  "Gateau di patate (tua porzione)": {
+    "ingredienti": [
+      {
+        "n": "Patate",
+        "qty": 375,
+        "unit": "g"
+      },
+      {
+        "n": "Uova",
+        "qty": 0.5,
+        "unit": "uova"
+      },
+      {
+        "n": "Parmigiano Reggiano",
+        "qty": 15,
+        "unit": "g"
+      },
+      {
+        "n": "Formaggio filante (scamorza/provola)",
+        "qty": 30,
+        "unit": "g"
+      },
+      {
+        "n": "Prosciutto cotto",
+        "qty": 30,
+        "unit": "g"
+      },
+      {
+        "n": "Burro",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Pangrattato",
+        "qty": 12,
+        "unit": "g"
+      }
     ],
+    "note": "Sale, pepe e noce moscata q.b."
   },
-  'Vellutata di lenticchie (tua porzione)': {
-    ingredienti: [
-      { n:'Lenticchie precotte (lattina)', qty:1, unit:'lattina' },
-      { n:'Patate', qty:200, unit:'g' },
-      { n:'Albume d\'uovo', qty:75, unit:'ml' },
-      { n:'Scalogno', qty:1, unit:'scalogno' },
-      { n:'Olio EVO', qty:10, unit:'g' },
+  "Vellutata di lenticchie (tua porzione)": {
+    "ingredienti": [
+      {
+        "n": "Lenticchie precotte (lattina)",
+        "qty": 225,
+        "unit": "g"
+      },
+      {
+        "n": "Patate",
+        "qty": 240,
+        "unit": "g"
+      },
+      {
+        "n": "Albume d'uovo",
+        "qty": 90,
+        "unit": "ml"
+      },
+      {
+        "n": "Scalogno",
+        "qty": 15,
+        "unit": "g"
+      },
+      {
+        "n": "Olio EVO",
+        "qty": 9,
+        "unit": "g"
+      }
     ],
-    note: 'Rosmarino e sale q.b.',
+    "note": "Rosmarino e sale q.b."
   },
-  'Burritos di pollo': {
-    ingredienti: [
-      { n:'Petto di pollo', qty:200, unit:'g' },
-      { n:'Tortillas', qty:2, unit:'tortillas' },
-      { n:'Insalata', qty:25, unit:'g' },
-      { n:'Pomodori', qty:25, unit:'g' },
-      { n:'Philadelphia', qty:40, unit:'g' },
-      { n:'Glassa per pollo', qty:10, unit:'g' },
-      { n:'Maionese', qty:10, unit:'g' },
+  "Frittata di zucchine e prosciutto, con pane (tua porzione)": {
+    "ingredienti": [
+      {
+        "n": "Uova",
+        "qty": 2,
+        "unit": "uova"
+      },
+      {
+        "n": "Zucchine",
+        "qty": 100,
+        "unit": "g"
+      },
+      {
+        "n": "Patate",
+        "qty": 80,
+        "unit": "g"
+      },
+      {
+        "n": "Parmigiano Reggiano",
+        "qty": 10,
+        "unit": "g"
+      },
+      {
+        "n": "Prosciutto cotto",
+        "qty": 45,
+        "unit": "g"
+      },
+      {
+        "n": "Olio EVO",
+        "qty": 3,
+        "unit": "g"
+      },
+      {
+        "n": "Pane ai cereali",
+        "qty": 80,
+        "unit": "g"
+      }
     ],
+    "note": "Sale e pepe q.b."
   },
-  'Gateau di patate (tua porzione)': {
-    ingredienti: [
-      { n:'Patate', qty:250, unit:'g' },
-      { n:'Uova', qty:0.5, unit:'uova' },
-      { n:'Parmigiano Reggiano', qty:15, unit:'g' },
-      { n:'Scamorza/provola affumicata', qty:40, unit:'g' },
-      { n:'Prosciutto cotto', qty:30, unit:'g' },
-      { n:'Burro', qty:7.5, unit:'g' },
-      { n:'Pangrattato', qty:14, unit:'g' },
+  "Burritos di pollo (tua porzione)": {
+    "ingredienti": [
+      {
+        "n": "Petto di pollo",
+        "qty": 150,
+        "unit": "g"
+      },
+      {
+        "n": "Tortillas piccole",
+        "qty": 2,
+        "unit": "tortillas"
+      },
+      {
+        "n": "Insalata",
+        "qty": 50,
+        "unit": "g"
+      },
+      {
+        "n": "Pomodori",
+        "qty": 50,
+        "unit": "g"
+      },
+      {
+        "n": "Philadelphia",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Glassa per pollo (BBQ/teriyaki)",
+        "qty": 7.5,
+        "unit": "g"
+      }
+    ]
+  },
+  "Panino con tartare di manzo (tua porzione)": {
+    "ingredienti": [
+      {
+        "n": "Tartare di manzo pronta",
+        "qty": 100,
+        "unit": "g"
+      },
+      {
+        "n": "Pane ai cereali",
+        "qty": 1,
+        "unit": "panino"
+      },
+      {
+        "n": "Mozzarella proteica",
+        "qty": 70,
+        "unit": "g"
+      },
+      {
+        "n": "Pomodorini",
+        "qty": 80,
+        "unit": "g"
+      },
+      {
+        "n": "Glassa balsamica",
+        "qty": 10,
+        "unit": "g"
+      },
+      {
+        "n": "Olio EVO",
+        "qty": 5,
+        "unit": "g"
+      }
     ],
+    "note": "Manzo crudo: acquistalo il giorno stesso."
   },
-  'Tartare, pane e insalata': {
-    ingredienti: [
-      { n:'Tartare di manzo', qty:100, unit:'g' },
-      { n:'Pane', qty:110, unit:'g' },
-      /* Il piano dà "100 g pomodori e insalata" come un'unica voce, senza
-         indicare quanto sia pomodori e quanto insalata: per la lista della
-         spesa li dividiamo a metà (50/50), l'unica assunzione ragionevole
-         senza un dato più preciso — non incide sui macro del pasto, che
-         restano quelli già calcolati per la cena nel suo insieme. */
-      { n:'Pomodori', qty:50, unit:'g' },
-      { n:'Insalata', qty:50, unit:'g' },
-      { n:'Olio EVO', qty:5, unit:'g' },
+  "Polpette di pollo al limone, con patate lesse (tua porzione)": {
+    "ingredienti": [
+      {
+        "n": "Petto di pollo",
+        "qty": 150,
+        "unit": "g"
+      },
+      {
+        "n": "Ricotta",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Parmigiano Reggiano",
+        "qty": 2.5,
+        "unit": "g"
+      },
+      {
+        "n": "Albume d'uovo",
+        "qty": 12.5,
+        "unit": "ml"
+      },
+      {
+        "n": "Farina",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Burro",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Vino bianco secco",
+        "qty": 25,
+        "unit": "ml"
+      },
+      {
+        "n": "Latte intero",
+        "qty": 75,
+        "unit": "ml"
+      },
+      {
+        "n": "Succo di limone",
+        "qty": 12.5,
+        "unit": "ml"
+      },
+      {
+        "n": "Patate",
+        "qty": 175,
+        "unit": "g"
+      }
     ],
+    "note": "Scorza di limone e prezzemolo q.b."
   },
-  'Petto di pollo al limone e pane': {
-    ingredienti: [
-      { n:'Petto di pollo', qty:200, unit:'g' },
-      { n:'Pane', qty:120, unit:'g' },
-      { n:'Olio EVO', qty:5, unit:'g' },
+  "Polpette di pollo al limone, con riso (tua porzione)": {
+    "ingredienti": [
+      {
+        "n": "Petto di pollo",
+        "qty": 150,
+        "unit": "g"
+      },
+      {
+        "n": "Ricotta",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Parmigiano Reggiano",
+        "qty": 2.5,
+        "unit": "g"
+      },
+      {
+        "n": "Albume d'uovo",
+        "qty": 12.5,
+        "unit": "ml"
+      },
+      {
+        "n": "Farina",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Burro",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Vino bianco secco",
+        "qty": 25,
+        "unit": "ml"
+      },
+      {
+        "n": "Latte intero",
+        "qty": 75,
+        "unit": "ml"
+      },
+      {
+        "n": "Succo di limone",
+        "qty": 12.5,
+        "unit": "ml"
+      },
+      {
+        "n": "Riso",
+        "qty": 65,
+        "unit": "g"
+      }
     ],
+    "note": "Scorza di limone e prezzemolo q.b."
   },
+  "Polpette di pollo al limone, con pane (tua porzione)": {
+    "ingredienti": [
+      {
+        "n": "Petto di pollo",
+        "qty": 150,
+        "unit": "g"
+      },
+      {
+        "n": "Ricotta",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Parmigiano Reggiano",
+        "qty": 2.5,
+        "unit": "g"
+      },
+      {
+        "n": "Albume d'uovo",
+        "qty": 12.5,
+        "unit": "ml"
+      },
+      {
+        "n": "Farina",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Burro",
+        "qty": 5,
+        "unit": "g"
+      },
+      {
+        "n": "Vino bianco secco",
+        "qty": 25,
+        "unit": "ml"
+      },
+      {
+        "n": "Latte intero",
+        "qty": 75,
+        "unit": "ml"
+      },
+      {
+        "n": "Succo di limone",
+        "qty": 12.5,
+        "unit": "ml"
+      },
+      {
+        "n": "Pane ai cereali",
+        "qty": 90,
+        "unit": "g"
+      }
+    ],
+    "note": "Scorza di limone e prezzemolo q.b."
+  }
 };
 /* I 7 giorni della settimana della spesa, a partire dal sabato (giorno in
    cui Silvana fa la spesa) fino al venerdi' successivo. */
@@ -1928,75 +2242,58 @@ const ALIM_NIENTE_ID = '__niente__';
 const ALIM_GIORNI = [
   {
     "id": "alim-a",
-    "cardSub": "Cena: Frittata di zucchine · Pranzo: Pasta al tonno",
+    "cardSub": "Cena: Gateau di patate · Pranzo: Pasta con Zucchine, Tonno e Pomodorini",
     "pasti": [
       {
         "id": "colazione",
         "label": "Colazione",
         "variante": "C",
-        "nome": "Cereali, latte d'avena, yogurt greco e banana",
+        "nome": "Cereali, latte d'avena, yogurt greco, banana e biscotti",
         "ingredienti": [
           {
             "n": "Cereali (cocopops / riso soffiato)",
-            "def": 40,
+            "def": 35,
             "unit": "g",
-            "kcal": 156,
-            "p": 1.6,
-            "c": 33.6,
-            "g": 1.2
+            "kcal": 146.1,
+            "p": 1.5,
+            "c": 27.7,
+            "g": 1.4
           },
           {
             "n": "Latte d'avena",
             "def": 200,
             "unit": "ml",
-            "kcal": 100,
-            "p": 1.0,
-            "c": 16.0,
-            "g": 3.6
+            "kcal": 107.1,
+            "p": 1.1,
+            "c": 15.1,
+            "g": 4.8
           },
           {
             "n": "Yogurt greco 0%",
-            "def": 100,
+            "def": 150,
             "unit": "g",
-            "kcal": 59,
-            "p": 10.0,
-            "c": 3.6,
-            "g": 0.2
+            "kcal": 94.7,
+            "p": 16.1,
+            "c": 5.1,
+            "g": 0.4
           },
           {
             "n": "Banana",
-            "def": 100,
+            "def": 120,
             "unit": "g",
-            "kcal": 89,
-            "p": 1.1,
-            "c": 23.0,
-            "g": 0.3
-          }
-        ]
-      },
-      {
-        "id": "spuntinoAM",
-        "label": "Spuntino mattutino",
-        "variante": "A",
-        "nome": "Mela e mandorle",
-        "ingredienti": [
-          {
-            "n": "Mela",
-            "def": 150,
-            "unit": "g",
-            "kcal": 78,
-            "p": 0.5,
-            "c": 21.0,
-            "g": 0.3
+            "kcal": 114.3,
+            "p": 1.4,
+            "c": 26.0,
+            "g": 0.5
           },
           {
-            "n": "Mandorle",
-            "def": 15,
+            "n": "Biscotti con gocce di cioccolato",
+            "def": 30,
             "unit": "g",
-            "kcal": 87,
-            "p": 3.1,
-            "c": 3.3,
-            "g": 7.5
+            "kcal": 147.7,
+            "p": 1.9,
+            "c": 18.1,
+            "g": 8.0
           }
         ]
       },
@@ -2004,723 +2301,78 @@ const ALIM_GIORNI = [
         "id": "pranzo",
         "label": "Pranzo",
         "variante": "1",
-        "nome": "Pasta con Zucchine, Tonno e Pomodorini (con pane)",
+        "nome": "Pasta con Zucchine, Tonno e Pomodorini",
         "ingredienti": [
           {
             "n": "Pasta (peso a crudo)",
-            "def": 110,
+            "def": 80,
             "unit": "g",
-            "kcal": 385,
-            "p": 13.2,
-            "c": 77.0,
-            "g": 1.6
+            "kcal": 291.9,
+            "p": 9.5,
+            "c": 58.8,
+            "g": 1.2
           },
           {
             "n": "Tonno sott'olio sgocciolato",
-            "def": 80,
-            "unit": "g",
-            "kcal": 146,
-            "p": 20.0,
-            "c": 0.0,
-            "g": 8.0
-          },
-          {
-            "n": "Zucchine",
-            "def": 200,
-            "unit": "g",
-            "kcal": 34,
-            "p": 2.4,
-            "c": 5.2,
-            "g": 0.4
-          },
-          {
-            "n": "Pomodorini",
-            "def": 150,
-            "unit": "g",
-            "kcal": 27,
-            "p": 1.3,
-            "c": 5.3,
-            "g": 0.3
-          },
-          {
-            "n": "Cipolla / scalogno",
-            "def": 30,
-            "unit": "g",
-            "kcal": 12,
-            "p": 0.3,
-            "c": 2.8,
-            "g": 0.0
-          },
-          {
-            "n": "Olio EVO",
-            "def": 13,
-            "unit": "g",
-            "kcal": 115,
-            "p": 0.0,
-            "c": 0.0,
-            "g": 13.0
-          },
-          {
-            "n": "Pane",
-            "def": 25,
-            "unit": "g",
-            "kcal": 68,
-            "p": 2.0,
-            "c": 13.8,
-            "g": 0.2
-          }
-        ]
-      },
-      {
-        "id": "spuntinoPM",
-        "label": "Spuntino pomeridiano",
-        "variante": "A",
-        "nome": "Budino proteico",
-        "ingredienti": [
-          {
-            "n": "Budino proteico Milbona (Lidl)",
-            "def": 200,
-            "unit": "g",
-            "kcal": 154,
-            "p": 20.0,
-            "c": 11.6,
-            "g": 3.0
-          }
-        ]
-      },
-      {
-        "id": "cena",
-        "label": "Cena",
-        "variante": null,
-        "nome": "Frittata di zucchine (tua porzione)",
-        "ingredienti": [
-          {
-            "n": "Uova",
-            "def": 100,
-            "unit": "g",
-            "kcal": 95.6,
-            "p": 7.4,
-            "c": 0.8,
-            "g": 5.8
-          },
-          {
-            "n": "Albume d'uovo",
-            "def": 60,
-            "unit": "g",
-            "kcal": 20.9,
-            "p": 3.8,
-            "c": 0.5,
-            "g": 0.1
-          },
-          {
-            "n": "Zucchine",
-            "def": 100,
-            "unit": "g",
-            "kcal": 11.3,
-            "p": 0.7,
-            "c": 2.8,
-            "g": 0.1
-          },
-          {
-            "n": "Patate",
-            "def": 80,
-            "unit": "g",
-            "kcal": 41.2,
-            "p": 0.9,
-            "c": 15.1,
-            "g": 0.0
-          },
-          {
-            "n": "Parmigiano Reggiano",
-            "def": 15,
-            "unit": "g",
-            "kcal": 40.1,
-            "p": 2.9,
-            "c": 0.0,
-            "g": 2.7
-          },
-          {
-            "n": "Prosciutto cotto",
-            "def": 120,
-            "unit": "g",
-            "kcal": 116.3,
-            "p": 12.7,
-            "c": 1.9,
-            "g": 5.9
-          },
-          {
-            "n": "Olio EVO",
-            "def": 13,
-            "unit": "g",
-            "kcal": 76.7,
-            "p": 0.0,
-            "c": 0.0,
-            "g": 8.0
-          }
-        ]
-      }
-    ],
-    "lettera": "A"
-  },
-  {
-    "id": "alim-g",
-    "cardSub": "Cena: Vellutata di lenticchie · Pranzo: Pasta al tonno (senza pane)",
-    "pasti": [
-      {
-        "id": "colazione",
-        "label": "Colazione",
-        "variante": "C",
-        "nome": "Cereali, latte d'avena, yogurt greco e banana",
-        "ingredienti": [
-          {
-            "n": "Cereali (cocopops / riso soffiato)",
-            "def": 40,
-            "unit": "g",
-            "kcal": 156,
-            "p": 1.6,
-            "c": 33.6,
-            "g": 1.2
-          },
-          {
-            "n": "Latte d'avena",
-            "def": 200,
-            "unit": "ml",
-            "kcal": 100,
-            "p": 1.0,
-            "c": 16.0,
-            "g": 3.6
-          },
-          {
-            "n": "Yogurt greco 0%",
-            "def": 100,
-            "unit": "g",
-            "kcal": 59,
-            "p": 10.0,
-            "c": 3.6,
-            "g": 0.2
-          },
-          {
-            "n": "Banana",
-            "def": 100,
-            "unit": "g",
-            "kcal": 89,
-            "p": 1.1,
-            "c": 23.0,
-            "g": 0.3
-          }
-        ]
-      },
-      {
-        "id": "spuntinoAM",
-        "label": "Spuntino mattutino",
-        "variante": "A",
-        "nome": "Mela e mandorle",
-        "ingredienti": [
-          {
-            "n": "Mela",
-            "def": 150,
-            "unit": "g",
-            "kcal": 78,
-            "p": 0.5,
-            "c": 21.0,
-            "g": 0.3
-          },
-          {
-            "n": "Mandorle",
-            "def": 15,
-            "unit": "g",
-            "kcal": 87,
-            "p": 3.1,
-            "c": 3.3,
-            "g": 7.5
-          }
-        ]
-      },
-      {
-        "id": "pranzo",
-        "label": "Pranzo",
-        "variante": "1b",
-        "nome": "Pasta con Zucchine, Tonno e Pomodorini (senza pane)",
-        "ingredienti": [
-          {
-            "n": "Pasta (peso a crudo)",
-            "def": 60,
-            "unit": "g",
-            "kcal": 210,
-            "p": 7.2,
-            "c": 42.0,
-            "g": 0.9
-          },
-          {
-            "n": "Tonno sott'olio sgocciolato",
-            "def": 80,
-            "unit": "g",
-            "kcal": 146,
-            "p": 20.0,
-            "c": 0.0,
-            "g": 8.0
-          },
-          {
-            "n": "Zucchine",
-            "def": 200,
-            "unit": "g",
-            "kcal": 34,
-            "p": 2.4,
-            "c": 5.2,
-            "g": 0.4
-          },
-          {
-            "n": "Pomodorini",
-            "def": 150,
-            "unit": "g",
-            "kcal": 27,
-            "p": 1.3,
-            "c": 5.3,
-            "g": 0.3
-          },
-          {
-            "n": "Cipolla / scalogno",
-            "def": 30,
-            "unit": "g",
-            "kcal": 12,
-            "p": 0.3,
-            "c": 2.8,
-            "g": 0.0
-          },
-          {
-            "n": "Olio EVO",
-            "def": 25,
-            "unit": "g",
-            "kcal": 221,
-            "p": 0.0,
-            "c": 0.0,
-            "g": 25.0
-          }
-        ]
-      },
-      {
-        "id": "spuntinoPM",
-        "label": "Spuntino pomeridiano",
-        "variante": "A",
-        "nome": "Budino proteico",
-        "ingredienti": [
-          {
-            "n": "Budino proteico Milbona (Lidl)",
-            "def": 200,
-            "unit": "g",
-            "kcal": 154,
-            "p": 20.0,
-            "c": 11.6,
-            "g": 3.0
-          }
-        ]
-      },
-      {
-        "id": "cena",
-        "label": "Cena",
-        "variante": null,
-        "nome": "Vellutata di lenticchie (tua porzione)",
-        "ingredienti": [
-          {
-            "n": "Lenticchie precotte (lattina)",
-            "def": 240,
-            "unit": "g",
-            "kcal": 248.3,
-            "p": 18.4,
-            "c": 39.3,
-            "g": 1.2
-          },
-          {
-            "n": "Patate",
-            "def": 200,
-            "unit": "g",
-            "kcal": 144.8,
-            "p": 3.8,
-            "c": 33.7,
-            "g": 0.2
-          },
-          {
-            "n": "Albume d'uovo",
-            "def": 75,
-            "unit": "g",
-            "kcal": 36.7,
-            "p": 7.8,
-            "c": 0.5,
-            "g": 0.1
-          },
-          {
-            "n": "Scalogno",
-            "def": 15,
-            "unit": "g",
-            "kcal": 10.2,
-            "p": 0.4,
-            "c": 2.5,
-            "g": 0.0
-          },
-          {
-            "n": "Olio EVO",
-            "def": 10,
-            "unit": "g",
-            "kcal": 83,
-            "p": 0.0,
-            "c": 0.0,
-            "g": 9.7
-          }
-        ]
-      }
-    ],
-    "lettera": "G"
-  },
-  {
-    "id": "alim-b",
-    "cardSub": "Cena: Burritos di pollo · Pranzo: Pasta mozzarella",
-    "pasti": [
-      {
-        "id": "colazione",
-        "label": "Colazione",
-        "variante": "C",
-        "nome": "Cereali, latte d'avena, yogurt greco e banana",
-        "ingredienti": [
-          {
-            "n": "Cereali (cocopops / riso soffiato)",
-            "def": 40,
-            "unit": "g",
-            "kcal": 156,
-            "p": 1.6,
-            "c": 33.6,
-            "g": 1.2
-          },
-          {
-            "n": "Latte d'avena",
-            "def": 200,
-            "unit": "ml",
-            "kcal": 100,
-            "p": 1.0,
-            "c": 16.0,
-            "g": 3.6
-          },
-          {
-            "n": "Yogurt greco 0%",
-            "def": 100,
-            "unit": "g",
-            "kcal": 59,
-            "p": 10.0,
-            "c": 3.6,
-            "g": 0.2
-          },
-          {
-            "n": "Banana",
-            "def": 100,
-            "unit": "g",
-            "kcal": 89,
-            "p": 1.1,
-            "c": 23.0,
-            "g": 0.3
-          }
-        ]
-      },
-      {
-        "id": "spuntinoAM",
-        "label": "Spuntino mattutino",
-        "variante": "B",
-        "nome": "Mela",
-        "ingredienti": [
-          {
-            "n": "Mela",
-            "def": 150,
-            "unit": "g",
-            "kcal": 78,
-            "p": 0.5,
-            "c": 21.0,
-            "g": 0.3
-          }
-        ]
-      },
-      {
-        "id": "pranzo",
-        "label": "Pranzo",
-        "variante": "2",
-        "nome": "Pasta con Pomodori e Mozzarella Proteica",
-        "ingredienti": [
-          {
-            "n": "Pasta (peso a crudo)",
-            "def": 100,
-            "unit": "g",
-            "kcal": 350,
-            "p": 12.0,
-            "c": 70.0,
-            "g": 1.5
-          },
-          {
-            "n": "Mozzarella proteica",
-            "def": 100,
-            "unit": "g",
-            "kcal": 165,
-            "p": 20.0,
-            "c": 2.0,
-            "g": 8.0
-          },
-          {
-            "n": "Pomodorini",
-            "def": 120,
-            "unit": "g",
-            "kcal": 22,
-            "p": 1.1,
-            "c": 4.2,
-            "g": 0.2
-          },
-          {
-            "n": "Parmigiano Reggiano",
-            "def": 10,
-            "unit": "g",
-            "kcal": 40,
-            "p": 3.3,
-            "c": 0.0,
-            "g": 2.9
-          },
-          {
-            "n": "Olio EVO",
-            "def": 10,
-            "unit": "g",
-            "kcal": 88,
-            "p": 0.0,
-            "c": 0.0,
-            "g": 10.0
-          }
-        ]
-      },
-      {
-        "id": "spuntinoPM",
-        "label": "Spuntino pomeridiano",
-        "variante": "B2",
-        "nome": "Biscotti e mandorle",
-        "ingredienti": [
-          {
-            "n": "Biscotti con gocce di cioccolato",
-            "def": 25,
-            "unit": "g",
-            "kcal": 115,
-            "p": 1.5,
-            "c": 16.0,
-            "g": 5.0
-          },
-          {
-            "n": "Mandorle",
-            "def": 12,
-            "unit": "g",
-            "kcal": 70,
-            "p": 2.5,
-            "c": 2.6,
-            "g": 6.0
-          }
-        ]
-      },
-      {
-        "id": "cena",
-        "label": "Cena",
-        "variante": null,
-        "nome": "Burritos di pollo",
-        "ingredienti": [
-          {
-            "n": "Petto di pollo",
-            "def": 200,
-            "unit": "g",
-            "kcal": 173.4,
-            "p": 45.8,
-            "c": 0.0,
-            "g": 1.6
-          },
-          {
-            "n": "Tortillas",
             "def": 90,
             "unit": "g",
-            "kcal": 212.9,
-            "p": 7.2,
-            "c": 39.6,
-            "g": 3.4
+            "kcal": 170.8,
+            "p": 22.3,
+            "c": 0.0,
+            "g": 8.5
           },
           {
-            "n": "Insalata",
-            "def": 25,
+            "n": "Zucchine",
+            "def": 280,
             "unit": "g",
-            "kcal": 3,
-            "p": 0.3,
-            "c": 0.7,
-            "g": 0.0
-          },
-          {
-            "n": "Pomodori",
-            "def": 25,
-            "unit": "g",
-            "kcal": 3.6,
-            "p": 0.2,
-            "c": 0.8,
-            "g": 0.0
-          },
-          {
-            "n": "Philadelphia",
-            "def": 40,
-            "unit": "g",
-            "kcal": 107.8,
-            "p": 2.2,
-            "c": 1.5,
-            "g": 7.3
-          },
-          {
-            "n": "Glassa per pollo",
-            "def": 10,
-            "unit": "g",
-            "kcal": 19.7,
-            "p": 0.1,
-            "c": 5.0,
-            "g": 0.1
-          },
-          {
-            "n": "Maionese",
-            "def": 10,
-            "unit": "g",
-            "kcal": 53.6,
-            "p": 0.1,
-            "c": 0.3,
-            "g": 4.0
-          }
-        ]
-      }
-    ],
-    "lettera": "B"
-  },
-  {
-    "id": "alim-c",
-    "cardSub": "Cena: Gateau di patate · Pranzo: Pasta mozzarella (meno olio)",
-    "pasti": [
-      {
-        "id": "colazione",
-        "label": "Colazione",
-        "variante": "B",
-        "nome": "Yogurt greco, banana e biscotti (meno biscotti)",
-        "ingredienti": [
-          {
-            "n": "Yogurt greco 0%",
-            "def": 200,
-            "unit": "g",
-            "kcal": 118,
-            "p": 20.0,
-            "c": 7.2,
-            "g": 0.4
-          },
-          {
-            "n": "Banana",
-            "def": 100,
-            "unit": "g",
-            "kcal": 89,
-            "p": 1.1,
-            "c": 23.0,
-            "g": 0.3
-          },
-          {
-            "n": "Biscotti con gocce di cioccolato",
-            "def": 20,
-            "unit": "g",
-            "kcal": 92,
-            "p": 1.2,
-            "c": 12.8,
-            "g": 4.0
-          }
-        ]
-      },
-      {
-        "id": "spuntinoAM",
-        "label": "Spuntino mattutino",
-        "variante": "C",
-        "nome": "Mela",
-        "ingredienti": [
-          {
-            "n": "Mela",
-            "def": 150,
-            "unit": "g",
-            "kcal": 78,
-            "p": 0.5,
-            "c": 21.0,
-            "g": 0.3
-          }
-        ]
-      },
-      {
-        "id": "pranzo",
-        "label": "Pranzo",
-        "variante": "2b",
-        "nome": "Pasta con Pomodori e Mozzarella Proteica (versione con meno olio)",
-        "ingredienti": [
-          {
-            "n": "Pasta (peso a crudo)",
-            "def": 110,
-            "unit": "g",
-            "kcal": 385,
-            "p": 13.2,
-            "c": 77.0,
-            "g": 1.6
-          },
-          {
-            "n": "Mozzarella proteica",
-            "def": 100,
-            "unit": "g",
-            "kcal": 165,
-            "p": 20.0,
-            "c": 2.0,
-            "g": 8.0
+            "kcal": 49.6,
+            "p": 3.3,
+            "c": 7.6,
+            "g": 0.6
           },
           {
             "n": "Pomodorini",
-            "def": 120,
+            "def": 150,
             "unit": "g",
-            "kcal": 22,
-            "p": 1.1,
-            "c": 4.2,
-            "g": 0.2
+            "kcal": 28.2,
+            "p": 1.3,
+            "c": 5.5,
+            "g": 0.3
           },
           {
-            "n": "Parmigiano Reggiano",
-            "def": 10,
+            "n": "Cipolla / scalogno",
+            "def": 40,
             "unit": "g",
-            "kcal": 40,
-            "p": 3.3,
-            "c": 0.0,
-            "g": 2.9
+            "kcal": 13.8,
+            "p": 0.4,
+            "c": 3.1,
+            "g": 0.0
           },
           {
             "n": "Olio EVO",
-            "def": 10,
+            "def": 8,
             "unit": "g",
-            "kcal": 88,
+            "kcal": 73.7,
             "p": 0.0,
             "c": 0.0,
-            "g": 10.0
+            "g": 8.4
           }
         ]
       },
       {
         "id": "spuntinoPM",
         "label": "Spuntino pomeridiano",
-        "variante": "C",
-        "nome": "Pera e biscotti",
+        "variante": "A",
+        "nome": "Mandorle",
         "ingredienti": [
           {
-            "n": "Pera",
-            "def": 150,
+            "n": "Mandorle",
+            "def": 25,
             "unit": "g",
-            "kcal": 85,
-            "p": 0.6,
-            "c": 22.5,
-            "g": 0.1
-          },
-          {
-            "n": "Biscotti con gocce di cioccolato",
-            "def": 20,
-            "unit": "g",
-            "kcal": 92,
-            "p": 1.2,
-            "c": 12.8,
-            "g": 4.0
+            "kcal": 145.0,
+            "p": 5.0,
+            "c": 5.0,
+            "g": 13.0
           }
         ]
       },
@@ -2732,125 +2384,309 @@ const ALIM_GIORNI = [
         "ingredienti": [
           {
             "n": "Patate",
-            "def": 250,
+            "def": 375,
             "unit": "g",
-            "kcal": 214.4,
-            "p": 6.0,
-            "c": 45.1,
-            "g": 0.3
+            "kcal": 289.6,
+            "p": 7.6,
+            "c": 65.1,
+            "g": 0.4
           },
           {
             "n": "Uova",
             "def": 25,
             "unit": "g",
-            "kcal": 39.8,
-            "p": 3.8,
-            "c": 0.2,
-            "g": 2.6
+            "kcal": 38.9,
+            "p": 3.3,
+            "c": 0.3,
+            "g": 2.7
           },
           {
             "n": "Parmigiano Reggiano",
             "def": 15,
             "unit": "g",
-            "kcal": 66.8,
-            "p": 5.9,
+            "kcal": 59.0,
+            "p": 5.0,
             "c": 0.0,
-            "g": 4.8
+            "g": 4.1
           },
           {
-            "n": "Scamorza/provola affumicata",
-            "def": 40,
+            "n": "Formaggio filante (scamorza/provola)",
+            "def": 30,
             "unit": "g",
-            "kcal": 147,
-            "p": 11.9,
-            "c": 0.4,
-            "g": 11.1
+            "kcal": 90.3,
+            "p": 7.6,
+            "c": 0.3,
+            "g": 6.4
           },
           {
             "n": "Prosciutto cotto",
             "def": 30,
             "unit": "g",
-            "kcal": 48.4,
-            "p": 6.5,
-            "c": 0.5,
-            "g": 2.7
+            "kcal": 43.6,
+            "p": 6.1,
+            "c": 0.3,
+            "g": 2.0
           },
           {
             "n": "Burro",
-            "def": 7.5,
+            "def": 5,
             "unit": "g",
-            "kcal": 59.9,
-            "p": 0.1,
+            "kcal": 36.0,
+            "p": 0.0,
             "c": 0.0,
-            "g": 6.8
+            "g": 3.9
           },
           {
             "n": "Pangrattato",
-            "def": 14,
+            "def": 12,
             "unit": "g",
-            "kcal": 61.6,
-            "p": 2.2,
-            "c": 10.4,
-            "g": 0.8
+            "kcal": 45.7,
+            "p": 1.5,
+            "c": 9.0,
+            "g": 0.6
           }
         ]
       }
     ],
-    "lettera": "C"
+    "lettera": "A"
   },
   {
-    "id": "alim-d",
-    "cardSub": "Cena: Tartare, pane e insalata · Pranzo: Pasta fiocchi",
+    "id": "alim-b",
+    "cardSub": "Cena: Vellutata di lenticchie · Pranzo: Pasta con Pomodori e Mozzarella Proteica",
     "pasti": [
       {
         "id": "colazione",
         "label": "Colazione",
-        "variante": "A",
-        "nome": "Yogurt greco, banana e biscotti",
+        "variante": "C",
+        "nome": "Cereali, latte d'avena, yogurt greco, banana e biscotti",
         "ingredienti": [
           {
-            "n": "Yogurt greco 0%",
-            "def": 200,
+            "n": "Cereali (cocopops / riso soffiato)",
+            "def": 35,
             "unit": "g",
-            "kcal": 118,
-            "p": 20.0,
-            "c": 7.2,
+            "kcal": 146.1,
+            "p": 1.5,
+            "c": 27.7,
+            "g": 1.4
+          },
+          {
+            "n": "Latte d'avena",
+            "def": 200,
+            "unit": "ml",
+            "kcal": 107.1,
+            "p": 1.1,
+            "c": 15.1,
+            "g": 4.8
+          },
+          {
+            "n": "Yogurt greco 0%",
+            "def": 150,
+            "unit": "g",
+            "kcal": 94.7,
+            "p": 16.1,
+            "c": 5.1,
             "g": 0.4
           },
           {
             "n": "Banana",
-            "def": 100,
+            "def": 120,
             "unit": "g",
-            "kcal": 89,
-            "p": 1.1,
-            "c": 23.0,
-            "g": 0.3
+            "kcal": 114.3,
+            "p": 1.4,
+            "c": 26.0,
+            "g": 0.5
           },
           {
             "n": "Biscotti con gocce di cioccolato",
-            "def": 25,
+            "def": 30,
             "unit": "g",
-            "kcal": 115,
-            "p": 1.5,
-            "c": 16.0,
-            "g": 5.0
+            "kcal": 147.7,
+            "p": 1.9,
+            "c": 18.1,
+            "g": 8.0
           }
         ]
       },
       {
-        "id": "spuntinoAM",
-        "label": "Spuntino mattutino",
-        "variante": "B",
-        "nome": "Mela",
+        "id": "pranzo",
+        "label": "Pranzo",
+        "variante": "2",
+        "nome": "Pasta con Pomodori e Mozzarella Proteica",
         "ingredienti": [
           {
-            "n": "Mela",
+            "n": "Pasta (peso a crudo)",
+            "def": 95,
+            "unit": "g",
+            "kcal": 321.8,
+            "p": 11.4,
+            "c": 69.6,
+            "g": 1.1
+          },
+          {
+            "n": "Pomodorini",
+            "def": 140,
+            "unit": "g",
+            "kcal": 24.4,
+            "p": 1.3,
+            "c": 5.1,
+            "g": 0.2
+          },
+          {
+            "n": "Mozzarella proteica",
+            "def": 110,
+            "unit": "g",
+            "kcal": 175.7,
+            "p": 22.0,
+            "c": 2.3,
+            "g": 7.1
+          },
+          {
+            "n": "Parmigiano Reggiano",
+            "def": 10,
+            "unit": "g",
+            "kcal": 37.9,
+            "p": 3.3,
+            "c": 0.0,
+            "g": 2.3
+          },
+          {
+            "n": "Olio EVO",
+            "def": 4,
+            "unit": "g",
+            "kcal": 34.2,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 3.2
+          }
+        ]
+      },
+      {
+        "id": "spuntinoPM",
+        "label": "Spuntino pomeridiano",
+        "variante": "A",
+        "nome": "Mandorle",
+        "ingredienti": [
+          {
+            "n": "Mandorle",
+            "def": 25,
+            "unit": "g",
+            "kcal": 145.0,
+            "p": 5.0,
+            "c": 5.0,
+            "g": 13.0
+          }
+        ]
+      },
+      {
+        "id": "cena",
+        "label": "Cena",
+        "variante": null,
+        "nome": "Vellutata di lenticchie (tua porzione)",
+        "ingredienti": [
+          {
+            "n": "Lenticchie precotte (lattina)",
+            "def": 225,
+            "unit": "g",
+            "kcal": 232.9,
+            "p": 17.8,
+            "c": 38.1,
+            "g": 1.2
+          },
+          {
+            "n": "Patate",
+            "def": 240,
+            "unit": "g",
+            "kcal": 185.7,
+            "p": 4.9,
+            "c": 42.1,
+            "g": 0.2
+          },
+          {
+            "n": "Albume d'uovo",
+            "def": 90,
+            "unit": "g",
+            "kcal": 43.4,
+            "p": 10.1,
+            "c": 0.7,
+            "g": 0.2
+          },
+          {
+            "n": "Scalogno",
+            "def": 15,
+            "unit": "g",
+            "kcal": 5.0,
+            "p": 0.2,
+            "c": 1.1,
+            "g": 0.0
+          },
+          {
+            "n": "Olio EVO",
+            "def": 9,
+            "unit": "g",
+            "kcal": 80.0,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 9.4
+          }
+        ]
+      }
+    ],
+    "lettera": "B"
+  },
+  {
+    "id": "alim-c",
+    "cardSub": "Cena: Frittata di zucchine e prosciutto, con pane · Pranzo: Pasta con Crema di Zucchine e Fiocchi di Latte",
+    "pasti": [
+      {
+        "id": "colazione",
+        "label": "Colazione",
+        "variante": "C",
+        "nome": "Cereali, latte d'avena, yogurt greco, banana e biscotti",
+        "ingredienti": [
+          {
+            "n": "Cereali (cocopops / riso soffiato)",
+            "def": 35,
+            "unit": "g",
+            "kcal": 146.1,
+            "p": 1.5,
+            "c": 27.7,
+            "g": 1.4
+          },
+          {
+            "n": "Latte d'avena",
+            "def": 200,
+            "unit": "ml",
+            "kcal": 107.1,
+            "p": 1.1,
+            "c": 15.1,
+            "g": 4.8
+          },
+          {
+            "n": "Yogurt greco 0%",
             "def": 150,
             "unit": "g",
-            "kcal": 78,
-            "p": 0.5,
-            "c": 21.0,
-            "g": 0.3
+            "kcal": 94.7,
+            "p": 16.1,
+            "c": 5.1,
+            "g": 0.4
+          },
+          {
+            "n": "Banana",
+            "def": 120,
+            "unit": "g",
+            "kcal": 114.3,
+            "p": 1.4,
+            "c": 26.0,
+            "g": 0.5
+          },
+          {
+            "n": "Biscotti con gocce di cioccolato",
+            "def": 30,
+            "unit": "g",
+            "kcal": 147.7,
+            "p": 1.9,
+            "c": 18.1,
+            "g": 8.0
           }
         ]
       },
@@ -2862,65 +2698,65 @@ const ALIM_GIORNI = [
         "ingredienti": [
           {
             "n": "Pasta (peso a crudo)",
-            "def": 120,
+            "def": 80,
             "unit": "g",
-            "kcal": 420,
-            "p": 14.4,
-            "c": 84.0,
-            "g": 1.8
+            "kcal": 279.3,
+            "p": 9.9,
+            "c": 61.0,
+            "g": 0.9
+          },
+          {
+            "n": "Zucchine",
+            "def": 260,
+            "unit": "g",
+            "kcal": 44.1,
+            "p": 3.2,
+            "c": 7.4,
+            "g": 0.4
           },
           {
             "n": "Fiocchi di latte Milbona (Lidl)",
             "def": 200,
             "unit": "g",
-            "kcal": 196,
-            "p": 23.0,
-            "c": 5.6,
-            "g": 9.0
+            "kcal": 195.5,
+            "p": 23.7,
+            "c": 6.1,
+            "g": 7.2
           },
           {
-            "n": "Zucchine",
-            "def": 225,
+            "n": "Scalogno",
+            "def": 20,
             "unit": "g",
-            "kcal": 38,
-            "p": 2.7,
-            "c": 5.8,
-            "g": 0.5
+            "kcal": 6.6,
+            "p": 0.2,
+            "c": 1.6,
+            "g": 0.0
           },
           {
             "n": "Olio EVO",
-            "def": 22,
+            "def": 8,
             "unit": "g",
-            "kcal": 194,
+            "kcal": 70.5,
             "p": 0.0,
             "c": 0.0,
-            "g": 22.0
+            "g": 6.4
           }
         ]
       },
       {
         "id": "spuntinoPM",
         "label": "Spuntino pomeridiano",
-        "variante": "B",
-        "nome": "Biscotti e mandorle",
+        "variante": "A",
+        "nome": "Mandorle",
         "ingredienti": [
           {
-            "n": "Biscotti con gocce di cioccolato",
+            "n": "Mandorle",
             "def": 25,
             "unit": "g",
-            "kcal": 115,
-            "p": 1.5,
-            "c": 16.0,
-            "g": 5.0
-          },
-          {
-            "n": "Mandorle",
-            "def": 10,
-            "unit": "g",
-            "kcal": 58,
-            "p": 2.1,
-            "c": 2.2,
-            "g": 5.0
+            "kcal": 145.0,
+            "p": 5.0,
+            "c": 5.0,
+            "g": 13.0
           }
         ]
       },
@@ -2928,52 +2764,271 @@ const ALIM_GIORNI = [
         "id": "cena",
         "label": "Cena",
         "variante": null,
-        "nome": "Tartare, pane e insalata",
+        "nome": "Frittata di zucchine e prosciutto, con pane (tua porzione)",
         "ingredienti": [
           {
-            "n": "Tartare di manzo",
+            "n": "Uova",
             "def": 100,
             "unit": "g",
-            "kcal": 134.8,
-            "p": 20.8,
-            "c": 0.0,
-            "g": 5.4
+            "kcal": 160.6,
+            "p": 14.4,
+            "c": 1.0,
+            "g": 13.2
           },
           {
-            "n": "Pane",
-            "def": 110,
+            "n": "Zucchine",
+            "def": 100,
             "unit": "g",
-            "kcal": 294.4,
-            "p": 8.7,
-            "c": 60.8,
-            "g": 0.9
+            "kcal": 17.6,
+            "p": 1.3,
+            "c": 2.3,
+            "g": 0.2
           },
           {
-            "n": "Pomodori",
-            "def": 50,
+            "n": "Patate",
+            "def": 80,
             "unit": "g",
-            "kcal": 9,
-            "p": 0.4,
-            "c": 1.8,
+            "kcal": 63.8,
+            "p": 1.8,
+            "c": 12.1,
             "g": 0.1
+          },
+          {
+            "n": "Parmigiano Reggiano",
+            "def": 10,
+            "unit": "g",
+            "kcal": 40.6,
+            "p": 3.6,
+            "c": 0.0,
+            "g": 3.4
+          },
+          {
+            "n": "Prosciutto cotto",
+            "def": 45,
+            "unit": "g",
+            "kcal": 67.6,
+            "p": 9.9,
+            "c": 0.4,
+            "g": 3.8
+          },
+          {
+            "n": "Olio EVO",
+            "def": 3,
+            "unit": "g",
+            "kcal": 27.5,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 3.6
+          },
+          {
+            "n": "Pane ai cereali (contorno)",
+            "def": 80,
+            "unit": "g",
+            "kcal": 222.2,
+            "p": 7.0,
+            "c": 39.3,
+            "g": 0.8
+          }
+        ]
+      }
+    ],
+    "lettera": "C"
+  },
+  {
+    "id": "alim-d",
+    "cardSub": "Cena: Burritos di pollo · Pranzo: Pasta con Zucchine, Tonno e Pomodorini",
+    "pasti": [
+      {
+        "id": "colazione",
+        "label": "Colazione",
+        "variante": "C",
+        "nome": "Cereali, latte d'avena, yogurt greco, banana e biscotti",
+        "ingredienti": [
+          {
+            "n": "Cereali (cocopops / riso soffiato)",
+            "def": 35,
+            "unit": "g",
+            "kcal": 146.1,
+            "p": 1.5,
+            "c": 27.7,
+            "g": 1.4
+          },
+          {
+            "n": "Latte d'avena",
+            "def": 200,
+            "unit": "ml",
+            "kcal": 107.1,
+            "p": 1.1,
+            "c": 15.1,
+            "g": 4.8
+          },
+          {
+            "n": "Yogurt greco 0%",
+            "def": 150,
+            "unit": "g",
+            "kcal": 94.7,
+            "p": 16.1,
+            "c": 5.1,
+            "g": 0.4
+          },
+          {
+            "n": "Banana",
+            "def": 120,
+            "unit": "g",
+            "kcal": 114.3,
+            "p": 1.4,
+            "c": 26.0,
+            "g": 0.5
+          },
+          {
+            "n": "Biscotti con gocce di cioccolato",
+            "def": 30,
+            "unit": "g",
+            "kcal": 147.7,
+            "p": 1.9,
+            "c": 18.1,
+            "g": 8.0
+          }
+        ]
+      },
+      {
+        "id": "pranzo",
+        "label": "Pranzo",
+        "variante": "1",
+        "nome": "Pasta con Zucchine, Tonno e Pomodorini",
+        "ingredienti": [
+          {
+            "n": "Pasta (peso a crudo)",
+            "def": 80,
+            "unit": "g",
+            "kcal": 291.9,
+            "p": 9.5,
+            "c": 58.8,
+            "g": 1.2
+          },
+          {
+            "n": "Tonno sott'olio sgocciolato",
+            "def": 90,
+            "unit": "g",
+            "kcal": 170.8,
+            "p": 22.3,
+            "c": 0.0,
+            "g": 8.5
+          },
+          {
+            "n": "Zucchine",
+            "def": 280,
+            "unit": "g",
+            "kcal": 49.6,
+            "p": 3.3,
+            "c": 7.6,
+            "g": 0.6
+          },
+          {
+            "n": "Pomodorini",
+            "def": 150,
+            "unit": "g",
+            "kcal": 28.2,
+            "p": 1.3,
+            "c": 5.5,
+            "g": 0.3
+          },
+          {
+            "n": "Cipolla / scalogno",
+            "def": 40,
+            "unit": "g",
+            "kcal": 13.8,
+            "p": 0.4,
+            "c": 3.1,
+            "g": 0.0
+          },
+          {
+            "n": "Olio EVO",
+            "def": 8,
+            "unit": "g",
+            "kcal": 73.7,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 8.4
+          }
+        ]
+      },
+      {
+        "id": "spuntinoPM",
+        "label": "Spuntino pomeridiano",
+        "variante": "A",
+        "nome": "Mandorle",
+        "ingredienti": [
+          {
+            "n": "Mandorle",
+            "def": 25,
+            "unit": "g",
+            "kcal": 145.0,
+            "p": 5.0,
+            "c": 5.0,
+            "g": 13.0
+          }
+        ]
+      },
+      {
+        "id": "cena",
+        "label": "Cena",
+        "variante": null,
+        "nome": "Burritos di pollo (tua porzione)",
+        "ingredienti": [
+          {
+            "n": "Petto di pollo",
+            "def": 150,
+            "unit": "g",
+            "kcal": 142.9,
+            "p": 32.6,
+            "c": 0.0,
+            "g": 1.3
+          },
+          {
+            "n": "Tortillas piccole",
+            "def": 54,
+            "unit": "g",
+            "kcal": 184.0,
+            "p": 4.1,
+            "c": 26.6,
+            "g": 5.5
           },
           {
             "n": "Insalata",
             "def": 50,
             "unit": "g",
-            "kcal": 7.4,
-            "p": 0.7,
-            "c": 1.5,
+            "kcal": 6.6,
+            "p": 0.6,
+            "c": 1.6,
             "g": 0.1
           },
           {
-            "n": "Olio EVO",
+            "n": "Pomodori",
+            "def": 50,
+            "unit": "g",
+            "kcal": 9.9,
+            "p": 0.4,
+            "c": 1.9,
+            "g": 0.1
+          },
+          {
+            "n": "Philadelphia",
             "def": 5,
             "unit": "g",
-            "kcal": 43.4,
+            "kcal": 18.8,
+            "p": 0.3,
+            "c": 0.2,
+            "g": 1.9
+          },
+          {
+            "n": "Glassa per pollo (BBQ/teriyaki)",
+            "def": 7.5,
+            "unit": "g",
+            "kcal": 10.8,
             "p": 0.0,
-            "c": 0.0,
-            "g": 4.9
+            "c": 2.7,
+            "g": 0.1
           }
         ]
       }
@@ -2982,136 +3037,128 @@ const ALIM_GIORNI = [
   },
   {
     "id": "alim-e",
-    "cardSub": "Cena: Burritos di pollo · Pranzo: Pasta fiocchi (ridotta)",
+    "cardSub": "Cena: Panino con tartare di manzo · Pranzo: Pasta con Pomodori e Mozzarella Proteica",
     "pasti": [
       {
         "id": "colazione",
         "label": "Colazione",
         "variante": "C",
-        "nome": "Cereali, latte d'avena, yogurt greco e banana",
+        "nome": "Cereali, latte d'avena, yogurt greco, banana e biscotti",
         "ingredienti": [
           {
             "n": "Cereali (cocopops / riso soffiato)",
-            "def": 40,
+            "def": 35,
             "unit": "g",
-            "kcal": 156,
-            "p": 1.6,
-            "c": 33.6,
-            "g": 1.2
+            "kcal": 146.1,
+            "p": 1.5,
+            "c": 27.7,
+            "g": 1.4
           },
           {
             "n": "Latte d'avena",
             "def": 200,
             "unit": "ml",
-            "kcal": 100,
-            "p": 1.0,
-            "c": 16.0,
-            "g": 3.6
+            "kcal": 107.1,
+            "p": 1.1,
+            "c": 15.1,
+            "g": 4.8
           },
           {
             "n": "Yogurt greco 0%",
-            "def": 100,
+            "def": 150,
             "unit": "g",
-            "kcal": 59,
-            "p": 10.0,
-            "c": 3.6,
-            "g": 0.2
+            "kcal": 94.7,
+            "p": 16.1,
+            "c": 5.1,
+            "g": 0.4
           },
           {
             "n": "Banana",
-            "def": 100,
+            "def": 120,
             "unit": "g",
-            "kcal": 89,
-            "p": 1.1,
-            "c": 23.0,
-            "g": 0.3
-          }
-        ]
-      },
-      {
-        "id": "spuntinoAM",
-        "label": "Spuntino mattutino",
-        "variante": "D",
-        "nome": "Mela",
-        "ingredienti": [
+            "kcal": 114.3,
+            "p": 1.4,
+            "c": 26.0,
+            "g": 0.5
+          },
           {
-            "n": "Mela",
-            "def": 150,
+            "n": "Biscotti con gocce di cioccolato",
+            "def": 30,
             "unit": "g",
-            "kcal": 78,
-            "p": 0.5,
-            "c": 21.0,
-            "g": 0.3
+            "kcal": 147.7,
+            "p": 1.9,
+            "c": 18.1,
+            "g": 8.0
           }
         ]
       },
       {
         "id": "pranzo",
         "label": "Pranzo",
-        "variante": "3b",
-        "nome": "Pasta con Crema di Zucchine e Fiocchi di Latte (versione ridotta)",
+        "variante": "2",
+        "nome": "Pasta con Pomodori e Mozzarella Proteica",
         "ingredienti": [
           {
             "n": "Pasta (peso a crudo)",
-            "def": 100,
+            "def": 95,
             "unit": "g",
-            "kcal": 350,
-            "p": 12.0,
-            "c": 70.0,
-            "g": 1.5
+            "kcal": 321.8,
+            "p": 11.4,
+            "c": 69.6,
+            "g": 1.1
           },
           {
-            "n": "Fiocchi di latte Milbona (Lidl)",
-            "def": 200,
+            "n": "Pomodorini",
+            "def": 140,
             "unit": "g",
-            "kcal": 196,
-            "p": 23.0,
-            "c": 5.6,
-            "g": 9.0
+            "kcal": 24.4,
+            "p": 1.3,
+            "c": 5.1,
+            "g": 0.2
           },
           {
-            "n": "Zucchine",
-            "def": 225,
+            "n": "Mozzarella proteica",
+            "def": 110,
             "unit": "g",
-            "kcal": 38,
-            "p": 2.7,
-            "c": 5.8,
-            "g": 0.5
+            "kcal": 175.7,
+            "p": 22.0,
+            "c": 2.3,
+            "g": 7.1
+          },
+          {
+            "n": "Parmigiano Reggiano",
+            "def": 10,
+            "unit": "g",
+            "kcal": 37.9,
+            "p": 3.3,
+            "c": 0.0,
+            "g": 2.3
           },
           {
             "n": "Olio EVO",
-            "def": 17,
+            "def": 4,
             "unit": "g",
-            "kcal": 150,
+            "kcal": 34.2,
             "p": 0.0,
             "c": 0.0,
-            "g": 17.0
+            "g": 3.2
           }
         ]
       },
       {
         "id": "spuntinoPM",
         "label": "Spuntino pomeridiano",
-        "variante": "D",
-        "nome": "Biscotti e mandorle (leggero)",
+        "variante": "A",
+        "nome": "Mandorle",
         "ingredienti": [
           {
-            "n": "Biscotti con gocce di cioccolato",
-            "def": 15,
-            "unit": "g",
-            "kcal": 69,
-            "p": 0.9,
-            "c": 9.6,
-            "g": 3.0
-          },
-          {
             "n": "Mandorle",
-            "def": 8,
+            "def": 25,
             "unit": "g",
-            "kcal": 46,
-            "p": 1.7,
-            "c": 1.8,
-            "g": 4.0
+            "kcal": 145.0,
+            "p": 5.0,
+            "c": 5.0,
+            "g": 13.0
           }
         ]
       },
@@ -3119,70 +3166,61 @@ const ALIM_GIORNI = [
         "id": "cena",
         "label": "Cena",
         "variante": null,
-        "nome": "Burritos di pollo",
+        "nome": "Panino con tartare di manzo (tua porzione)",
         "ingredienti": [
           {
-            "n": "Petto di pollo",
-            "def": 200,
+            "n": "Tartare di manzo pronta",
+            "def": 100,
             "unit": "g",
-            "kcal": 173.4,
-            "p": 45.8,
+            "kcal": 124.4,
+            "p": 20.0,
             "c": 0.0,
-            "g": 1.6
+            "g": 4.8
           },
           {
-            "n": "Tortillas",
+            "n": "Pane ai cereali",
             "def": 90,
             "unit": "g",
-            "kcal": 212.9,
-            "p": 7.2,
-            "c": 39.6,
-            "g": 3.4
+            "kcal": 222.0,
+            "p": 6.8,
+            "c": 46.5,
+            "g": 0.7
           },
           {
-            "n": "Insalata",
-            "def": 25,
+            "n": "Mozzarella proteica",
+            "def": 70,
             "unit": "g",
-            "kcal": 3,
-            "p": 0.3,
-            "c": 0.7,
-            "g": 0.0
+            "kcal": 106.5,
+            "p": 13.4,
+            "c": 1.3,
+            "g": 5.0
           },
           {
-            "n": "Pomodori",
-            "def": 25,
+            "n": "Pomodorini",
+            "def": 80,
             "unit": "g",
-            "kcal": 3.6,
-            "p": 0.2,
-            "c": 0.8,
-            "g": 0.0
-          },
-          {
-            "n": "Philadelphia",
-            "def": 40,
-            "unit": "g",
-            "kcal": 107.8,
-            "p": 2.2,
-            "c": 1.5,
-            "g": 7.3
-          },
-          {
-            "n": "Glassa per pollo",
-            "def": 10,
-            "unit": "g",
-            "kcal": 19.7,
-            "p": 0.1,
-            "c": 5.0,
+            "kcal": 13.3,
+            "p": 0.7,
+            "c": 2.6,
             "g": 0.1
           },
           {
-            "n": "Maionese",
+            "n": "Glassa balsamica",
             "def": 10,
             "unit": "g",
-            "kcal": 53.6,
-            "p": 0.1,
-            "c": 0.3,
-            "g": 4.0
+            "kcal": 23.0,
+            "p": 0.0,
+            "c": 5.6,
+            "g": 0.0
+          },
+          {
+            "n": "Olio EVO",
+            "def": 5,
+            "unit": "g",
+            "kcal": 40.7,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 4.4
           }
         ]
       }
@@ -3191,145 +3229,128 @@ const ALIM_GIORNI = [
   },
   {
     "id": "alim-f",
-    "cardSub": "Cena: Pollo al limone e pane · Pranzo: Pasta mozzarella (ridotta)",
+    "cardSub": "Cena: Polpette di pollo al limone, con patate lesse · Pranzo: Pasta con Crema di Zucchine e Fiocchi di Latte",
     "pasti": [
       {
         "id": "colazione",
         "label": "Colazione",
         "variante": "C",
-        "nome": "Cereali, latte d'avena, yogurt greco e banana",
+        "nome": "Cereali, latte d'avena, yogurt greco, banana e biscotti",
         "ingredienti": [
           {
             "n": "Cereali (cocopops / riso soffiato)",
-            "def": 40,
+            "def": 35,
             "unit": "g",
-            "kcal": 156,
-            "p": 1.6,
-            "c": 33.6,
-            "g": 1.2
+            "kcal": 146.1,
+            "p": 1.5,
+            "c": 27.7,
+            "g": 1.4
           },
           {
             "n": "Latte d'avena",
             "def": 200,
             "unit": "ml",
-            "kcal": 100,
-            "p": 1.0,
-            "c": 16.0,
-            "g": 3.6
+            "kcal": 107.1,
+            "p": 1.1,
+            "c": 15.1,
+            "g": 4.8
           },
           {
             "n": "Yogurt greco 0%",
-            "def": 100,
+            "def": 150,
             "unit": "g",
-            "kcal": 59,
-            "p": 10.0,
-            "c": 3.6,
-            "g": 0.2
+            "kcal": 94.7,
+            "p": 16.1,
+            "c": 5.1,
+            "g": 0.4
           },
           {
             "n": "Banana",
-            "def": 100,
+            "def": 120,
             "unit": "g",
-            "kcal": 89,
-            "p": 1.1,
-            "c": 23.0,
-            "g": 0.3
-          }
-        ]
-      },
-      {
-        "id": "spuntinoAM",
-        "label": "Spuntino mattutino",
-        "variante": "D",
-        "nome": "Mela",
-        "ingredienti": [
+            "kcal": 114.3,
+            "p": 1.4,
+            "c": 26.0,
+            "g": 0.5
+          },
           {
-            "n": "Mela",
-            "def": 150,
+            "n": "Biscotti con gocce di cioccolato",
+            "def": 30,
             "unit": "g",
-            "kcal": 78,
-            "p": 0.5,
-            "c": 21.0,
-            "g": 0.3
+            "kcal": 147.7,
+            "p": 1.9,
+            "c": 18.1,
+            "g": 8.0
           }
         ]
       },
       {
         "id": "pranzo",
         "label": "Pranzo",
-        "variante": "2c",
-        "nome": "Pasta con Pomodori e Mozzarella Proteica (versione ridotta)",
+        "variante": "3",
+        "nome": "Pasta con Crema di Zucchine e Fiocchi di Latte",
         "ingredienti": [
           {
             "n": "Pasta (peso a crudo)",
             "def": 80,
             "unit": "g",
-            "kcal": 280,
-            "p": 9.6,
-            "c": 56.0,
-            "g": 1.2
+            "kcal": 279.3,
+            "p": 9.9,
+            "c": 61.0,
+            "g": 0.9
           },
           {
-            "n": "Mozzarella proteica",
-            "def": 100,
+            "n": "Zucchine",
+            "def": 260,
             "unit": "g",
-            "kcal": 165,
-            "p": 20.0,
-            "c": 2.0,
-            "g": 8.0
+            "kcal": 44.1,
+            "p": 3.2,
+            "c": 7.4,
+            "g": 0.4
           },
           {
-            "n": "Pomodorini",
-            "def": 120,
+            "n": "Fiocchi di latte Milbona (Lidl)",
+            "def": 200,
             "unit": "g",
-            "kcal": 22,
-            "p": 1.1,
-            "c": 4.2,
-            "g": 0.2
+            "kcal": 195.5,
+            "p": 23.7,
+            "c": 6.1,
+            "g": 7.2
           },
           {
-            "n": "Parmigiano Reggiano",
-            "def": 10,
+            "n": "Scalogno",
+            "def": 20,
             "unit": "g",
-            "kcal": 40,
-            "p": 3.3,
-            "c": 0.0,
-            "g": 2.9
+            "kcal": 6.6,
+            "p": 0.2,
+            "c": 1.6,
+            "g": 0.0
           },
           {
             "n": "Olio EVO",
-            "def": 20,
+            "def": 8,
             "unit": "g",
-            "kcal": 177,
+            "kcal": 70.5,
             "p": 0.0,
             "c": 0.0,
-            "g": 20.0
+            "g": 6.4
           }
         ]
       },
       {
         "id": "spuntinoPM",
         "label": "Spuntino pomeridiano",
-        "variante": "D2",
-        "nome": "Biscotti e mandorle",
+        "variante": "A",
+        "nome": "Mandorle",
         "ingredienti": [
           {
-            "n": "Biscotti con gocce di cioccolato",
-            "def": 20,
-            "unit": "g",
-            "kcal": 92,
-            "p": 1.2,
-            "c": 12.8,
-            "g": 4.0
-          },
-          {
             "n": "Mandorle",
-            "def": 12,
+            "def": 25,
             "unit": "g",
-            "kcal": 70,
-            "p": 2.5,
-            "c": 2.6,
-            "g": 6.0
+            "kcal": 145.0,
+            "p": 5.0,
+            "c": 5.0,
+            "g": 13.0
           }
         ]
       },
@@ -3337,39 +3358,567 @@ const ALIM_GIORNI = [
         "id": "cena",
         "label": "Cena",
         "variante": null,
-        "nome": "Petto di pollo al limone e pane",
+        "nome": "Polpette di pollo al limone, con patate lesse (tua porzione)",
         "ingredienti": [
           {
             "n": "Petto di pollo",
-            "def": 200,
+            "def": 150,
             "unit": "g",
-            "kcal": 220,
-            "p": 46,
-            "c": 0,
-            "g": 3
+            "kcal": 139.6,
+            "p": 32.6,
+            "c": 0.0,
+            "g": 1.6
           },
           {
-            "n": "Pane",
-            "def": 120,
-            "unit": "g",
-            "kcal": 324,
-            "p": 9.6,
-            "c": 66,
-            "g": 1.2
-          },
-          {
-            "n": "Olio EVO",
+            "n": "Ricotta",
             "def": 5,
             "unit": "g",
-            "kcal": 44,
-            "p": 0,
-            "c": 0,
-            "g": 5
+            "kcal": 7.8,
+            "p": 0.4,
+            "c": 0.2,
+            "g": 0.7
+          },
+          {
+            "n": "Parmigiano Reggiano",
+            "def": 2.5,
+            "unit": "g",
+            "kcal": 10.5,
+            "p": 0.8,
+            "c": 0.0,
+            "g": 0.9
+          },
+          {
+            "n": "Albume d'uovo",
+            "def": 12.5,
+            "unit": "g",
+            "kcal": 6.4,
+            "p": 1.3,
+            "c": 0.1,
+            "g": 0.0
+          },
+          {
+            "n": "Farina (per infarinare)",
+            "def": 5,
+            "unit": "g",
+            "kcal": 18.2,
+            "p": 0.5,
+            "c": 3.9,
+            "g": 0.1
+          },
+          {
+            "n": "Burro",
+            "def": 5,
+            "unit": "g",
+            "kcal": 38.5,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 5.2
+          },
+          {
+            "n": "Vino bianco secco",
+            "def": 25,
+            "unit": "g",
+            "kcal": 22.0,
+            "p": 0.0,
+            "c": 0.7,
+            "g": 0.0
+          },
+          {
+            "n": "Latte intero",
+            "def": 75,
+            "unit": "g",
+            "kcal": 51.5,
+            "p": 2.3,
+            "c": 3.8,
+            "g": 3.5
+          },
+          {
+            "n": "Succo di limone",
+            "def": 12.5,
+            "unit": "g",
+            "kcal": 1.3,
+            "p": 0.0,
+            "c": 0.4,
+            "g": 0.0
+          },
+          {
+            "n": "Patate lesse (contorno)",
+            "def": 175,
+            "unit": "g",
+            "kcal": 150.5,
+            "p": 3.3,
+            "c": 35.0,
+            "g": 0.2
           }
         ]
       }
     ],
     "lettera": "F"
+  },
+  {
+    "id": "alim-g",
+    "cardSub": "Cena: Polpette di pollo al limone, con riso · Pranzo: Pasta con Zucchine, Tonno e Pomodorini",
+    "pasti": [
+      {
+        "id": "colazione",
+        "label": "Colazione",
+        "variante": "C",
+        "nome": "Cereali, latte d'avena, yogurt greco, banana e biscotti",
+        "ingredienti": [
+          {
+            "n": "Cereali (cocopops / riso soffiato)",
+            "def": 35,
+            "unit": "g",
+            "kcal": 146.1,
+            "p": 1.5,
+            "c": 27.7,
+            "g": 1.4
+          },
+          {
+            "n": "Latte d'avena",
+            "def": 200,
+            "unit": "ml",
+            "kcal": 107.1,
+            "p": 1.1,
+            "c": 15.1,
+            "g": 4.8
+          },
+          {
+            "n": "Yogurt greco 0%",
+            "def": 150,
+            "unit": "g",
+            "kcal": 94.7,
+            "p": 16.1,
+            "c": 5.1,
+            "g": 0.4
+          },
+          {
+            "n": "Banana",
+            "def": 120,
+            "unit": "g",
+            "kcal": 114.3,
+            "p": 1.4,
+            "c": 26.0,
+            "g": 0.5
+          },
+          {
+            "n": "Biscotti con gocce di cioccolato",
+            "def": 30,
+            "unit": "g",
+            "kcal": 147.7,
+            "p": 1.9,
+            "c": 18.1,
+            "g": 8.0
+          }
+        ]
+      },
+      {
+        "id": "pranzo",
+        "label": "Pranzo",
+        "variante": "1",
+        "nome": "Pasta con Zucchine, Tonno e Pomodorini",
+        "ingredienti": [
+          {
+            "n": "Pasta (peso a crudo)",
+            "def": 80,
+            "unit": "g",
+            "kcal": 291.9,
+            "p": 9.5,
+            "c": 58.8,
+            "g": 1.2
+          },
+          {
+            "n": "Tonno sott'olio sgocciolato",
+            "def": 90,
+            "unit": "g",
+            "kcal": 170.8,
+            "p": 22.3,
+            "c": 0.0,
+            "g": 8.5
+          },
+          {
+            "n": "Zucchine",
+            "def": 280,
+            "unit": "g",
+            "kcal": 49.6,
+            "p": 3.3,
+            "c": 7.6,
+            "g": 0.6
+          },
+          {
+            "n": "Pomodorini",
+            "def": 150,
+            "unit": "g",
+            "kcal": 28.2,
+            "p": 1.3,
+            "c": 5.5,
+            "g": 0.3
+          },
+          {
+            "n": "Cipolla / scalogno",
+            "def": 40,
+            "unit": "g",
+            "kcal": 13.8,
+            "p": 0.4,
+            "c": 3.1,
+            "g": 0.0
+          },
+          {
+            "n": "Olio EVO",
+            "def": 8,
+            "unit": "g",
+            "kcal": 73.7,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 8.4
+          }
+        ]
+      },
+      {
+        "id": "spuntinoPM",
+        "label": "Spuntino pomeridiano",
+        "variante": "A",
+        "nome": "Mandorle",
+        "ingredienti": [
+          {
+            "n": "Mandorle",
+            "def": 25,
+            "unit": "g",
+            "kcal": 145.0,
+            "p": 5.0,
+            "c": 5.0,
+            "g": 13.0
+          }
+        ]
+      },
+      {
+        "id": "cena",
+        "label": "Cena",
+        "variante": null,
+        "nome": "Polpette di pollo al limone, con riso (tua porzione)",
+        "ingredienti": [
+          {
+            "n": "Petto di pollo",
+            "def": 150,
+            "unit": "g",
+            "kcal": 139.6,
+            "p": 32.6,
+            "c": 0.0,
+            "g": 1.6
+          },
+          {
+            "n": "Ricotta",
+            "def": 5,
+            "unit": "g",
+            "kcal": 7.8,
+            "p": 0.4,
+            "c": 0.2,
+            "g": 0.7
+          },
+          {
+            "n": "Parmigiano Reggiano",
+            "def": 2.5,
+            "unit": "g",
+            "kcal": 10.5,
+            "p": 0.8,
+            "c": 0.0,
+            "g": 0.9
+          },
+          {
+            "n": "Albume d'uovo",
+            "def": 12.5,
+            "unit": "g",
+            "kcal": 6.4,
+            "p": 1.3,
+            "c": 0.1,
+            "g": 0.0
+          },
+          {
+            "n": "Farina (per infarinare)",
+            "def": 5,
+            "unit": "g",
+            "kcal": 18.2,
+            "p": 0.5,
+            "c": 3.9,
+            "g": 0.1
+          },
+          {
+            "n": "Burro",
+            "def": 5,
+            "unit": "g",
+            "kcal": 38.5,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 5.2
+          },
+          {
+            "n": "Vino bianco secco",
+            "def": 25,
+            "unit": "g",
+            "kcal": 22.0,
+            "p": 0.0,
+            "c": 0.7,
+            "g": 0.0
+          },
+          {
+            "n": "Latte intero",
+            "def": 75,
+            "unit": "g",
+            "kcal": 51.5,
+            "p": 2.3,
+            "c": 3.8,
+            "g": 3.5
+          },
+          {
+            "n": "Succo di limone",
+            "def": 12.5,
+            "unit": "g",
+            "kcal": 1.3,
+            "p": 0.0,
+            "c": 0.4,
+            "g": 0.0
+          },
+          {
+            "n": "Riso (peso a crudo, contorno)",
+            "def": 65,
+            "unit": "g",
+            "kcal": 234.0,
+            "p": 4.4,
+            "c": 52.0,
+            "g": 0.4
+          }
+        ]
+      }
+    ],
+    "lettera": "G"
+  },
+  {
+    "id": "alim-h",
+    "cardSub": "Cena: Polpette di pollo al limone, con pane · Pranzo: Pasta con Pomodori e Mozzarella Proteica",
+    "pasti": [
+      {
+        "id": "colazione",
+        "label": "Colazione",
+        "variante": "C",
+        "nome": "Cereali, latte d'avena, yogurt greco, banana e biscotti",
+        "ingredienti": [
+          {
+            "n": "Cereali (cocopops / riso soffiato)",
+            "def": 35,
+            "unit": "g",
+            "kcal": 146.1,
+            "p": 1.5,
+            "c": 27.7,
+            "g": 1.4
+          },
+          {
+            "n": "Latte d'avena",
+            "def": 200,
+            "unit": "ml",
+            "kcal": 107.1,
+            "p": 1.1,
+            "c": 15.1,
+            "g": 4.8
+          },
+          {
+            "n": "Yogurt greco 0%",
+            "def": 150,
+            "unit": "g",
+            "kcal": 94.7,
+            "p": 16.1,
+            "c": 5.1,
+            "g": 0.4
+          },
+          {
+            "n": "Banana",
+            "def": 120,
+            "unit": "g",
+            "kcal": 114.3,
+            "p": 1.4,
+            "c": 26.0,
+            "g": 0.5
+          },
+          {
+            "n": "Biscotti con gocce di cioccolato",
+            "def": 30,
+            "unit": "g",
+            "kcal": 147.7,
+            "p": 1.9,
+            "c": 18.1,
+            "g": 8.0
+          }
+        ]
+      },
+      {
+        "id": "pranzo",
+        "label": "Pranzo",
+        "variante": "2",
+        "nome": "Pasta con Pomodori e Mozzarella Proteica",
+        "ingredienti": [
+          {
+            "n": "Pasta (peso a crudo)",
+            "def": 95,
+            "unit": "g",
+            "kcal": 321.8,
+            "p": 11.4,
+            "c": 69.6,
+            "g": 1.1
+          },
+          {
+            "n": "Pomodorini",
+            "def": 140,
+            "unit": "g",
+            "kcal": 24.4,
+            "p": 1.3,
+            "c": 5.1,
+            "g": 0.2
+          },
+          {
+            "n": "Mozzarella proteica",
+            "def": 110,
+            "unit": "g",
+            "kcal": 175.7,
+            "p": 22.0,
+            "c": 2.3,
+            "g": 7.1
+          },
+          {
+            "n": "Parmigiano Reggiano",
+            "def": 10,
+            "unit": "g",
+            "kcal": 37.9,
+            "p": 3.3,
+            "c": 0.0,
+            "g": 2.3
+          },
+          {
+            "n": "Olio EVO",
+            "def": 4,
+            "unit": "g",
+            "kcal": 34.2,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 3.2
+          }
+        ]
+      },
+      {
+        "id": "spuntinoPM",
+        "label": "Spuntino pomeridiano",
+        "variante": "A",
+        "nome": "Mandorle",
+        "ingredienti": [
+          {
+            "n": "Mandorle",
+            "def": 25,
+            "unit": "g",
+            "kcal": 145.0,
+            "p": 5.0,
+            "c": 5.0,
+            "g": 13.0
+          }
+        ]
+      },
+      {
+        "id": "cena",
+        "label": "Cena",
+        "variante": null,
+        "nome": "Polpette di pollo al limone, con pane (tua porzione)",
+        "ingredienti": [
+          {
+            "n": "Petto di pollo",
+            "def": 150,
+            "unit": "g",
+            "kcal": 139.6,
+            "p": 32.6,
+            "c": 0.0,
+            "g": 1.6
+          },
+          {
+            "n": "Ricotta",
+            "def": 5,
+            "unit": "g",
+            "kcal": 7.8,
+            "p": 0.4,
+            "c": 0.2,
+            "g": 0.7
+          },
+          {
+            "n": "Parmigiano Reggiano",
+            "def": 2.5,
+            "unit": "g",
+            "kcal": 10.5,
+            "p": 0.8,
+            "c": 0.0,
+            "g": 0.9
+          },
+          {
+            "n": "Albume d'uovo",
+            "def": 12.5,
+            "unit": "g",
+            "kcal": 6.4,
+            "p": 1.3,
+            "c": 0.1,
+            "g": 0.0
+          },
+          {
+            "n": "Farina (per infarinare)",
+            "def": 5,
+            "unit": "g",
+            "kcal": 18.2,
+            "p": 0.5,
+            "c": 3.9,
+            "g": 0.1
+          },
+          {
+            "n": "Burro",
+            "def": 5,
+            "unit": "g",
+            "kcal": 38.5,
+            "p": 0.0,
+            "c": 0.0,
+            "g": 5.2
+          },
+          {
+            "n": "Vino bianco secco",
+            "def": 25,
+            "unit": "g",
+            "kcal": 22.0,
+            "p": 0.0,
+            "c": 0.7,
+            "g": 0.0
+          },
+          {
+            "n": "Latte intero",
+            "def": 75,
+            "unit": "g",
+            "kcal": 51.5,
+            "p": 2.3,
+            "c": 3.8,
+            "g": 3.5
+          },
+          {
+            "n": "Succo di limone",
+            "def": 12.5,
+            "unit": "g",
+            "kcal": 1.3,
+            "p": 0.0,
+            "c": 0.4,
+            "g": 0.0
+          },
+          {
+            "n": "Pane ai cereali (contorno)",
+            "def": 90,
+            "unit": "g",
+            "kcal": 240.8,
+            "p": 7.1,
+            "c": 49.8,
+            "g": 0.7
+          }
+        ]
+      }
+    ],
+    "lettera": "H"
   }
 ];
 /* Sentinella per la scheda "Cosa mangi stasera?": un giorno senza alcuna
@@ -3819,10 +4368,6 @@ function nuovaEntryDaGiorno(giorno){
 async function startAlimVariant(giornoId, forDate){
   const giorno = giornoOrLibero(giornoId);
   if(!giorno) return;
-  /* forDate permette di creare la registrazione direttamente su un giorno
-     passato (es. da "Registra un giorno passato" nello Storico) invece che
-     sempre su oggi: senza questo non c'era modo di segnare un giorno che
-     ci si era dimenticate di registrare al momento giusto. */
   const date = forDate || todayLocalISO();
   try{
     await saveAlimEntry(date, nuovaEntryDaGiorno(giorno));
@@ -4276,9 +4821,9 @@ async function loadAlimHomeSummary(){
    Il rispetto del target (ALIM_TARGET, invariato) si vede sempre in tempo
    reale nel riepilogo macro sopra ai pasti, qualunque combinazione tu
    scelga — non serve imporre fasce di equivalenza rigide tra le opzioni. */
-const ALIM_PASTI_ORDINE = ['colazione','spuntinoAM','pranzo','spuntinoPM','cena'];
-const ALIM_PASTI_LABEL = { colazione:'Colazione', spuntinoAM:'Spuntino mattutino', pranzo:'Pranzo', spuntinoPM:'Spuntino pomeridiano', cena:'Cena' };
-const ALIM_PASTI_ICONA = { colazione:'🌅', spuntinoAM:'🍎', pranzo:'🍝', spuntinoPM:'🥤', cena:'🍽️' };
+const ALIM_PASTI_ORDINE = ['colazione','pranzo','spuntinoPM','cena'];
+const ALIM_PASTI_LABEL = { colazione:'Colazione', pranzo:'Pranzo', spuntinoPM:'Spuntino pomeridiano', cena:'Cena' };
+const ALIM_PASTI_ICONA = { colazione:'🌅', pranzo:'🍝', spuntinoPM:'🌰', cena:'🍽️' };
 
 function pastoIngTotals(pasto){
   const t = { kcal:0, p:0, c:0, g:0 };
@@ -4312,7 +4857,7 @@ function opzioniPerPasto(){
       if(visti[chiave]) return;
       visti[chiave] = true;
       out[pasto.id].push({
-        id: 'op-'+pasto.id+'-'+(out[pasto.id].length+1),
+        id: 'opv2-'+pasto.id+'-'+(out[pasto.id].length+1),
         pastoId: pasto.id,
         titolo: pasto.nome,
         letteraOrigine: giorno.lettera,
@@ -4324,8 +4869,1103 @@ function opzioniPerPasto(){
   ALIM_OPZIONI_CACHE = out;
   return out;
 }
+const ALIM_OPZIONI_LEGACY = {
+  "colazione": [
+    {
+      "id": "op-colazione-1",
+      "pastoId": "colazione",
+      "titolo": "Cereali, latte d'avena, yogurt greco e banana",
+      "letteraOrigine": "A",
+      "ingredienti": [
+        {
+          "n": "Cereali (cocopops / riso soffiato)",
+          "def": 40,
+          "unit": "g",
+          "kcal": 156,
+          "p": 1.6,
+          "c": 33.6,
+          "g": 1.2
+        },
+        {
+          "n": "Latte d'avena",
+          "def": 200,
+          "unit": "ml",
+          "kcal": 100,
+          "p": 1,
+          "c": 16,
+          "g": 3.6
+        },
+        {
+          "n": "Yogurt greco 0%",
+          "def": 100,
+          "unit": "g",
+          "kcal": 59,
+          "p": 10,
+          "c": 3.6,
+          "g": 0.2
+        },
+        {
+          "n": "Banana",
+          "def": 100,
+          "unit": "g",
+          "kcal": 89,
+          "p": 1.1,
+          "c": 23,
+          "g": 0.3
+        }
+      ],
+      "kcal": 404,
+      "p": 13.7,
+      "c": 76.2,
+      "g": 5.3
+    },
+    {
+      "id": "op-colazione-2",
+      "pastoId": "colazione",
+      "titolo": "Yogurt greco, banana e biscotti (meno biscotti)",
+      "letteraOrigine": "C",
+      "ingredienti": [
+        {
+          "n": "Yogurt greco 0%",
+          "def": 200,
+          "unit": "g",
+          "kcal": 118,
+          "p": 20,
+          "c": 7.2,
+          "g": 0.4
+        },
+        {
+          "n": "Banana",
+          "def": 100,
+          "unit": "g",
+          "kcal": 89,
+          "p": 1.1,
+          "c": 23,
+          "g": 0.3
+        },
+        {
+          "n": "Biscotti con gocce di cioccolato",
+          "def": 20,
+          "unit": "g",
+          "kcal": 92,
+          "p": 1.2,
+          "c": 12.8,
+          "g": 4
+        }
+      ],
+      "kcal": 299,
+      "p": 22.3,
+      "c": 43,
+      "g": 4.7
+    },
+    {
+      "id": "op-colazione-3",
+      "pastoId": "colazione",
+      "titolo": "Yogurt greco, banana e biscotti",
+      "letteraOrigine": "D",
+      "ingredienti": [
+        {
+          "n": "Yogurt greco 0%",
+          "def": 200,
+          "unit": "g",
+          "kcal": 118,
+          "p": 20,
+          "c": 7.2,
+          "g": 0.4
+        },
+        {
+          "n": "Banana",
+          "def": 100,
+          "unit": "g",
+          "kcal": 89,
+          "p": 1.1,
+          "c": 23,
+          "g": 0.3
+        },
+        {
+          "n": "Biscotti con gocce di cioccolato",
+          "def": 25,
+          "unit": "g",
+          "kcal": 115,
+          "p": 1.5,
+          "c": 16,
+          "g": 5
+        }
+      ],
+      "kcal": 322,
+      "p": 22.6,
+      "c": 46.2,
+      "g": 5.7
+    }
+  ],
+  "spuntinoAM": [
+    {
+      "id": "op-spuntinoAM-1",
+      "pastoId": "spuntinoAM",
+      "titolo": "Mela e mandorle",
+      "letteraOrigine": "A",
+      "ingredienti": [
+        {
+          "n": "Mela",
+          "def": 150,
+          "unit": "g",
+          "kcal": 78,
+          "p": 0.5,
+          "c": 21,
+          "g": 0.3
+        },
+        {
+          "n": "Mandorle",
+          "def": 15,
+          "unit": "g",
+          "kcal": 87,
+          "p": 3.1,
+          "c": 3.3,
+          "g": 7.5
+        }
+      ],
+      "kcal": 165,
+      "p": 3.6,
+      "c": 24.3,
+      "g": 7.8
+    },
+    {
+      "id": "op-spuntinoAM-2",
+      "pastoId": "spuntinoAM",
+      "titolo": "Mela",
+      "letteraOrigine": "B",
+      "ingredienti": [
+        {
+          "n": "Mela",
+          "def": 150,
+          "unit": "g",
+          "kcal": 78,
+          "p": 0.5,
+          "c": 21,
+          "g": 0.3
+        }
+      ],
+      "kcal": 78,
+      "p": 0.5,
+      "c": 21,
+      "g": 0.3
+    }
+  ],
+  "pranzo": [
+    {
+      "id": "op-pranzo-1",
+      "pastoId": "pranzo",
+      "titolo": "Pasta con Zucchine, Tonno e Pomodorini (con pane)",
+      "letteraOrigine": "A",
+      "ingredienti": [
+        {
+          "n": "Pasta (peso a crudo)",
+          "def": 110,
+          "unit": "g",
+          "kcal": 385,
+          "p": 13.2,
+          "c": 77,
+          "g": 1.6
+        },
+        {
+          "n": "Tonno sott'olio sgocciolato",
+          "def": 80,
+          "unit": "g",
+          "kcal": 146,
+          "p": 20,
+          "c": 0,
+          "g": 8
+        },
+        {
+          "n": "Zucchine",
+          "def": 200,
+          "unit": "g",
+          "kcal": 34,
+          "p": 2.4,
+          "c": 5.2,
+          "g": 0.4
+        },
+        {
+          "n": "Pomodorini",
+          "def": 150,
+          "unit": "g",
+          "kcal": 27,
+          "p": 1.3,
+          "c": 5.3,
+          "g": 0.3
+        },
+        {
+          "n": "Cipolla / scalogno",
+          "def": 30,
+          "unit": "g",
+          "kcal": 12,
+          "p": 0.3,
+          "c": 2.8,
+          "g": 0
+        },
+        {
+          "n": "Olio EVO",
+          "def": 13,
+          "unit": "g",
+          "kcal": 115,
+          "p": 0,
+          "c": 0,
+          "g": 13
+        },
+        {
+          "n": "Pane",
+          "def": 25,
+          "unit": "g",
+          "kcal": 68,
+          "p": 2,
+          "c": 13.8,
+          "g": 0.2
+        }
+      ],
+      "kcal": 787,
+      "p": 39.2,
+      "c": 104.1,
+      "g": 23.5
+    },
+    {
+      "id": "op-pranzo-2",
+      "pastoId": "pranzo",
+      "titolo": "Pasta con Zucchine, Tonno e Pomodorini (senza pane)",
+      "letteraOrigine": "G",
+      "ingredienti": [
+        {
+          "n": "Pasta (peso a crudo)",
+          "def": 60,
+          "unit": "g",
+          "kcal": 210,
+          "p": 7.2,
+          "c": 42,
+          "g": 0.9
+        },
+        {
+          "n": "Tonno sott'olio sgocciolato",
+          "def": 80,
+          "unit": "g",
+          "kcal": 146,
+          "p": 20,
+          "c": 0,
+          "g": 8
+        },
+        {
+          "n": "Zucchine",
+          "def": 200,
+          "unit": "g",
+          "kcal": 34,
+          "p": 2.4,
+          "c": 5.2,
+          "g": 0.4
+        },
+        {
+          "n": "Pomodorini",
+          "def": 150,
+          "unit": "g",
+          "kcal": 27,
+          "p": 1.3,
+          "c": 5.3,
+          "g": 0.3
+        },
+        {
+          "n": "Cipolla / scalogno",
+          "def": 30,
+          "unit": "g",
+          "kcal": 12,
+          "p": 0.3,
+          "c": 2.8,
+          "g": 0
+        },
+        {
+          "n": "Olio EVO",
+          "def": 25,
+          "unit": "g",
+          "kcal": 221,
+          "p": 0,
+          "c": 0,
+          "g": 25
+        }
+      ],
+      "kcal": 650,
+      "p": 31.2,
+      "c": 55.3,
+      "g": 34.6
+    },
+    {
+      "id": "op-pranzo-3",
+      "pastoId": "pranzo",
+      "titolo": "Pasta con Pomodori e Mozzarella Proteica",
+      "letteraOrigine": "B",
+      "ingredienti": [
+        {
+          "n": "Pasta (peso a crudo)",
+          "def": 100,
+          "unit": "g",
+          "kcal": 350,
+          "p": 12,
+          "c": 70,
+          "g": 1.5
+        },
+        {
+          "n": "Mozzarella proteica",
+          "def": 100,
+          "unit": "g",
+          "kcal": 165,
+          "p": 20,
+          "c": 2,
+          "g": 8
+        },
+        {
+          "n": "Pomodorini",
+          "def": 120,
+          "unit": "g",
+          "kcal": 22,
+          "p": 1.1,
+          "c": 4.2,
+          "g": 0.2
+        },
+        {
+          "n": "Parmigiano Reggiano",
+          "def": 10,
+          "unit": "g",
+          "kcal": 40,
+          "p": 3.3,
+          "c": 0,
+          "g": 2.9
+        },
+        {
+          "n": "Olio EVO",
+          "def": 10,
+          "unit": "g",
+          "kcal": 88,
+          "p": 0,
+          "c": 0,
+          "g": 10
+        }
+      ],
+      "kcal": 665,
+      "p": 36.4,
+      "c": 76.2,
+      "g": 22.6
+    },
+    {
+      "id": "op-pranzo-4",
+      "pastoId": "pranzo",
+      "titolo": "Pasta con Pomodori e Mozzarella Proteica (versione con meno olio)",
+      "letteraOrigine": "C",
+      "ingredienti": [
+        {
+          "n": "Pasta (peso a crudo)",
+          "def": 110,
+          "unit": "g",
+          "kcal": 385,
+          "p": 13.2,
+          "c": 77,
+          "g": 1.6
+        },
+        {
+          "n": "Mozzarella proteica",
+          "def": 100,
+          "unit": "g",
+          "kcal": 165,
+          "p": 20,
+          "c": 2,
+          "g": 8
+        },
+        {
+          "n": "Pomodorini",
+          "def": 120,
+          "unit": "g",
+          "kcal": 22,
+          "p": 1.1,
+          "c": 4.2,
+          "g": 0.2
+        },
+        {
+          "n": "Parmigiano Reggiano",
+          "def": 10,
+          "unit": "g",
+          "kcal": 40,
+          "p": 3.3,
+          "c": 0,
+          "g": 2.9
+        },
+        {
+          "n": "Olio EVO",
+          "def": 10,
+          "unit": "g",
+          "kcal": 88,
+          "p": 0,
+          "c": 0,
+          "g": 10
+        }
+      ],
+      "kcal": 700,
+      "p": 37.6,
+      "c": 83.2,
+      "g": 22.7
+    },
+    {
+      "id": "op-pranzo-5",
+      "pastoId": "pranzo",
+      "titolo": "Pasta con Crema di Zucchine e Fiocchi di Latte",
+      "letteraOrigine": "D",
+      "ingredienti": [
+        {
+          "n": "Pasta (peso a crudo)",
+          "def": 120,
+          "unit": "g",
+          "kcal": 420,
+          "p": 14.4,
+          "c": 84,
+          "g": 1.8
+        },
+        {
+          "n": "Fiocchi di latte Milbona (Lidl)",
+          "def": 200,
+          "unit": "g",
+          "kcal": 196,
+          "p": 23,
+          "c": 5.6,
+          "g": 9
+        },
+        {
+          "n": "Zucchine",
+          "def": 225,
+          "unit": "g",
+          "kcal": 38,
+          "p": 2.7,
+          "c": 5.8,
+          "g": 0.5
+        },
+        {
+          "n": "Olio EVO",
+          "def": 22,
+          "unit": "g",
+          "kcal": 194,
+          "p": 0,
+          "c": 0,
+          "g": 22
+        }
+      ],
+      "kcal": 848,
+      "p": 40.1,
+      "c": 95.4,
+      "g": 33.3
+    },
+    {
+      "id": "op-pranzo-6",
+      "pastoId": "pranzo",
+      "titolo": "Pasta con Crema di Zucchine e Fiocchi di Latte (versione ridotta)",
+      "letteraOrigine": "E",
+      "ingredienti": [
+        {
+          "n": "Pasta (peso a crudo)",
+          "def": 100,
+          "unit": "g",
+          "kcal": 350,
+          "p": 12,
+          "c": 70,
+          "g": 1.5
+        },
+        {
+          "n": "Fiocchi di latte Milbona (Lidl)",
+          "def": 200,
+          "unit": "g",
+          "kcal": 196,
+          "p": 23,
+          "c": 5.6,
+          "g": 9
+        },
+        {
+          "n": "Zucchine",
+          "def": 225,
+          "unit": "g",
+          "kcal": 38,
+          "p": 2.7,
+          "c": 5.8,
+          "g": 0.5
+        },
+        {
+          "n": "Olio EVO",
+          "def": 17,
+          "unit": "g",
+          "kcal": 150,
+          "p": 0,
+          "c": 0,
+          "g": 17
+        }
+      ],
+      "kcal": 734,
+      "p": 37.7,
+      "c": 81.4,
+      "g": 28
+    },
+    {
+      "id": "op-pranzo-7",
+      "pastoId": "pranzo",
+      "titolo": "Pasta con Pomodori e Mozzarella Proteica (versione ridotta)",
+      "letteraOrigine": "F",
+      "ingredienti": [
+        {
+          "n": "Pasta (peso a crudo)",
+          "def": 80,
+          "unit": "g",
+          "kcal": 280,
+          "p": 9.6,
+          "c": 56,
+          "g": 1.2
+        },
+        {
+          "n": "Mozzarella proteica",
+          "def": 100,
+          "unit": "g",
+          "kcal": 165,
+          "p": 20,
+          "c": 2,
+          "g": 8
+        },
+        {
+          "n": "Pomodorini",
+          "def": 120,
+          "unit": "g",
+          "kcal": 22,
+          "p": 1.1,
+          "c": 4.2,
+          "g": 0.2
+        },
+        {
+          "n": "Parmigiano Reggiano",
+          "def": 10,
+          "unit": "g",
+          "kcal": 40,
+          "p": 3.3,
+          "c": 0,
+          "g": 2.9
+        },
+        {
+          "n": "Olio EVO",
+          "def": 20,
+          "unit": "g",
+          "kcal": 177,
+          "p": 0,
+          "c": 0,
+          "g": 20
+        }
+      ],
+      "kcal": 684,
+      "p": 34,
+      "c": 62.2,
+      "g": 32.3
+    }
+  ],
+  "spuntinoPM": [
+    {
+      "id": "op-spuntinoPM-1",
+      "pastoId": "spuntinoPM",
+      "titolo": "Budino proteico",
+      "letteraOrigine": "A",
+      "ingredienti": [
+        {
+          "n": "Budino proteico Milbona (Lidl)",
+          "def": 200,
+          "unit": "g",
+          "kcal": 154,
+          "p": 20,
+          "c": 11.6,
+          "g": 3
+        }
+      ],
+      "kcal": 154,
+      "p": 20,
+      "c": 11.6,
+      "g": 3
+    },
+    {
+      "id": "op-spuntinoPM-2",
+      "pastoId": "spuntinoPM",
+      "titolo": "Biscotti e mandorle",
+      "letteraOrigine": "B",
+      "ingredienti": [
+        {
+          "n": "Biscotti con gocce di cioccolato",
+          "def": 25,
+          "unit": "g",
+          "kcal": 115,
+          "p": 1.5,
+          "c": 16,
+          "g": 5
+        },
+        {
+          "n": "Mandorle",
+          "def": 12,
+          "unit": "g",
+          "kcal": 70,
+          "p": 2.5,
+          "c": 2.6,
+          "g": 6
+        }
+      ],
+      "kcal": 185,
+      "p": 4,
+      "c": 18.6,
+      "g": 11
+    },
+    {
+      "id": "op-spuntinoPM-3",
+      "pastoId": "spuntinoPM",
+      "titolo": "Pera e biscotti",
+      "letteraOrigine": "C",
+      "ingredienti": [
+        {
+          "n": "Pera",
+          "def": 150,
+          "unit": "g",
+          "kcal": 85,
+          "p": 0.6,
+          "c": 22.5,
+          "g": 0.1
+        },
+        {
+          "n": "Biscotti con gocce di cioccolato",
+          "def": 20,
+          "unit": "g",
+          "kcal": 92,
+          "p": 1.2,
+          "c": 12.8,
+          "g": 4
+        }
+      ],
+      "kcal": 177,
+      "p": 1.8,
+      "c": 35.3,
+      "g": 4.1
+    },
+    {
+      "id": "op-spuntinoPM-4",
+      "pastoId": "spuntinoPM",
+      "titolo": "Biscotti e mandorle (leggero)",
+      "letteraOrigine": "E",
+      "ingredienti": [
+        {
+          "n": "Biscotti con gocce di cioccolato",
+          "def": 15,
+          "unit": "g",
+          "kcal": 69,
+          "p": 0.9,
+          "c": 9.6,
+          "g": 3
+        },
+        {
+          "n": "Mandorle",
+          "def": 8,
+          "unit": "g",
+          "kcal": 46,
+          "p": 1.7,
+          "c": 1.8,
+          "g": 4
+        }
+      ],
+      "kcal": 115,
+      "p": 2.6,
+      "c": 11.4,
+      "g": 7
+    }
+  ],
+  "cena": [
+    {
+      "id": "op-cena-1",
+      "pastoId": "cena",
+      "titolo": "Frittata di zucchine (tua porzione)",
+      "letteraOrigine": "A",
+      "ingredienti": [
+        {
+          "n": "Uova",
+          "def": 100,
+          "unit": "g",
+          "kcal": 95.6,
+          "p": 7.4,
+          "c": 0.8,
+          "g": 5.8
+        },
+        {
+          "n": "Albume d'uovo",
+          "def": 60,
+          "unit": "g",
+          "kcal": 20.9,
+          "p": 3.8,
+          "c": 0.5,
+          "g": 0.1
+        },
+        {
+          "n": "Zucchine",
+          "def": 100,
+          "unit": "g",
+          "kcal": 11.3,
+          "p": 0.7,
+          "c": 2.8,
+          "g": 0.1
+        },
+        {
+          "n": "Patate",
+          "def": 80,
+          "unit": "g",
+          "kcal": 41.2,
+          "p": 0.9,
+          "c": 15.1,
+          "g": 0
+        },
+        {
+          "n": "Parmigiano Reggiano",
+          "def": 15,
+          "unit": "g",
+          "kcal": 40.1,
+          "p": 2.9,
+          "c": 0,
+          "g": 2.7
+        },
+        {
+          "n": "Prosciutto cotto",
+          "def": 120,
+          "unit": "g",
+          "kcal": 116.3,
+          "p": 12.7,
+          "c": 1.9,
+          "g": 5.9
+        },
+        {
+          "n": "Olio EVO",
+          "def": 13,
+          "unit": "g",
+          "kcal": 76.7,
+          "p": 0,
+          "c": 0,
+          "g": 8
+        }
+      ],
+      "kcal": 402,
+      "p": 28.4,
+      "c": 21.1,
+      "g": 22.6
+    },
+    {
+      "id": "op-cena-2",
+      "pastoId": "cena",
+      "titolo": "Vellutata di lenticchie (tua porzione)",
+      "letteraOrigine": "G",
+      "ingredienti": [
+        {
+          "n": "Lenticchie precotte (lattina)",
+          "def": 240,
+          "unit": "g",
+          "kcal": 248.3,
+          "p": 18.4,
+          "c": 39.3,
+          "g": 1.2
+        },
+        {
+          "n": "Patate",
+          "def": 200,
+          "unit": "g",
+          "kcal": 144.8,
+          "p": 3.8,
+          "c": 33.7,
+          "g": 0.2
+        },
+        {
+          "n": "Albume d'uovo",
+          "def": 75,
+          "unit": "g",
+          "kcal": 36.7,
+          "p": 7.8,
+          "c": 0.5,
+          "g": 0.1
+        },
+        {
+          "n": "Scalogno",
+          "def": 15,
+          "unit": "g",
+          "kcal": 10.2,
+          "p": 0.4,
+          "c": 2.5,
+          "g": 0
+        },
+        {
+          "n": "Olio EVO",
+          "def": 10,
+          "unit": "g",
+          "kcal": 83,
+          "p": 0,
+          "c": 0,
+          "g": 9.7
+        }
+      ],
+      "kcal": 523,
+      "p": 30.4,
+      "c": 76,
+      "g": 11.2
+    },
+    {
+      "id": "op-cena-3",
+      "pastoId": "cena",
+      "titolo": "Burritos di pollo",
+      "letteraOrigine": "B",
+      "ingredienti": [
+        {
+          "n": "Petto di pollo",
+          "def": 200,
+          "unit": "g",
+          "kcal": 173.4,
+          "p": 45.8,
+          "c": 0,
+          "g": 1.6
+        },
+        {
+          "n": "Tortillas",
+          "def": 90,
+          "unit": "g",
+          "kcal": 212.9,
+          "p": 7.2,
+          "c": 39.6,
+          "g": 3.4
+        },
+        {
+          "n": "Insalata",
+          "def": 25,
+          "unit": "g",
+          "kcal": 3,
+          "p": 0.3,
+          "c": 0.7,
+          "g": 0
+        },
+        {
+          "n": "Pomodori",
+          "def": 25,
+          "unit": "g",
+          "kcal": 3.6,
+          "p": 0.2,
+          "c": 0.8,
+          "g": 0
+        },
+        {
+          "n": "Philadelphia",
+          "def": 40,
+          "unit": "g",
+          "kcal": 107.8,
+          "p": 2.2,
+          "c": 1.5,
+          "g": 7.3
+        },
+        {
+          "n": "Glassa per pollo",
+          "def": 10,
+          "unit": "g",
+          "kcal": 19.7,
+          "p": 0.1,
+          "c": 5,
+          "g": 0.1
+        },
+        {
+          "n": "Maionese",
+          "def": 10,
+          "unit": "g",
+          "kcal": 53.6,
+          "p": 0.1,
+          "c": 0.3,
+          "g": 4
+        }
+      ],
+      "kcal": 574,
+      "p": 55.9,
+      "c": 47.9,
+      "g": 16.4
+    },
+    {
+      "id": "op-cena-4",
+      "pastoId": "cena",
+      "titolo": "Gateau di patate (tua porzione)",
+      "letteraOrigine": "C",
+      "ingredienti": [
+        {
+          "n": "Patate",
+          "def": 250,
+          "unit": "g",
+          "kcal": 214.4,
+          "p": 6,
+          "c": 45.1,
+          "g": 0.3
+        },
+        {
+          "n": "Uova",
+          "def": 25,
+          "unit": "g",
+          "kcal": 39.8,
+          "p": 3.8,
+          "c": 0.2,
+          "g": 2.6
+        },
+        {
+          "n": "Parmigiano Reggiano",
+          "def": 15,
+          "unit": "g",
+          "kcal": 66.8,
+          "p": 5.9,
+          "c": 0,
+          "g": 4.8
+        },
+        {
+          "n": "Scamorza/provola affumicata",
+          "def": 40,
+          "unit": "g",
+          "kcal": 147,
+          "p": 11.9,
+          "c": 0.4,
+          "g": 11.1
+        },
+        {
+          "n": "Prosciutto cotto",
+          "def": 30,
+          "unit": "g",
+          "kcal": 48.4,
+          "p": 6.5,
+          "c": 0.5,
+          "g": 2.7
+        },
+        {
+          "n": "Burro",
+          "def": 7.5,
+          "unit": "g",
+          "kcal": 59.9,
+          "p": 0.1,
+          "c": 0,
+          "g": 6.8
+        },
+        {
+          "n": "Pangrattato",
+          "def": 14,
+          "unit": "g",
+          "kcal": 61.6,
+          "p": 2.2,
+          "c": 10.4,
+          "g": 0.8
+        }
+      ],
+      "kcal": 638,
+      "p": 36.4,
+      "c": 56.6,
+      "g": 29.1
+    },
+    {
+      "id": "op-cena-5",
+      "pastoId": "cena",
+      "titolo": "Tartare, pane e insalata",
+      "letteraOrigine": "D",
+      "ingredienti": [
+        {
+          "n": "Tartare di manzo",
+          "def": 100,
+          "unit": "g",
+          "kcal": 134.8,
+          "p": 20.8,
+          "c": 0,
+          "g": 5.4
+        },
+        {
+          "n": "Pane",
+          "def": 110,
+          "unit": "g",
+          "kcal": 294.4,
+          "p": 8.7,
+          "c": 60.8,
+          "g": 0.9
+        },
+        {
+          "n": "Pomodori",
+          "def": 50,
+          "unit": "g",
+          "kcal": 9,
+          "p": 0.4,
+          "c": 1.8,
+          "g": 0.1
+        },
+        {
+          "n": "Insalata",
+          "def": 50,
+          "unit": "g",
+          "kcal": 7.4,
+          "p": 0.7,
+          "c": 1.5,
+          "g": 0.1
+        },
+        {
+          "n": "Olio EVO",
+          "def": 5,
+          "unit": "g",
+          "kcal": 43.4,
+          "p": 0,
+          "c": 0,
+          "g": 4.9
+        }
+      ],
+      "kcal": 489,
+      "p": 30.6,
+      "c": 64.1,
+      "g": 11.4
+    },
+    {
+      "id": "op-cena-6",
+      "pastoId": "cena",
+      "titolo": "Petto di pollo al limone e pane",
+      "letteraOrigine": "F",
+      "ingredienti": [
+        {
+          "n": "Petto di pollo",
+          "def": 200,
+          "unit": "g",
+          "kcal": 220,
+          "p": 46,
+          "c": 0,
+          "g": 3
+        },
+        {
+          "n": "Pane",
+          "def": 120,
+          "unit": "g",
+          "kcal": 324,
+          "p": 9.6,
+          "c": 66,
+          "g": 1.2
+        },
+        {
+          "n": "Olio EVO",
+          "def": 5,
+          "unit": "g",
+          "kcal": 44,
+          "p": 0,
+          "c": 0,
+          "g": 5
+        }
+      ],
+      "kcal": 588,
+      "p": 55.6,
+      "c": 66,
+      "g": 9.2
+    }
+  ]
+};
+/* Alcune voci storiche (Firestore) puntano a pasti o opzioni che non
+   esistono piu' nel catalogo live (es. lo spuntino mattutino, rimosso dal
+   piano, o vecchie ricette di cena sostituite dalle nuove col ricettario
+   nutrizionista) — invece di perdere quei dati (kcal/macro dei giorni
+   passati), teniamo un'istantanea congelata del vecchio catalogo
+   (ALIM_OPZIONI_LEGACY, sopra) e la usiamo come fallback quando l'id non
+   si trova piu' tra le opzioni live. */
 function trovaOpzione(pastoId, opzioneId){
-  return (opzioniPerPasto()[pastoId]||[]).find(o=>o.id===opzioneId) || null;
+  const live = (opzioniPerPasto()[pastoId]||[]).find(o=>o.id===opzioneId);
+  if(live) return live;
+  return (ALIM_OPZIONI_LEGACY[pastoId]||[]).find(o=>o.id===opzioneId) || null;
 }
 function opzioneDefaultDiGiorno(giorno, pastoId){
   const pasto = giorno.pasti.find(p=>p.id===pastoId);
@@ -4366,7 +6006,13 @@ function pastoOpTotals(op, pastoId, entry){
 function entryTotals(entry){
   const t = { kcal:0, p:0, c:0, g:0 };
   if(!entry) return t;
-  ALIM_PASTI_ORDINE.forEach(pid=>{
+  /* Unione tra i pasti del piano attuale e quelli eventualmente presenti
+     solo in una voce storica (es. lo spuntino mattutino di un giorno
+     registrato prima che venisse tolto dal piano): cosi' i totali kcal/
+     macro dei giorni passati restano corretti anche se il tipo di pasto
+     non esiste piu' nel piano di oggi. */
+  const pidsDaSommare = new Set([...ALIM_PASTI_ORDINE, ...Object.keys(entry.pastiFatti||{})]);
+  pidsDaSommare.forEach(pid=>{
     if(entry.pastiFatti && entry.pastiFatti[pid] && !(entry.pastiViaExtra && entry.pastiViaExtra[pid])){
       const op = trovaOpzione(pid, entry.opzioni && entry.opzioni[pid]);
       if(op){ const pt = pastoOpTotals(op, pid, entry); t.kcal+=pt.kcal; t.p+=pt.p; t.c+=pt.c; t.g+=pt.g; }
@@ -4383,7 +6029,7 @@ function entryTotals(entry){
    ragionevole il "budget" di kcal ancora disponibile tra i pasti che non
    hai ancora fatto, invece di dividerlo in parti uguali (cosa che
    suggerirebbe, ad es., uno spuntino grande quanto un pranzo). */
-const ALIM_PASTI_PESO = { colazione:0.198, spuntinoAM:0.054, pranzo:0.38, spuntinoPM:0.084, cena:0.284 };
+const ALIM_PASTI_PESO = { colazione:0.324, pranzo:0.323, spuntinoPM:0.077, cena:0.277 };
 function residuoGiorno(entry){
   const t = entryTotals(entry);
   return { kcal: ALIM_TARGET.kcal - t.kcal, p: ALIM_TARGET.p - t.p, c: ALIM_TARGET.c - t.c, g: ALIM_TARGET.g - t.g };
@@ -5122,7 +6768,7 @@ async function eseguiRicercaAlimento(){
   renderCercaAlimentoExtra();
 }
 function pastoSuggeritoOra(){
-  const FASCE = [ ['colazione',7.5], ['spuntinoAM',11], ['pranzo',14], ['spuntinoPM',18.5], ['cena',20.5] ];
+  const FASCE = [ ['colazione',7.5], ['pranzo',14], ['spuntinoPM',16.5], ['cena',20.5] ];
   const ora = new Date(); const h = ora.getHours()+ora.getMinutes()/60;
   let best = FASCE[0][0], bestDist = Infinity;
   FASCE.forEach(([pid,r])=>{ const d=Math.abs(h-r); if(d<bestDist){ bestDist=d; best=pid; } });
@@ -5417,9 +7063,9 @@ async function renderStoricoAlimentazione(){
       <div class="titles"><h1>Storico</h1><div class="eyebrow" style="margin-top:3px;">Alimentazione registrata</div></div>
     </div>
     <div class="wrap">
-      <button class="cta-next" id="btnAddPastDay" style="margin-bottom:16px;">
+      <button class="cta-next" id="btnRegistraGiornoPassato" style="margin-bottom:14px;">
         <div class="cta-next-title">+ Registra un giorno passato</div>
-        <div class="cta-next-sub">Ti sei dimenticata di segnare cosa hai mangiato? Recuperalo qui</div>
+        <div class="cta-next-sub">Ti sei dimenticata di segnare cosa hai mangiato? Recuperala qui</div>
         <div class="cta-next-arrow">${ICO.chev}</div>
       </button>
       <div class="swipe-hint">Scorri una voce verso sinistra per eliminarla</div>
@@ -5427,11 +7073,11 @@ async function renderStoricoAlimentazione(){
     </div>
     <div class="picker-sheet" id="pickerSheetPastDay">
       <div class="picker-sheet-inner">
-        <div class="picker-head"><h3>Che giorno vuoi registrare?</h3><button id="pickerClosePastDay">${ICO.close}</button></div>
+        <div class="picker-head"><h3>Registra un giorno passato</h3><button id="pickerClosePastDay">${ICO.close}</button></div>
         <div class="picker-scroll">
-          <div style="padding:2px 2px 16px;">
-            <label style="font-size:12px;color:var(--text-muted);display:block;margin-bottom:6px;">Data</label>
-            <input type="date" id="pastDayDateInput" max="${todayLocalISO()}" value="${yesterdayLocalISO()}" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--bg-elev);color:var(--text);font-size:14px;font-family:inherit;">
+          <div class="field" style="margin-bottom:14px;">
+            <label>Che giorno vuoi registrare?</label>
+            <input type="date" id="pastDayDateInput" max="${todayLocalISO()}" value="${yesterdayLocalISO()}">
           </div>
           <div class="picker-group" id="pastDayVariantGroup">
             <button class="picker-item" data-gid="${ALIM_LIBERO_ID}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;border-color:var(--accent);">
@@ -5450,37 +7096,30 @@ async function renderStoricoAlimentazione(){
     </div>
   `;
   document.getElementById('btnBack').onclick = renderAlimentazione;
-  await refreshAlimStorico();
-  document.getElementById('btnAddPastDay').onclick = ()=>{
-    const inp = document.getElementById('pastDayDateInput');
-    if(inp) inp.value = yesterdayLocalISO();
-    document.getElementById('pickerSheetPastDay').classList.add('open');
-  };
+  document.getElementById('btnRegistraGiornoPassato').onclick = ()=> document.getElementById('pickerSheetPastDay').classList.add('open');
   document.getElementById('pickerClosePastDay').onclick = ()=> document.getElementById('pickerSheetPastDay').classList.remove('open');
-  document.getElementById('pickerSheetPastDay').addEventListener('click',(e)=>{ if(e.target.id==='pickerSheetPastDay') e.currentTarget.classList.remove('open'); });
-  document.querySelectorAll('#pastDayVariantGroup .picker-item').forEach(btn=>{
+  document.getElementById('pickerSheetPastDay').addEventListener('click', (e)=>{ if(e.target.id==='pickerSheetPastDay') e.currentTarget.classList.remove('open'); });
+  app.querySelectorAll('#pastDayVariantGroup .picker-item').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
       const gid = btn.dataset.gid;
       const dateInput = document.getElementById('pastDayDateInput');
-      const chosenDate = (dateInput && dateInput.value) || yesterdayLocalISO();
+      const chosenDate = dateInput ? dateInput.value : yesterdayLocalISO();
+      if(!chosenDate){ showToast('Scegli prima una data'); return; }
       document.getElementById('pickerSheetPastDay').classList.remove('open');
-      /* Se quel giorno ha gia' una registrazione, non la sovrascriviamo in
-         silenzio: meglio proporre di aprirla per modificarla, cosi' non si
-         perdono dati gia' segnati per sbaglio. */
-      let esistente = null;
-      try{ esistente = await loadAlimEntry(chosenDate); }catch(e){}
+      const esistente = await loadAlimEntry(chosenDate);
       if(esistente){
         showConfirm(
-          `Il ${fmtDate(chosenDate)} ha già una registrazione salvata. Vuoi aprirla per modificarla?`,
+          `Hai già una registrazione per il ${fmtDate(chosenDate)}. Vuoi aprirla invece di sovrascriverla?`,
           ()=> openAlimEntryForEdit(chosenDate),
-          'Apri quella esistente',
+          'Apri quella salvata',
           'Annulla'
         );
-        return;
+      } else {
+        startAlimVariant(gid, chosenDate);
       }
-      startAlimVariant(gid, chosenDate);
     });
   });
+  await refreshAlimStorico();
 }
 async function refreshAlimStorico(){
   const body = document.getElementById('alimStoricoBody');
@@ -5799,9 +7438,15 @@ async function startNewWorkout(giornoId){
      sessione o crearne una seconda separata per la stessa giornata. */
   const today = todayLocalISO();
   let todaySession = null;
+  let prevLog = null;
   try{
     const sessions = await listSessionsDetailed(giornoId);
     todaySession = sessions.find(s=>s.date===today) || null;
+    // La sessione precedente piu' recente (diversa da oggi) fornisce i
+    // valori suggeriti kg/rip/RPE per la nuova sessione: 'sessions' e' gia'
+    // ordinato dal piu' recente, quindi la prima che non e' di oggi va bene.
+    const prevEntry = sessions.find(s=>s.date!==today) || null;
+    prevLog = prevEntry ? prevEntry.log : null;
   }catch(e){}
   if(todaySession){
     showConfirm(
@@ -5812,12 +7457,12 @@ async function startNewWorkout(giornoId){
           async ()=>{
             try{
               await deleteSession(giornoId, todaySession.sessionId);
-              beginBlankWorkout(giornoId, giorno);
+              beginBlankWorkout(giornoId, giorno, prevLog);
             }catch(e){ showToast('Errore — riprova'); }
           },
           'Sovrascrivi',
           'Duplica',
-          ()=> beginBlankWorkout(giornoId, giorno)
+          ()=> beginBlankWorkout(giornoId, giorno, prevLog)
         );
       },
       'Sì',
@@ -5825,14 +7470,15 @@ async function startNewWorkout(giornoId){
     );
     return;
   }
-  beginBlankWorkout(giornoId, giorno);
+  beginBlankWorkout(giornoId, giorno, prevLog);
 }
-function beginBlankWorkout(giornoId, giorno){
+function beginBlankWorkout(giornoId, giorno, prevLog){
   state.giornoId = giornoId;
   state.cicloId = giorno.cicloId;
   state.sessionId = generateSessionId();
   state.returnTo = 'cicli';
   state.log = blankLog(giorno);
+  state.suggestions = buildSuggestions(state.log, prevLog);
   state.screen = 'workout';
   renderWorkout();
 }
@@ -5840,6 +7486,7 @@ async function openExistingSession(giornoId, sessionId){
   state.giornoId = giornoId;
   state.sessionId = sessionId;
   state.returnTo = 'cronologia';
+  state.suggestions = {};
   try{
     const res = await window.storage.get(logKey(giornoId, sessionId), false);
     state.log = (res && res.value) ? JSON.parse(res.value) : null;
@@ -5989,10 +7636,10 @@ function renderExercise(entry){
         <button class="rec-start" data-rec="${ex.rec}" data-name="${ex.n}">${ICO.play} avvia</button>
       </div>
       ` : ''}
-      ${isPerLato ? renderLatoBlock('debole', LATO_DEBOLE, rows) + renderLatoBlock('forte', LATO_FORTE, rows) : `
+      ${isPerLato ? renderLatoBlock('debole', LATO_DEBOLE, rows, id) + renderLatoBlock('forte', LATO_FORTE, rows, id) : `
       <div class="set-table">
         <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span>RPE</span><span></span></div>
-        <div class="rows-container">${rows.map((r,si)=>renderSetRow(r,si)).join('')}</div>
+        <div class="rows-container">${rows.map((r,si)=>renderSetRow(r,si,sugFor(id,si))).join('')}</div>
       </div>
       <div class="ex-actions">
         <button class="set-btn" data-act="add">+ Aggiungi serie</button>
@@ -6007,14 +7654,14 @@ function renderExercise(entry){
    (mantenendo l'indice VERO nell'array sets, non quello locale al filtro,
    così salvataggio/lettura restano invariati) e con i propri pulsanti
    +/- serie, scoped a quel lato soltanto. */
-function renderLatoBlock(lato, label, rows){
+function renderLatoBlock(lato, label, rows, exId){
   const filtered = rows.map((r,i)=>({r,i})).filter(x=>x.r.lato===lato);
   return `
     <div class="lato-block" data-lato="${lato}">
       <div class="lato-label ${lato}">Lato ${lato} — ${label}</div>
       <div class="set-table">
         <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span>RPE</span><span></span></div>
-        <div class="rows-container" data-lato="${lato}">${filtered.map(x=>renderSetRow(x.r, x.i)).join('')}</div>
+        <div class="rows-container" data-lato="${lato}">${filtered.map(x=>renderSetRow(x.r, x.i, sugFor(exId, x.i))).join('')}</div>
       </div>
       <div class="ex-actions">
         <button class="set-btn" data-act="add" data-lato="${lato}">+ Aggiungi serie</button>
@@ -6023,16 +7670,31 @@ function renderLatoBlock(lato, label, rows){
     </div>
   `;
 }
-function renderSetRow(r, si){
+function renderSetRow(r, si, sug){
+  // sug (se presente) sono i kg/rip/RPE dell'ultima sessione precedente per
+  // questa stessa serie: mostrati come placeholder leggero (grigio, sparisce
+  // appena si scrive), mai come valore gia' scritto nel campo -- cosi'
+  // Silvana vede subito cosa aveva fatto la volta scorsa ma non rischia di
+  // salvare per sbaglio un dato vecchio se dimentica di aggiornarlo.
+  const phKg = (sug && sug.kg !== '' && sug.kg != null) ? sug.kg : '0';
+  const phReps = (sug && sug.reps !== '' && sug.reps != null) ? sug.reps : '0';
+  const phRpe = (sug && sug.rpe) ? sug.rpe : '–';
   return `
     <div class="set-row" data-si="${si}">
       <span class="set-idx">${si+1}</span>
-      <input type="number" inputmode="decimal" step="0.5" placeholder="0" value="${r.kg}" data-f="kg">
-      <input type="number" inputmode="numeric" step="1" placeholder="0" value="${r.reps}" data-f="reps">
-      <input type="number" inputmode="decimal" step="0.5" min="6" max="10" placeholder="–" value="${r.rpe||''}" data-f="rpe" title="RPE (6-10): sforzo percepito">
+      <input type="number" inputmode="decimal" step="0.5" placeholder="${phKg}" value="${r.kg}" data-f="kg">
+      <input type="number" inputmode="numeric" step="1" placeholder="${phReps}" value="${r.reps}" data-f="reps">
+      <input type="number" inputmode="decimal" step="0.5" min="6" max="10" placeholder="${phRpe}" value="${r.rpe||''}" data-f="rpe" title="RPE (6-10): sforzo percepito">
       <button class="set-done ${r.done?'on':''}" data-f="done">${ICO.check}</button>
     </div>
   `;
+}
+/* Ritorna il suggerimento kg/rip/RPE (se esiste) per la serie si-esima di un
+   esercizio, calcolato una volta sola all'apertura della sessione da
+   buildSuggestions() e salvato in state.suggestions. */
+function sugFor(exId, si){
+  const arr = state.suggestions && state.suggestions[exId];
+  return (arr && arr[si]) || null;
 }
 function wireExerciseEvents(){
   app.querySelectorAll('.ex-name-btn').forEach(btn=>{
@@ -6057,9 +7719,18 @@ function wireExerciseEvents(){
         });
         const doneBtn = row.querySelector('.set-done');
         doneBtn.addEventListener('click', ()=>{
-          state.log.esercizi[exId].sets[si].done = !state.log.esercizi[exId].sets[si].done;
+          const nowDone = !state.log.esercizi[exId].sets[si].done;
+          state.log.esercizi[exId].sets[si].done = nowDone;
           doneBtn.classList.toggle('on');
           queueSave();
+          // Segnare una serie come fatta avvia (o fa ripartire da capo, se
+          // era gia' in corso) il timer di recupero specifico di quell'
+          // esercizio: ogni esercizio ha la sua pausa consigliata, quindi
+          // non serve piu' premere manualmente "avvia" dopo ogni serie.
+          if(nowDone){
+            const exLive = EXBYID[exId];
+            if(exLive) startTimerWithDuration(exLive.rec, exLive.n);
+          }
         });
       });
     }
@@ -6093,7 +7764,7 @@ function wireExerciseEvents(){
         card.querySelectorAll('.rows-container').forEach(rc=>{
           const rcLato = rc.dataset.lato;
           const filtered = arr.map((r,i)=>({r,i})).filter(x=> rcLato ? x.r.lato===rcLato : true);
-          rc.innerHTML = filtered.map(x=>renderSetRow(x.r, x.i)).join('');
+          rc.innerHTML = filtered.map(x=>renderSetRow(x.r, x.i, sugFor(exId, x.i))).join('');
         });
         bindRows();
         queueSave();
@@ -6178,21 +7849,40 @@ function openTimerSheet(forceStart){
   if(forceStart || !timer.running) startTimer();
   else renderTimerBar();
 }
+/* Il conto alla rovescia si basa sull'orario di fine (endAt), non su un
+   contatore che scende di 1 ogni secondo: su iPhone, quando l'app va in
+   background (schermo bloccato o si passa a un'altra app), il browser
+   sospende i timer JavaScript e setInterval smette di scattare — un
+   contatore a scalare si "congela" e al rientro mostra un tempo sbagliato
+   (troppo lungo, come se non fosse passato tempo). Con endAt, il tempo
+   restante viene ricalcolato dall'orologio reale ogni volta — anche subito
+   al rientro nell'app, grazie al listener 'visibilitychange' qui sotto —
+   quindi il timer risulta sempre corretto anche dopo minuti di background. */
 function startTimer(){
   timer.running = true;
+  timer.endAt = Date.now() + timer.remaining*1000;
   const tcT = document.getElementById('tcToggle'); if(tcT) tcT.innerHTML = ICO.pause;
   const rS1 = document.getElementById('ringStatus'); if(rS1) rS1.textContent = 'recupero';
   clearInterval(timer.intervalId);
-  timer.intervalId = setInterval(()=>{
-    timer.remaining -= 1;
-    if(timer.remaining <= 0){ timer.remaining = 0; finishTimer(); }
-    updateRing();
-  },1000);
+  timer.intervalId = setInterval(tickTimer, 1000);
   updateRing();
   renderTimerBar();
 }
+function tickTimer(){
+  timer.remaining = Math.max(0, Math.round((timer.endAt - Date.now())/1000));
+  if(timer.remaining <= 0){ finishTimer(); return; }
+  updateRing();
+}
+/* Ricalcola subito il tempo restante dall'orologio reale quando l'app torna
+   in primo piano (si sblocca lo schermo, si torna da un'altra app): senza
+   questo il timer resterebbe fermo al valore di quando si e' usciti, finche'
+   non scatta il prossimo tick al secondo successivo (o non scatta affatto se
+   il browser ha sospeso l'intervallo). */
+document.addEventListener('visibilitychange', ()=>{
+  if(document.visibilityState === 'visible' && timer.running) tickTimer();
+});
 function pauseTimer(){
-  timer.running = false; clearInterval(timer.intervalId);
+  timer.running = false; clearInterval(timer.intervalId); timer.endAt = null;
   const tcT2 = document.getElementById('tcToggle'); if(tcT2) tcT2.innerHTML = ICO.play;
   const rS2 = document.getElementById('ringStatus'); if(rS2) rS2.textContent = 'in pausa';
   renderTimerBar();
@@ -6208,6 +7898,7 @@ function resetTimer(){
 function adjustTimer(delta){
   timer.remaining = Math.max(0, timer.remaining + delta);
   timer.total = Math.max(timer.total, timer.remaining);
+  if(timer.running) timer.endAt = Date.now() + timer.remaining*1000;
   updateRing();
   renderTimerBar();
 }
