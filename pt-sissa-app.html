@@ -898,8 +898,8 @@ window.storage = {
         .where(firebase.firestore.FieldPath.documentId(), '>=', prefix)
         .where(firebase.firestore.FieldPath.documentId(), '<', end)
         .get();
-      return { keys: q.docs.map(d=>d.id) };
-    }catch(e){ return { keys: [] }; }
+      return { keys: q.docs.map(d=>d.id), items: q.docs.map(d=>({ key:d.id, value:d.data().value })) };
+    }catch(e){ return { keys: [], items: [] }; }
   }
 };
 /* "Oggi" in data locale (fuso orario del telefono), non UTC: usando
@@ -1456,19 +1456,22 @@ async function listSessionsDetailed(giornoId){
   try{
     const prefix = `log-v2-${giornoId}-`;
     const res = await window.storage.list(prefix, false);
-    if(!res || !res.keys) return [];
-    const results = await Promise.all(res.keys.map(async (k)=>{
-      const sessionId = k.slice(prefix.length);
+    if(!res || !res.items) return [];
+    /* Prima: 1 query per l'elenco chiavi + una richiesta di rete separata per
+       OGNI sessione salvata (list poi N get, ripetuto per ogni giorno/ciclo).
+       Ora la query di list() restituisce gia' il contenuto di ogni documento,
+       quindi lo riusiamo direttamente: una sola interrogazione di rete. */
+    const results = res.items.map((it)=>{
+      const sessionId = it.key.slice(prefix.length);
       try{
-        const r = await window.storage.get(k, false);
-        if(r && r.value){
-          const log = JSON.parse(r.value);
+        if(it.value){
+          const log = JSON.parse(it.value);
           const date = log.date || todayLocalISO();
           return { sessionId, date, log };
         }
       }catch(e){}
       return null;
-    }));
+    });
     const items = results.filter(Boolean);
     items.sort((a,b)=> b.date.localeCompare(a.date) || b.sessionId.localeCompare(a.sessionId));
     return items;
@@ -1531,14 +1534,13 @@ async function saveMeasureEntry(date, values, existingKey){
 async function listMeasureEntries(){
   try{
     const res = await window.storage.list('misure-', false);
-    if(!res || !res.keys) return [];
-    const results = await Promise.all(res.keys.map(async (k)=>{
-      const r = await window.storage.get(k, false);
-      if(r && r.value){
-        try{ return { key:k, ...JSON.parse(r.value) }; }catch(e){}
+    if(!res || !res.items) return [];
+    const results = res.items.map((it)=>{
+      if(it.value){
+        try{ return { key: it.key, ...JSON.parse(it.value) }; }catch(e){}
       }
       return null;
-    }));
+    });
     const items = results.filter(Boolean);
     items.sort((a,b)=> b.date.localeCompare(a.date) || b.key.localeCompare(a.key));
     return items;
@@ -1913,9 +1915,28 @@ const ALIM_CENE_RICETTE = {
         "n": "Pangrattato",
         "qty": 12,
         "unit": "g"
+      },
+      {
+        "n": "Latte (se l'impasto e' asciutto)",
+        "qty": null,
+        "unit": "q.b."
+      },
+      {
+        "n": "Sale",
+        "qty": null,
+        "unit": "q.b."
+      },
+      {
+        "n": "Pepe",
+        "qty": null,
+        "unit": "q.b."
+      },
+      {
+        "n": "Noce moscata",
+        "qty": null,
+        "unit": "q.b."
       }
-    ],
-    "note": "Sale, pepe e noce moscata q.b."
+    ]
   },
   "Vellutata di lenticchie (tua porzione)": {
     "ingredienti": [
@@ -1943,9 +1964,18 @@ const ALIM_CENE_RICETTE = {
         "n": "Olio EVO",
         "qty": 9,
         "unit": "g"
+      },
+      {
+        "n": "Rosmarino",
+        "qty": null,
+        "unit": "q.b."
+      },
+      {
+        "n": "Sale",
+        "qty": null,
+        "unit": "q.b."
       }
-    ],
-    "note": "Rosmarino e sale q.b."
+    ]
   },
   "Frittata di zucchine e prosciutto, con pane (tua porzione)": {
     "ingredienti": [
@@ -1983,9 +2013,18 @@ const ALIM_CENE_RICETTE = {
         "n": "Pane ai cereali",
         "qty": 80,
         "unit": "g"
+      },
+      {
+        "n": "Sale",
+        "qty": null,
+        "unit": "q.b."
+      },
+      {
+        "n": "Pepe",
+        "qty": null,
+        "unit": "q.b."
       }
-    ],
-    "note": "Sale e pepe q.b."
+    ]
   },
   "Burritos di pollo (tua porzione)": {
     "ingredienti": [
@@ -1995,28 +2034,33 @@ const ALIM_CENE_RICETTE = {
         "unit": "g"
       },
       {
-        "n": "Tortillas piccole",
-        "qty": 2,
+        "n": "Tortillas grandi",
+        "qty": 1,
         "unit": "tortillas"
       },
       {
         "n": "Insalata",
-        "qty": 50,
+        "qty": 25,
         "unit": "g"
       },
       {
         "n": "Pomodori",
-        "qty": 50,
+        "qty": 30,
         "unit": "g"
       },
       {
-        "n": "Philadelphia",
-        "qty": 5,
+        "n": "Philadelphia (Milbona, senza lattosio)",
+        "qty": 18,
         "unit": "g"
       },
       {
         "n": "Glassa per pollo (BBQ/teriyaki)",
         "qty": 7.5,
+        "unit": "g"
+      },
+      {
+        "n": "Maionese",
+        "qty": 15,
         "unit": "g"
       }
     ]
@@ -2029,18 +2073,28 @@ const ALIM_CENE_RICETTE = {
         "unit": "g"
       },
       {
-        "n": "Pane ai cereali",
-        "qty": 1,
-        "unit": "panino"
+        "n": "Puccia salentina (Certosa)",
+        "qty": 115,
+        "unit": "g"
       },
       {
         "n": "Mozzarella proteica",
-        "qty": 70,
+        "qty": 50,
         "unit": "g"
       },
       {
         "n": "Pomodorini",
-        "qty": 80,
+        "qty": 35,
+        "unit": "g"
+      },
+      {
+        "n": "Insalata",
+        "qty": 25,
+        "unit": "g"
+      },
+      {
+        "n": "Maionese",
+        "qty": 15,
         "unit": "g"
       },
       {
@@ -2102,9 +2156,28 @@ const ALIM_CENE_RICETTE = {
         "n": "Succo di limone",
         "qty": 12.5,
         "unit": "ml"
+      },
+      {
+        "n": "Scorza di limone",
+        "qty": null,
+        "unit": "q.b."
+      },
+      {
+        "n": "Prezzemolo",
+        "qty": null,
+        "unit": "q.b."
+      },
+      {
+        "n": "Sale",
+        "qty": null,
+        "unit": "q.b."
+      },
+      {
+        "n": "Pepe",
+        "qty": null,
+        "unit": "q.b."
       }
-    ],
-    "note": "Scorza di limone e prezzemolo q.b."
+    ]
   }
 };
 /* I 7 giorni della settimana della spesa, a partire dal sabato (giorno in
@@ -3375,14 +3448,16 @@ async function saveAlimEntry(date, entry){
 async function listAlimEntries(){
   try{
     const res = await window.storage.list('alim2-v1-', false);
-    if(!res || !res.keys) return [];
-    const results = await Promise.all(res.keys.map(async (k)=>{
+    if(!res || !res.items) return [];
+    /* Come per listSessionsDetailed: niente piu' una get() di rete per ogni
+       giorno di alimentazione salvato, riusiamo il contenuto gia' incluso
+       nella query di list(). */
+    const results = res.items.map((it)=>{
       try{
-        const r = await window.storage.get(k, false);
-        if(r && r.value) return { key:k, ...JSON.parse(r.value) };
+        if(it.value) return { key: it.key, ...JSON.parse(it.value) };
       }catch(e){}
       return null;
-    }));
+    });
     return results.filter(Boolean);
   }catch(e){ return []; }
 }
@@ -3604,10 +3679,19 @@ function computeListaSpesa(settimana){
   let assignedCount = 0;
   function addQty(name, unit, qty){
     name = ALIM_SPESA_SINONIMI[name] || name;
-    if(!byName[name]) byName[name] = { g:0, ml:0, other:{} };
+    if(!byName[name]) byName[name] = { g:0, ml:0, other:{}, qb:false };
     const entry = byName[name];
     if(unit === 'g' || unit === 'ml') entry[unit] += qty;
     else entry.other[unit] = (entry.other[unit]||0) + qty;
+  }
+  /* Ingredienti senza una quantita' numerica pulita (es. "sale q.b."): non
+     inventiamo un valore, ma li segnamo comunque come "da comprare" cosi'
+     compaiono nella lista spuntabile vera e propria invece che solo in una
+     nota a parte, facile da perdere. */
+  function addQb(name){
+    name = ALIM_SPESA_SINONIMI[name] || name;
+    if(!byName[name]) byName[name] = { g:0, ml:0, other:{}, qb:false };
+    byName[name].qb = true;
   }
   ALIM_SETTIMANA_GIORNI.forEach(d=>{
     const gid = settimana[d.key];
@@ -3620,7 +3704,7 @@ function computeListaSpesa(settimana){
       if(pasto.id === 'cena'){
         const ricetta = ALIM_CENE_RICETTE[pasto.nome];
         if(!ricetta) return; // per sicurezza, se mai mancasse una ricetta non blocchiamo il resto
-        ricetta.ingredienti.forEach(ing=> addQty(ing.n, ing.unit, ing.qty));
+        ricetta.ingredienti.forEach(ing=> ing.qty == null ? addQb(ing.n) : addQty(ing.n, ing.unit, ing.qty));
         if(ricetta.note && !seenCene.has(pasto.nome)){
           notes.push(`${pasto.nome.replace(' (tua porzione)','')}: ${ricetta.note}`);
           seenCene.add(pasto.nome);
@@ -3633,18 +3717,28 @@ function computeListaSpesa(settimana){
   const items = [];
   Object.keys(byName).forEach(name=>{
     const entry = byName[name];
+    let hasQty = false;
     if(entry.g > 0 && entry.ml > 0){
       /* presente sia in grammi che in millilitri: le uniamo in un'unica
          riga in grammi (1 ml ~= 1 g) invece di mostrarle separate */
       items.push({ n:name, unit:'g', qty: entry.g + entry.ml });
+      hasQty = true;
     } else if(entry.g > 0){
       items.push({ n:name, unit:'g', qty: entry.g });
+      hasQty = true;
     } else if(entry.ml > 0){
       items.push({ n:name, unit:'ml', qty: entry.ml });
+      hasQty = true;
     }
     Object.keys(entry.other).forEach(unit=>{
       items.push({ n:name, unit, qty: entry.other[unit] });
+      hasQty = true;
     });
+    if(!hasQty && entry.qb){
+      /* solo "q.b.", nessuna quantita' precisa da nessuna ricetta: la riga
+         compare comunque, cosi' non te la dimentichi al supermercato. */
+      items.push({ n:name, unit:'q.b.', qty:null });
+    }
   });
   items.sort((a,b)=> a.n.localeCompare(b.n, 'it'));
   return { items, notes, assignedCount };
@@ -3676,7 +3770,7 @@ async function renderListaSpesa(){
           ${items.map(it=>`
             <div class="spesa-row">
               <span class="sp-name">${it.n}</span>
-              <span class="sp-qty">${fmtMacro(it.qty)} ${it.unit}</span>
+              <span class="sp-qty">${it.qty == null ? 'q.b.' : (fmtMacro(it.qty)+' '+it.unit)}</span>
             </div>
           `).join('')}
         </div>
