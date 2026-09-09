@@ -526,6 +526,8 @@ input{font-family:inherit;}
 .chart-grid-line{stroke:var(--border);stroke-width:1;stroke-dasharray:3,4;}
 .chart-tick-label{font-family:var(--mono);fill:var(--text-faint);font-size:9px;}
 .chart-point-label{font-family:var(--mono);fill:var(--text-muted);font-size:9px;}
+.chart-target-line{stroke:var(--accent);stroke-width:1.5;stroke-dasharray:6,4;opacity:.9;}
+.chart-target-label{font-family:var(--mono);fill:var(--accent);font-size:9px;font-weight:600;}
 .range-row{display:flex;gap:10px;margin-bottom:10px;}
 .range-field{
   flex:1;background:var(--bg-elev);border:1px solid var(--border);border-radius:10px;padding:9px 10px;
@@ -2944,40 +2946,40 @@ const ALIM_GIORNI = [
             "g": 1.3
           },
           {
-            "n": "Tortillas piccole",
-            "def": 54,
+            "n": "Tortillas grandi",
+            "def": 61,
             "unit": "g",
-            "kcal": 184.0,
-            "p": 4.1,
-            "c": 26.6,
-            "g": 5.5
+            "kcal": 229.0,
+            "p": 5.7,
+            "c": 31.4,
+            "g": 6.8
           },
           {
             "n": "Insalata",
-            "def": 50,
+            "def": 25,
             "unit": "g",
-            "kcal": 6.6,
-            "p": 0.6,
-            "c": 1.6,
+            "kcal": 3.3,
+            "p": 0.3,
+            "c": 0.8,
             "g": 0.1
           },
           {
             "n": "Pomodori",
-            "def": 50,
+            "def": 30,
             "unit": "g",
-            "kcal": 9.9,
-            "p": 0.4,
-            "c": 1.9,
+            "kcal": 5.9,
+            "p": 0.2,
+            "c": 1.1,
             "g": 0.1
           },
           {
-            "n": "Philadelphia",
-            "def": 5,
+            "n": "Philadelphia (Milbona, senza lattosio)",
+            "def": 18,
             "unit": "g",
-            "kcal": 18.8,
-            "p": 0.3,
-            "c": 0.2,
-            "g": 1.9
+            "kcal": 44.1,
+            "p": 1.0,
+            "c": 0.7,
+            "g": 4.3
           },
           {
             "n": "Glassa per pollo (BBQ/teriyaki)",
@@ -2987,6 +2989,15 @@ const ALIM_GIORNI = [
             "p": 0.0,
             "c": 2.7,
             "g": 0.1
+          },
+          {
+            "n": "Maionese",
+            "def": 15,
+            "unit": "g",
+            "kcal": 102.0,
+            "p": 0.2,
+            "c": 0.3,
+            "g": 11.3
           }
         ]
       }
@@ -3136,31 +3147,49 @@ const ALIM_GIORNI = [
             "g": 4.8
           },
           {
-            "n": "Pane ai cereali",
-            "def": 90,
+            "n": "Puccia salentina (Certosa)",
+            "def": 115,
             "unit": "g",
-            "kcal": 222.0,
-            "p": 6.8,
-            "c": 46.5,
-            "g": 0.7
+            "kcal": 308.0,
+            "p": 11.4,
+            "c": 58.2,
+            "g": 6.0
           },
           {
             "n": "Mozzarella proteica",
-            "def": 70,
+            "def": 50,
             "unit": "g",
-            "kcal": 106.5,
-            "p": 13.4,
-            "c": 1.3,
-            "g": 5.0
+            "kcal": 78.0,
+            "p": 9.8,
+            "c": 1.0,
+            "g": 3.4
           },
           {
             "n": "Pomodorini",
-            "def": 80,
+            "def": 35,
             "unit": "g",
-            "kcal": 13.3,
-            "p": 0.7,
-            "c": 2.6,
+            "kcal": 5.8,
+            "p": 0.3,
+            "c": 1.1,
+            "g": 0.0
+          },
+          {
+            "n": "Insalata",
+            "def": 25,
+            "unit": "g",
+            "kcal": 3.3,
+            "p": 0.3,
+            "c": 0.8,
             "g": 0.1
+          },
+          {
+            "n": "Maionese",
+            "def": 15,
+            "unit": "g",
+            "kcal": 102.0,
+            "p": 0.2,
+            "c": 0.3,
+            "g": 11.3
           },
           {
             "n": "Glassa balsamica",
@@ -4182,7 +4211,7 @@ function updateAlimChartUI(){
     chartMeta.innerHTML = '';
     return;
   }
-  chartWrap.innerHTML = cmChartSVG(points);
+  chartWrap.innerHTML = cmChartSVG(points, ALIM_TARGET[statsAlimSel.type]);
   const first = points[0];
   chartMeta.innerHTML = `<span>${fmtDate(first.date)}: <b>${fmtMacro(first.cm)} ${meta.unit}</b></span><span>${fmtDate(last.date)}: <b>${fmtMacro(last.cm)} ${meta.unit}</b></span>`;
 }
@@ -7871,11 +7900,13 @@ async function renderStatsMisura(){
 function filteredMisuraPoints(){
   return statsMisuraPoints.filter(p => (!statsMisuraRange.from || p.date >= statsMisuraRange.from) && (!statsMisuraRange.to || p.date <= statsMisuraRange.to));
 }
-function cmChartSVG(points){
+function cmChartSVG(points, targetVal){
   const W = 340, H = 240;
   const mL = 34, mR = 12, mT = 16, mB = 34;
   const plotW = W - mL - mR, plotH = H - mT - mB;
   const vals = points.map(p=>p.cm);
+  const hasTarget = (targetVal !== undefined && targetVal !== null && !isNaN(targetVal));
+  if(hasTarget) vals.push(targetVal);
   let yMin = Math.min(...vals), yMax = Math.max(...vals);
   if(yMin === yMax){ yMin -= 5; yMax += 5; }
   const step = niceStep(yMax - yMin) || 1;
@@ -7902,12 +7933,19 @@ function cmChartSVG(points){
       <circle cx="${c[0].toFixed(1)}" cy="${c[1].toFixed(1)}" r="${i===coords.length-1?5:3.5}" style="fill:${i===coords.length-1?'var(--accent)':'var(--bg-elev)'};stroke:var(--accent);stroke-width:2;"/>
       ${points.length<=9?`<text class="chart-point-label" x="${c[0].toFixed(1)}" y="${(c[1]-10).toFixed(1)}" text-anchor="middle">${points[i].cm}</text>`:''}
   `).join('');
+  const targetLine = hasTarget ? (()=>{
+    const y = yFor(targetVal);
+    const yClamped = Math.max(mT, Math.min(H-mB, y));
+    return `<line class="chart-target-line" x1="${mL}" y1="${yClamped.toFixed(1)}" x2="${W-mR}" y2="${yClamped.toFixed(1)}"/>
+      <text class="chart-target-label" x="${W-mR}" y="${(yClamped-4).toFixed(1)}" text-anchor="end">Target ${targetVal}</text>`;
+  })() : '';
   return `
     <svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet">
       ${gridLines}
       <line class="chart-axis-line" x1="${mL}" y1="${mT}" x2="${mL}" y2="${H-mB}"/>
       <line class="chart-axis-line" x1="${mL}" y1="${H-mB}" x2="${W-mR}" y2="${H-mB}"/>
       ${xLabels}
+      ${targetLine}
       <path d="${path}" fill="none" style="stroke:var(--teal);" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
       ${dots}
     </svg>
