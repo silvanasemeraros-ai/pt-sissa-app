@@ -945,11 +945,18 @@ const CICLI = [
                 muscolo:"Lavora soprattutto il quadricipite, con gluteo e femorali come sinergici nella fase finale. Sensazione corretta: spinta uniforme su tutto il piede. Errore comune: spingere solo sulle punte, che scarica il lavoro sui polpacci e stressa le ginocchia.",
                 resp:"Inspira durante la discesa, espira spingendo verso l'alto.",
                 attrezzatura:"Hai preferito tenere questa macchina (invece della Super Calf Hack) perché dà più focus sul gluteo insieme al quadricipite."}},
-        {id:'leg-press-45', n:'Leg press 45°', s:3, sc:'3×12-15', rpe:'7-8', rec:120, recLabel:'2 min',
+        {id:'glute-press', n:'Glute Press', s:3, sc:'3×12-15', rpe:'7-8', rec:120, recLabel:'2 min', gruppo:'lp-gp',
+          info:{setup:"Seduta e reclinata sul macchinario dedicato (GluteBuilder Glute Press), schiena e bacino ben aderenti allo schienale, anche in flessione profonda (ginocchia verso il petto) nella posizione di partenza. Pianta del piede intera in appoggio sulla pedana centrale, non solo il tallone. Mani sulle maniglie laterali, usate solo per stabilizzarti, non per spingere.",
+                esec:"Concentrica (spinta): estendi le anche spingendo la pedana lontano da te, contraendo forte il gluteo a fine movimento — è l'anca che si apre a guidare la spinta, non il ginocchio. Eccentrica: torna controllata alla posizione di partenza, lasciando che le anche si flettano di nuovo verso il petto.",
+                muscolo:"Gluteo massimo come motore principale — stesso schema di movimento (estensione dell'anca) dell'Hip Thrust, ma da seduta invece che sdraiata. Sensazione corretta: contrazione forte del gluteo a fine spinta; se senti soprattutto il quadricipite o il ginocchio lavorare, probabilmente stai spingendo con la gamba invece che con l'anca.",
+                resp:"Inspira tornando in flessione, espira nella spinta.",
+                attrezzatura:"A differenza del leg press classico, qui il movimento è un'estensione dell'anca e non una spinta del ginocchio: lavora il gluteo in modo molto più mirato, con i quadricipiti quasi solo di supporto."}},
+        {id:'leg-press-45', n:'Leg press 45°', s:3, sc:'3×12-15', rpe:'7-8', rec:120, recLabel:'2 min', gruppo:'lp-gp',
           info:{setup:"Seduta con schiena e bacino ben aderenti al sedile — bacino in posizione neutra, senza lasciare che si sollevi o ruoti quando spingi — piedi sulla pedana all'altezza delle spalle, al centro, pianta intera in appoggio (non solo talloni o punte). Mani sulle maniglie laterali della seduta, senza spingere con le braccia. Sblocca i fermi laterali solo dopo aver posizionato i piedi.",
                 esec:"Discesa (eccentrica): sblocca i fermi e piega le ginocchia verso il petto in modo controllato, senza che il bacino si stacchi dal sedile, fino a circa 90° o dove la schiena resta comoda. Spinta (concentrica): spingi con tutta la pianta del piede fino quasi alla distensione.",
                 muscolo:"Quadricipiti con enfasi maggiore se i piedi sono centrali e alti sulla pedana, glutei come sinergici. Errore comune: staccare il bacino dal sedile in fondo alla discesa — se succede, riduci l'ampiezza.",
-                resp:"Inspira in discesa, espira in spinta."}},
+                resp:"Inspira in discesa, espira in spinta.",
+                attrezzatura:"Alternativa al Glute Press per questo slot della scheda: a inizio sessione scegli quale dei due fare oggi — ognuno mantiene comunque il proprio storico di allenamenti separato."}},
         {id:'hip-thrust-macchina', n:'Hip Thrust (macchina)', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min',
           info:{setup:"Seduta con la parte alta della schiena appoggiata allo schienale reclinabile imbottito, cuscinetto posizionato sul bacino (appena sopra le anche, non sullo stomaco), piedi piantati per terra o sulla pedana alla larghezza dei fianchi, ginocchia a circa 90° a fine movimento. Mani sulle maniglie laterali della macchina, usate solo per stabilizzarti, non per spingere. Bacino in posizione neutra in partenza, prima di iniziare la spinta. Regola schienale e leva prima di caricare il peso.",
                 esec:"Concentrica: spingi con i talloni sollevando il bacino, portando il corpo in linea retta dalle spalle alle ginocchia, contraendo forte i glutei in alto. Eccentrica: scendi controllata senza far cadere di colpo il peso.",
@@ -1370,13 +1377,46 @@ function sessionTimeLabel(sessionId){
     return label === 'Invalid Date' ? '' : label;
   }catch(e){ return ''; }
 }
+/* Alcuni esercizi sono ALTERNATIVI tra loro nella stessa giornata — stesso
+   "slot" in scheda, stesso obiettivo muscolare — e condividono lo stesso
+   campo `gruppo` (es. Glute Press / Leg press 45° nel Giorno 1). All'inizio
+   di ogni sessione si sceglie quale dei due fare quel giorno (vedi
+   avviaConSceltaGruppi); solo quello scelto entra nel log della sessione,
+   l'altro resta semplicemente non registrato per oggi. Ogni esercizio del
+   gruppo mantiene comunque il proprio id e il proprio storico separato,
+   esattamente come un esercizio qualsiasi — scegliere l'uno o l'altro non
+   tocca mai lo storico di quello non scelto (vedi buildSuggestions). */
+function gruppiDiScelta(giorno){
+  const map = {};
+  giorno.esercizi.forEach(ex=>{ if(ex.gruppo){ (map[ex.gruppo] = map[ex.gruppo]||[]).push(ex); } });
+  return Object.values(map).filter(arr=>arr.length>1);
+}
+/* Numero di "slot" reali della giornata: un gruppo di esercizi alternativi
+   conta come uno solo (si fa sempre e solo uno dei due), non due. */
+function contaSlot(giorno){
+  const gruppiVisti = new Set();
+  let n = 0;
+  giorno.esercizi.forEach(ex=>{
+    if(ex.gruppo){ if(!gruppiVisti.has(ex.gruppo)){ gruppiVisti.add(ex.gruppo); n++; } }
+    else n++;
+  });
+  return n;
+}
 /* Costruisce una sessione vuota per un giorno, facendo uno "snapshot" di nome e
    schema serie di ogni esercizio così com'è ORA — anche se in futuro la scheda
    cambia (o passa a un nuovo ciclo), questa sessione ricorderà per sempre cos'era
-   stato effettivamente svolto. */
-function blankLog(giorno){
+   stato effettivamente svolto.
+   `scelte` è una mappa {gruppo: idScelto} con la scelta di oggi per ogni
+   eventuale gruppo di esercizi alternativi; se manca (o è incompleta), si usa
+   di default la prima opzione di ciascun gruppo, così la sessione non perde
+   mai uno slot per una scelta non passata. */
+function blankLog(giorno, scelte){
+  const scelteFinali = {};
+  gruppiDiScelta(giorno).forEach(opzioni=>{ scelteFinali[opzioni[0].gruppo] = opzioni[0].id; });
+  Object.assign(scelteFinali, scelte||{});
   const log = { date:todayLocalISO(), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, cicloId:giorno.cicloId, esercizi:{} };
   giorno.esercizi.forEach(ex=>{
+    if(ex.gruppo && scelteFinali[ex.gruppo] !== ex.id) return; // alternativa non scelta oggi: non entra nel log
     // Gli esercizi perLato (un lato alla volta) hanno il doppio delle serie:
     // le prime ex.s sono etichettate 'debole', le successive ex.s 'forte' —
     // così in Workout compaiono come due sezioni separate, nell'ordine
@@ -1389,25 +1429,39 @@ function blankLog(giorno){
   return log;
 }
 /* Costruisce, per ogni esercizio del nuovo log vuoto, i valori suggeriti
-   (kg/ripetizioni/RPE) presi dall'ultima sessione precedente registrata per
-   lo stesso giorno (prevLog) -- cosi', ricominciando lo stesso allenamento
-   la settimana dopo, i campi vuoti mostrano come placeholder cosa era stato
-   fatto la volta scorsa. Allineamento serie-per-serie per indice; per gli
-   esercizi perLato l'allineamento e' per posizione ALL'INTERNO dello stesso
-   lato (debole con debole, forte con forte), non per indice assoluto,
-   altrimenti con un numero di serie diverso tra le due sessioni i
-   suggerimenti finirebbero sul lato sbagliato. Se l'esercizio e' nuovo, non
-   ha ancora storico, o la struttura non e' confrontabile, semplicemente non
-   c'e' suggerimento per quelle righe (restano i placeholder generici "0"/"–"
-   di sempre). Non scrive mai nulla nei campi: sono solo placeholder, quindi
-   un dato vecchio non puo' mai essere salvato per sbaglio come se fosse di
-   oggi senza che Silvana lo digiti lei stessa. */
-function buildSuggestions(newLog, prevLog){
+   (kg/ripetizioni/RPE) presi dall'ultima sessione in cui QUELL'esercizio
+   specifico è stato effettivamente registrato -- cosi', ricominciando lo
+   stesso allenamento la settimana dopo, i campi vuoti mostrano come
+   placeholder cosa era stato fatto la volta scorsa.
+   `pastLogs` è l'elenco delle sessioni passate per questo giorno, già
+   ordinato dalla più recente: per ogni esercizio si scorre finché non si
+   trova la prima sessione che lo contiene. Questo è importante per gli
+   esercizi ALTERNATIVI tra loro (stesso `gruppo`, es. Glute Press / Leg
+   press): se l'ultima sessione ha usato l'uno, il suggerimento per l'altro
+   non resta vuoto solo per questo, ma va a cercare la sua propria ultima
+   volta — i due non si mescolano mai, perché restano id diversi con
+   sessioni proprie.
+   Allineamento serie-per-serie per indice; per gli esercizi perLato
+   l'allineamento e' per posizione ALL'INTERNO dello stesso lato (debole con
+   debole, forte con forte), non per indice assoluto, altrimenti con un
+   numero di serie diverso tra le due sessioni i suggerimenti finirebbero sul
+   lato sbagliato. Se l'esercizio e' nuovo, non ha ancora storico, o la
+   struttura non e' confrontabile, semplicemente non c'e' suggerimento per
+   quelle righe (restano i placeholder generici "0"/"–" di sempre). Non
+   scrive mai nulla nei campi: sono solo placeholder, quindi un dato vecchio
+   non puo' mai essere salvato per sbaglio come se fosse di oggi senza che
+   Silvana lo digiti lei stessa. */
+function buildSuggestions(newLog, pastLogs){
   const sug = {};
-  if(!prevLog || !prevLog.esercizi) return sug;
+  const logs = (pastLogs||[]).filter(l=>l && l.esercizi);
+  if(!logs.length) return sug;
   Object.keys(newLog.esercizi).forEach(exId=>{
-    const prevEx = prevLog.esercizi[exId];
-    if(!prevEx || !prevEx.sets || !prevEx.sets.length) return;
+    let prevEx = null;
+    for(const log of logs){
+      const cand = log.esercizi[exId];
+      if(cand && cand.sets && cand.sets.length){ prevEx = cand; break; }
+    }
+    if(!prevEx) return;
     const curSets = newLog.esercizi[exId].sets;
     const hasLato = curSets.some(s=>s.lato);
     const arr = curSets.map((s,i)=>{
@@ -5126,6 +5180,48 @@ const ALIM_OPZIONI_LEGACY = {
       "p": 2.6,
       "c": 11.4,
       "g": 7
+    },
+    {
+      "id": "op-spuntinoPM-5",
+      "pastoId": "spuntinoPM",
+      "titolo": "Barretta Prozis Energy Choco Crunch (post-workout)",
+      "letteraOrigine": "Prozis",
+      "ingredienti": [
+        {
+          "n": "Barretta Prozis Energy Choco Crunch (1 barretta, 40 g)",
+          "def": 40,
+          "unit": "g",
+          "kcal": 173.6,
+          "p": 4.8,
+          "c": 23.2,
+          "g": 6.8
+        }
+      ],
+      "kcal": 173.6,
+      "p": 4.8,
+      "c": 23.2,
+      "g": 6.8
+    },
+    {
+      "id": "op-spuntinoPM-6",
+      "pastoId": "spuntinoPM",
+      "titolo": "Barretta Prozis Energy Crunch (post-workout)",
+      "letteraOrigine": "Prozis",
+      "ingredienti": [
+        {
+          "n": "Barretta Prozis Energy Crunch (1 barretta, 40 g)",
+          "def": 40,
+          "unit": "g",
+          "kcal": 164,
+          "p": 5.6,
+          "c": 23.6,
+          "g": 5.2
+        }
+      ],
+      "kcal": 164,
+      "p": 5.6,
+      "c": 23.6,
+      "g": 5.2
     }
   ],
   "cena": [
@@ -6840,7 +6936,7 @@ async function renderGiorniOfCiclo(cicloId){
             <div class="gnum">${g.label.toUpperCase()}</div>
             <div class="glabel">${g.meta}</div>
             <div class="gsub">${g.sub}</div>
-            <div class="gmeta">${g.esercizi.length} esercizi</div>
+            <div class="gmeta">${contaSlot(g)} esercizi</div>
             <div class="glast" data-last="${g.id}">Caricamento…</div>
           </button>
         `).join('')}
@@ -6992,16 +7088,17 @@ async function startNewWorkout(giornoId){
      sessione o crearne una seconda separata per la stessa giornata. */
   const today = todayLocalISO();
   let todaySession = null;
-  let prevLog = null;
+  let pastLogs = [];
   try{
     const sessions = await listSessionsDetailed(giornoId);
     todaySession = sessions.find(s=>s.date===today) || null;
-    // La sessione precedente piu' recente (diversa da oggi) fornisce i
-    // valori suggeriti kg/rip/RPE per la nuova sessione: 'sessions' e' gia'
-    // ordinato dal piu' recente, quindi la prima che non e' di oggi va bene.
-    const prevEntry = sessions.find(s=>s.date!==today) || null;
-    prevLog = prevEntry ? prevEntry.log : null;
+    // Tutte le sessioni passate (non di oggi) per questo giorno, dalla più
+    // recente: servono a buildSuggestions per cercare, esercizio per
+    // esercizio, l'ultima volta in cui è stato fatto davvero (vedi lì per il
+    // perché non basta la sola sessione immediatamente precedente).
+    pastLogs = sessions.filter(s=>s.date!==today).map(s=>s.log);
   }catch(e){}
+  const proceed = ()=> avviaConSceltaGruppi(giornoId, giorno, pastLogs);
   if(todaySession){
     showConfirm(
       'Hai già registrato un allenamento di questo tipo oggi. Sei sicura di voler ricominciare lo stesso allenamento nello stesso giorno?',
@@ -7011,12 +7108,12 @@ async function startNewWorkout(giornoId){
           async ()=>{
             try{
               await deleteSession(giornoId, todaySession.sessionId);
-              beginBlankWorkout(giornoId, giorno, prevLog);
+              proceed();
             }catch(e){ showToast('Errore — riprova'); }
           },
           'Sovrascrivi',
           'Duplica',
-          ()=> beginBlankWorkout(giornoId, giorno, prevLog)
+          proceed
         );
       },
       'Sì',
@@ -7024,15 +7121,38 @@ async function startNewWorkout(giornoId){
     );
     return;
   }
-  beginBlankWorkout(giornoId, giorno, prevLog);
+  proceed();
 }
-function beginBlankWorkout(giornoId, giorno, prevLog){
+/* Se la giornata ha esercizi alternativi tra loro (stesso `gruppo`, es.
+   Glute Press / Leg press 45° nel Giorno 1), chiede con un rapido tocco
+   quale fare oggi prima di iniziare — uno per gruppo, in sequenza se ce ne
+   fosse più di uno in futuro. Se non ci sono gruppi in questa giornata,
+   parte diretta come prima. */
+function avviaConSceltaGruppi(giornoId, giorno, pastLogs){
+  const gruppi = gruppiDiScelta(giorno);
+  if(!gruppi.length){ beginBlankWorkout(giornoId, giorno, pastLogs, {}); return; }
+  const scelte = {};
+  const chiediProssimo = (i)=>{
+    if(i >= gruppi.length){ beginBlankWorkout(giornoId, giorno, pastLogs, scelte); return; }
+    const opzioni = gruppi[i];
+    const a = opzioni[0], b = opzioni[1];
+    showConfirm(
+      `Cosa vuoi fare oggi: ${a.n} o ${b.n}?`,
+      ()=>{ scelte[a.gruppo] = a.id; chiediProssimo(i+1); },
+      a.n,
+      b.n,
+      ()=>{ scelte[a.gruppo] = b.id; chiediProssimo(i+1); }
+    );
+  };
+  chiediProssimo(0);
+}
+function beginBlankWorkout(giornoId, giorno, pastLogs, scelte){
   state.giornoId = giornoId;
   state.cicloId = giorno.cicloId;
   state.sessionId = generateSessionId();
   state.returnTo = 'cicli';
-  state.log = blankLog(giorno);
-  state.suggestions = buildSuggestions(state.log, prevLog);
+  state.log = blankLog(giorno, scelte);
+  state.suggestions = buildSuggestions(state.log, pastLogs);
   state.screen = 'workout';
   renderWorkout();
 }
