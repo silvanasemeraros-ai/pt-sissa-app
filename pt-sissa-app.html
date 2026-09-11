@@ -4439,11 +4439,33 @@ function pastoIngTotals(pasto){
   return t;
 }
 let ALIM_OPZIONI_CACHE = null;
+/* Opzioni aggiunte a mano da Silvana, non derivate dalle 7 varianti-giorno
+   originarie di ALIM_GIORNI (es. prodotti comprati a parte, come le
+   barrette Prozis) — vengono semplicemente accodate al catalogo di ciascun
+   pasto in opzioniPerPasto(), con lo stesso identico formato di tutte le
+   altre opzioni, cosi' compaiono nel selettore esattamente allo stesso
+   modo. IMPORTANTE: e' qui che va aggiunta una nuova opzione "a mano" — non
+   in ALIM_OPZIONI_LEGACY piu' sotto, che e' solo un archivio storico di
+   sola lettura usato da trovaOpzione() per le sessioni passate e NON
+   alimenta il selettore (lezione imparata l'11 settembre 2026: le due
+   barrette Prozis erano state aggiunte per errore li', quindi tecnicamente
+   salvate ma invisibili nel selettore). */
+const ALIM_OPZIONI_EXTRA_MANUALI = {
+  spuntinoPM: [
+    { id:'op-spuntinoPM-prozis-choco', pastoId:'spuntinoPM', titolo:'Barretta Prozis Energy Choco Crunch (post-workout)', letteraOrigine:'Prozis',
+      ingredienti:[{ n:'Barretta Prozis Energy Choco Crunch (1 barretta, 40 g)', def:40, unit:'g', kcal:173.6, p:4.8, c:23.2, g:6.8 }],
+      kcal:173.6, p:4.8, c:23.2, g:6.8 },
+    { id:'op-spuntinoPM-prozis-crunch', pastoId:'spuntinoPM', titolo:'Barretta Prozis Energy Crunch (post-workout)', letteraOrigine:'Prozis',
+      ingredienti:[{ n:'Barretta Prozis Energy Crunch (1 barretta, 40 g)', def:40, unit:'g', kcal:164, p:5.6, c:23.6, g:5.2 }],
+      kcal:164, p:5.6, c:23.6, g:5.2 },
+  ],
+};
 /* Costruisce una sola volta il "catalogo opzioni" per ciascun tipo di
-   pasto, leggendo le 7 varianti (ALIM_GIORNI, dati invariati). Alcune
-   ricette si ripetono identiche in piu' varianti (es. "Burritos di pollo"):
-   qui vengono deduplicate (stesso pasto + stesso titolo + stesse kcal),
-   cosi' compaiono una volta sola nel selettore invece di ripetersi. */
+   pasto, leggendo le 7 varianti (ALIM_GIORNI, dati invariati) e poi
+   accodando ALIM_OPZIONI_EXTRA_MANUALI. Alcune ricette si ripetono
+   identiche in piu' varianti (es. "Burritos di pollo"): qui vengono
+   deduplicate (stesso pasto + stesso titolo + stesse kcal), cosi'
+   compaiono una volta sola nel selettore invece di ripetersi. */
 function opzioniPerPasto(){
   if(ALIM_OPZIONI_CACHE) return ALIM_OPZIONI_CACHE;
   const out = {};
@@ -4473,6 +4495,10 @@ function opzioniPerPasto(){
         kcal: Math.round(t.kcal), p: Math.round(t.p*10)/10, c: Math.round(t.c*10)/10, g: Math.round(t.g*10)/10,
       });
     });
+  });
+  Object.keys(ALIM_OPZIONI_EXTRA_MANUALI).forEach(pid=>{
+    if(!out[pid]) out[pid] = [];
+    ALIM_OPZIONI_EXTRA_MANUALI[pid].forEach(op=> out[pid].push(op));
   });
   ALIM_OPZIONI_CACHE = out;
   return out;
@@ -5180,48 +5206,6 @@ const ALIM_OPZIONI_LEGACY = {
       "p": 2.6,
       "c": 11.4,
       "g": 7
-    },
-    {
-      "id": "op-spuntinoPM-5",
-      "pastoId": "spuntinoPM",
-      "titolo": "Barretta Prozis Energy Choco Crunch (post-workout)",
-      "letteraOrigine": "Prozis",
-      "ingredienti": [
-        {
-          "n": "Barretta Prozis Energy Choco Crunch (1 barretta, 40 g)",
-          "def": 40,
-          "unit": "g",
-          "kcal": 173.6,
-          "p": 4.8,
-          "c": 23.2,
-          "g": 6.8
-        }
-      ],
-      "kcal": 173.6,
-      "p": 4.8,
-      "c": 23.2,
-      "g": 6.8
-    },
-    {
-      "id": "op-spuntinoPM-6",
-      "pastoId": "spuntinoPM",
-      "titolo": "Barretta Prozis Energy Crunch (post-workout)",
-      "letteraOrigine": "Prozis",
-      "ingredienti": [
-        {
-          "n": "Barretta Prozis Energy Crunch (1 barretta, 40 g)",
-          "def": 40,
-          "unit": "g",
-          "kcal": 164,
-          "p": 5.6,
-          "c": 23.6,
-          "g": 5.2
-        }
-      ],
-      "kcal": 164,
-      "p": 5.6,
-      "c": 23.6,
-      "g": 5.2
     }
   ],
   "cena": [
