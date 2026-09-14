@@ -452,6 +452,17 @@ input{font-family:inherit;}
 }
 .set-btn svg{width:14px;height:14px;flex-shrink:0;}
 .set-btn:active{background:var(--bg-elev);}
+.pending-options{display:flex;flex-direction:column;gap:8px;padding:2px 16px 16px;}
+.pending-opt{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  width:100%;text-align:left;background:var(--bg-elev);border:1px solid var(--border-strong);
+  border-radius:10px;padding:11px 13px;color:var(--text-faint);
+}
+.pending-opt:active{background:var(--accent-dim);border-color:var(--accent);}
+.pending-opt-main{display:flex;flex-direction:column;align-items:flex-start;gap:2px;}
+.pending-opt-name{font-weight:700;font-size:14px;color:var(--text);}
+.pending-opt-sc{font-family:var(--mono);font-size:11px;color:var(--text-faint);}
+.pending-opt svg{width:14px;height:14px;flex-shrink:0;color:var(--text-faint);}
 .cta{
   display:block;width:100%;background:var(--accent);color:#101314;border:none;
   border-radius:12px;padding:16px;font-weight:800;text-align:center;
@@ -967,13 +978,28 @@ const CICLI = [
                 esec:"Discesa (eccentrica): sblocca i fermi e piega le ginocchia verso il petto in modo controllato, senza che il bacino si stacchi dal sedile, fino a circa 90° o dove la schiena resta comoda. Spinta (concentrica): spingi con tutta la pianta del piede fino quasi alla distensione.",
                 muscolo:"Quadricipiti con enfasi maggiore se i piedi sono centrali e alti sulla pedana, glutei come sinergici. Errore comune: staccare il bacino dal sedile in fondo alla discesa — se succede, riduci l'ampiezza.",
                 resp:"Inspira in discesa, espira in spinta.",
-                attrezzatura:"Alternativa al Glute Press per questo slot della scheda: a inizio sessione scegli quale dei due fare oggi — ognuno mantiene comunque il proprio storico di allenamenti separato."}},
-        {id:'hip-thrust-macchina', n:'Hip Thrust (macchina)', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min',
+                attrezzatura:"Alternativa al Glute Press per questo slot della scheda: quando arrivi a questo esercizio scegli lì per lì quale dei due fare oggi, in base a cosa trovi libero in sala — ognuno mantiene comunque il proprio storico di allenamenti separato."}},
+        {id:'hip-thrust-macchina', n:'Hip Thrust guidato', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min', gruppo:'hip-thrust',
           info:{setup:"Seduta con la parte alta della schiena appoggiata allo schienale reclinabile imbottito, cuscinetto posizionato sul bacino (appena sopra le anche, non sullo stomaco), piedi piantati per terra o sulla pedana alla larghezza dei fianchi, ginocchia a circa 90° a fine movimento. Mani sulle maniglie laterali della macchina, usate solo per stabilizzarti, non per spingere. Bacino in posizione neutra in partenza, prima di iniziare la spinta. Regola schienale e leva prima di caricare il peso.",
                 esec:"Concentrica: spingi con i talloni sollevando il bacino, portando il corpo in linea retta dalle spalle alle ginocchia, contraendo forte i glutei in alto. Eccentrica: scendi controllata senza far cadere di colpo il peso.",
                 muscolo:"Gluteo massimo come motore principale. Sensazione corretta: contrazione forte dei glutei in cima, non nella schiena bassa. Rispetto al bilanciere la macchina guida il movimento e stabilizza il busto.",
                 resp:"Inspira in discesa, espira nella spinta verso l'alto.",
-                attenzione:"Anche con la macchina mantieni lo sguardo verso l'alto/avanti e il mento leggermente rientrato per tutta la serie, senza spingere la testa indietro contro lo schienale. Lo schienale guidato riduce molto il rischio rispetto al bilanciere, ma vista la tua storia di fastidio cervicale è una buona abitudine da mantenere comunque."}},
+                attenzione:"Anche con la macchina mantieni lo sguardo verso l'alto/avanti e il mento leggermente rientrato per tutta la serie, senza spingere la testa indietro contro lo schienale. Lo schienale guidato riduce molto il rischio rispetto al bilanciere, ma vista la tua storia di fastidio cervicale è una buona abitudine da mantenere comunque.",
+                attrezzatura:"È la versione che usi di solito: schienale reclinabile con peso a stack (si sceglie con un piolo), movimento guidato su un unico binario. Se la trovi occupata, durante l'allenamento puoi scegliere al volo una delle altre due varianti qui sotto (a dischi o con bilanciere): ognuna tiene il proprio storico separato, senza mai mescolarsi con questa."}},
+        {id:'hip-thrust-dischi', n:'Hip Thrust machine (a dischi)', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min', gruppo:'hip-thrust',
+          info:{setup:"Seduta sotto la leva imbottita del macchinario a dischi (diverso da quello a piolo): il cuscinetto va posizionato sul bacino, appena sopra le anche. Schiena alta appoggiata allo schienale — spesso meno reclinabile e meno imbottito di quello della versione guidata — piedi piantati per terra o sulla pedana alla larghezza dei fianchi, ginocchia a circa 90° a fine spinta. Carica i dischi sui perni laterali PRIMA di sederti sotto la leva, per praticità e sicurezza. Mani sulle maniglie o sui braccioli laterali, usate solo per stabilizzarti.",
+                esec:"Concentrica: spingi con i talloni sollevando la leva ed estendendo le anche, portando il corpo in linea retta dalle spalle alle ginocchia, contraendo forte i glutei in alto. Eccentrica: abbassa la leva in modo controllato, senza lasciarla cadere di scatto tra una ripetizione e l'altra.",
+                muscolo:"Stesso schema di movimento (estensione dell'anca) delle altre due varianti — gluteo massimo come motore principale. Sensazione corretta: uguale a quella dell'Hip Thrust guidato, contrazione forte del gluteo in cima; se qui fai più fatica a trovare l'assetto o senti di più la schiena bassa nelle prime volte, è normale — lo schienale è meno confortevole.",
+                resp:"Inspira in discesa, espira nella spinta verso l'alto.",
+                attenzione:"Come per le altre varianti, mantieni lo sguardo verso l'alto/avanti e il mento leggermente rientrato per tutta la serie, senza spingere la testa indietro contro lo schienale. Vista la tua storia di fastidio cervicale, presta ancora più attenzione qui: lo schienale è meno guidato di quello della versione a piolo.",
+                attrezzatura:"Stesso movimento dell'Hip Thrust guidato, ma su un macchinario diverso: il carico si imposta con dischi su una leva invece che con un piolo sullo stack, e lo schienale è spesso meno regolabile — per questo la trovi più scomoda. Il peso che usi qui non è confrontabile con quello dell'altra macchina, quindi tiene un proprio storico separato: usala quando quella guidata è occupata, senza preoccuparti di 'ripartire da zero' — è solo un'altra variante, non un test."}},
+        {id:'hip-thrust-bilanciere', n:'Hip Thrust con bilanciere', s:4, sc:'4×10-12', rpe:'8', rec:180, recLabel:'3 min', gruppo:'hip-thrust',
+          info:{setup:"Parte alta della schiena (le scapole) appoggiata al bordo di una panca piana, bilanciere posizionato sopra il bacino con un cuscinetto/paraginocchia (barbell pad) per proteggere le anche dal contatto diretto con la barra. Piedi piantati per terra alla larghezza dei fianchi, leggermente più vicini al corpo di quanto sembri naturale, ginocchia che a fine spinta formeranno un angolo di circa 90°. Mani che afferrano il bilanciere ai lati del bacino, usate solo per tenerlo fermo e in linea, non per sollevarlo con le braccia. Parti con le anche abbassate verso il pavimento (senza toccarlo), mento leggermente rientrato.",
+                esec:"Concentrica: spingi con i talloni estendendo le anche verso l'alto, fino a portare il corpo in linea retta dalle spalle alle ginocchia, contraendo forte i glutei in cima e senza inarcare la schiena bassa per \"aiutarti\" — l'estensione deve venire dall'anca, non dalla zona lombare. Eccentrica: abbassa le anche in modo controllato verso il pavimento, mantenendo il bilanciere aderente al bacino per tutto il movimento.",
+                muscolo:"Gluteo massimo come motore principale, con una richiesta di stabilizzazione (core, adduttori) più alta delle due macchine, perché qui sei tu — non il macchinario — a tenere il bilanciere in equilibrio e in traiettoria. Sensazione corretta: stessa contrazione forte del gluteo in cima delle altre due varianti; se senti soprattutto la schiena bassa lavorare, il movimento sta partendo dalla lombare invece che dall'anca — riduci il carico e rallenta finché non senti il gluteo guidare la spinta.",
+                resp:"Inspira abbassando le anche, espira nella spinta verso l'alto.",
+                attenzione:"Anche qui mantieni lo sguardo verso l'alto/avanti e il mento leggermente rientrato per tutta la serie, senza estendere la testa all'indietro contro il bordo della panca. Il bilanciere non sostiene la testa come lo schienale delle macchine, quindi presta attenzione doppia vista la tua storia di fastidio cervicale — se senti anche solo un accenno di tensione al collo, fermati e valuta di tornare a una delle due varianti guidate per quel giorno.",
+                attrezzatura:"È la variante meno guidata delle tre: permette in teoria i carichi più alti, ma richiede più attenzione tecnica perché la stabilità la fornisci tu, non la macchina. Usa sempre un barbell pad sul bilanciere per proteggere il bacino, e nelle prime sessioni con questa variante parti più leggera di quanto faresti sulle macchine, anche se il numero sul bilanciere sembra poco — prima la posizione, poi il carico. Storico separato dalle altre due, come sempre."}},
         {id:'affondi-bulgari', n:'Affondi bulgari con manubri', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', perLato:true,
           info:{setup:"Piede posteriore appoggiato con il collo del piede su una panca dietro di te, gamba anteriore avanti a circa un passo e mezzo (abbastanza da poter scendere in verticale senza che il ginocchio anteriore superi troppo la punta del piede), peso sulla gamba anteriore concentrato sul centro/tallone del piede. Un manubrio per mano, braccia distese lungo i fianchi con presa neutra (palmi rivolti verso le cosce). Busto leggermente inclinato in avanti mantenendo la schiena neutra (le curve naturali della colonna, né arrotondata né inarcata), sguardo avanti.",
                 esec:"Discesa: piega il ginocchio anteriore scendendo verticalmente finché il ginocchio posteriore quasi tocca terra, senza far avanzare troppo il ginocchio oltre la punta del piede. Spinta: risali spingendo con tallone e avampiede della gamba anteriore.",
@@ -1179,7 +1205,7 @@ const WARMUP_BY_GIORNO = {
 };
 function warmupForGiorno(giornoId){ return WARMUP_BY_GIORNO[giornoId] || null; }
 /* ============== STATE ============== */
-let state = { screen:'home', cicloId:null, giornoId:null, sessionId:null, log: null, returnTo:'cicli', suggestions:{} };
+let state = { screen:'home', cicloId:null, giornoId:null, sessionId:null, log: null, returnTo:'cicli', suggestions:{}, pastLogs:[] };
 let timer = { total:90, remaining:90, running:false, intervalId:null, endAt:null };
 let saveTimeout = null;
 const app = document.getElementById('app');
@@ -1387,17 +1413,38 @@ function sessionTimeLabel(sessionId){
 }
 /* Alcuni esercizi sono ALTERNATIVI tra loro nella stessa giornata — stesso
    "slot" in scheda, stesso obiettivo muscolare — e condividono lo stesso
-   campo `gruppo` (es. Glute Press / Leg press 45° nel Giorno 1). All'inizio
-   di ogni sessione si sceglie quale dei due fare quel giorno (vedi
-   avviaConSceltaGruppi); solo quello scelto entra nel log della sessione,
-   l'altro resta semplicemente non registrato per oggi. Ogni esercizio del
-   gruppo mantiene comunque il proprio id e il proprio storico separato,
-   esattamente come un esercizio qualsiasi — scegliere l'uno o l'altro non
-   tocca mai lo storico di quello non scelto (vedi buildSuggestions). */
+   campo `gruppo` (es. Glute Press / Leg press 45° nel Giorno 1, o le tre
+   varianti di Hip Thrust). Dal 14 set 2026 la scelta di quale fare NON si
+   chiede più tutta insieme a inizio sessione: non si può sapere in anticipo
+   quale macchinario si troverà libero in palestra. Il log parte con quello
+   slot "in sospeso" (vedi pendingKey/blankLog) e la scelta si fa dentro
+   l'allenamento, quando si arriva a quell'esercizio — anche a metà sessione
+   (vedi resolvePendingChoice più sotto, in fondo al file). Una volta scelto,
+   quell'esercizio mantiene comunque il proprio id e il proprio storico
+   separato, esattamente come un esercizio qualsiasi — scegliere l'uno o
+   l'altro non tocca mai lo storico degli altri non scelti (vedi
+   suggestForSets/buildSuggestions). */
 function gruppiDiScelta(giorno){
   const map = {};
   giorno.esercizi.forEach(ex=>{ if(ex.gruppo){ (map[ex.gruppo] = map[ex.gruppo]||[]).push(ex); } });
   return Object.values(map).filter(arr=>arr.length>1);
+}
+/* Chiave sintetica usata in log.esercizi al posto di un id vero, finché la
+   scelta per quel gruppo non è stata fatta (vedi blankLog/resolvePendingChoice).
+   Non può mai collidere con un id reale di esercizio: nessun id in CICLI
+   comincia con questo prefisso. */
+const PENDING_PREFIX = '__pending__';
+function pendingKey(gruppo){ return PENDING_PREFIX + gruppo; }
+function isPendingKey(id){ return typeof id === 'string' && id.startsWith(PENDING_PREFIX); }
+function pendingGruppoFromKey(id){ return id.slice(PENDING_PREFIX.length); }
+/* Costruisce l'array di serie vuote per un esercizio (vedi blankLog per il
+   perché del doppio-lato su perLato): fattorizzato perché serve sia a
+   blankLog sia a resolvePendingChoice, per non rischiare che le due
+   costruzioni si scollino nel tempo. */
+function buildSetsFor(ex){
+  return ex.perLato
+    ? Array.from({length:ex.s*2},(_, i)=>({kg:'',reps:'',rpe:'',done:false, lato: i<ex.s?'debole':'forte'}))
+    : Array.from({length:ex.s},()=>({kg:'',reps:'',rpe:'',done:false}));
 }
 /* Numero di "slot" reali della giornata: un gruppo di esercizi alternativi
    conta come uno solo (si fa sempre e solo uno dei due), non due. */
@@ -1414,25 +1461,35 @@ function contaSlot(giorno){
    schema serie di ogni esercizio così com'è ORA — anche se in futuro la scheda
    cambia (o passa a un nuovo ciclo), questa sessione ricorderà per sempre cos'era
    stato effettivamente svolto.
-   `scelte` è una mappa {gruppo: idScelto} con la scelta di oggi per ogni
-   eventuale gruppo di esercizi alternativi; se manca (o è incompleta), si usa
-   di default la prima opzione di ciascun gruppo, così la sessione non perde
-   mai uno slot per una scelta non passata. */
+   `scelte` è una mappa {gruppo: idScelto}, usata solo per riaprire/ricostruire
+   casi particolari (di norma è sempre {}, vedi beginBlankWorkout): con la
+   scelta ancora da fare per un gruppo, quello slot entra nel log come
+   PENDING (una card "scegli quale fare oggi" al posto della card esercizio,
+   vedi renderPendingCard) invece di essere assegnato di default alla prima
+   opzione — così non si rischia mai di registrare per sbaglio l'esercizio
+   sbagliato solo perché era il primo della lista. */
 function blankLog(giorno, scelte){
-  const scelteFinali = {};
-  gruppiDiScelta(giorno).forEach(opzioni=>{ scelteFinali[opzioni[0].gruppo] = opzioni[0].id; });
-  Object.assign(scelteFinali, scelte||{});
+  const scelteFinali = Object.assign({}, scelte||{});
   const log = { date:todayLocalISO(), giornoId:giorno.id, giornoLabel:giorno.label, giornoMeta:giorno.meta, cicloId:giorno.cicloId, esercizi:{} };
+  const gruppiGestiti = new Set();
   giorno.esercizi.forEach(ex=>{
-    if(ex.gruppo && scelteFinali[ex.gruppo] !== ex.id) return; // alternativa non scelta oggi: non entra nel log
+    if(ex.gruppo){
+      const scelta = scelteFinali[ex.gruppo];
+      if(scelta){
+        if(scelta !== ex.id) return; // alternativa non scelta: non entra nel log
+        // scelto: prosegue sotto come un esercizio normale
+      } else {
+        if(gruppiGestiti.has(ex.gruppo)) return; // placeholder già inserito per questo gruppo (dalla prima alternativa incontrata)
+        gruppiGestiti.add(ex.gruppo);
+        log.esercizi[pendingKey(ex.gruppo)] = { pending:true, gruppo:ex.gruppo };
+        return;
+      }
+    }
     // Gli esercizi perLato (un lato alla volta) hanno il doppio delle serie:
     // le prime ex.s sono etichettate 'debole', le successive ex.s 'forte' —
     // così in Workout compaiono come due sezioni separate, nell'ordine
     // debole poi forte, e non si rischia di saltare un lato.
-    const sets = ex.perLato
-      ? Array.from({length:ex.s*2},(_, i)=>({kg:'',reps:'',rpe:'',done:false, lato: i<ex.s?'debole':'forte'}))
-      : Array.from({length:ex.s},()=>({kg:'',reps:'',rpe:'',done:false}));
-    log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets };
+    log.esercizi[ex.id] = { name:ex.n, sc:ex.sc, sets:buildSetsFor(ex) };
   });
   return log;
 }
@@ -1445,10 +1502,10 @@ function blankLog(giorno, scelte){
    ordinato dalla più recente: per ogni esercizio si scorre finché non si
    trova la prima sessione che lo contiene. Questo è importante per gli
    esercizi ALTERNATIVI tra loro (stesso `gruppo`, es. Glute Press / Leg
-   press): se l'ultima sessione ha usato l'uno, il suggerimento per l'altro
-   non resta vuoto solo per questo, ma va a cercare la sua propria ultima
-   volta — i due non si mescolano mai, perché restano id diversi con
-   sessioni proprie.
+   press, o le tre varianti di Hip Thrust): se l'ultima sessione ha usato
+   uno di loro, il suggerimento per un altro non resta vuoto solo per
+   questo, ma va a cercare la sua propria ultima volta — non si mescolano
+   mai, perché restano id diversi con sessioni proprie.
    Allineamento serie-per-serie per indice; per gli esercizi perLato
    l'allineamento e' per posizione ALL'INTERNO dello stesso lato (debole con
    debole, forte con forte), non per indice assoluto, altrimenti con un
@@ -1458,35 +1515,43 @@ function blankLog(giorno, scelte){
    quelle righe (restano i placeholder generici "0"/"–" di sempre). Non
    scrive mai nulla nei campi: sono solo placeholder, quindi un dato vecchio
    non puo' mai essere salvato per sbaglio come se fosse di oggi senza che
-   Silvana lo digiti lei stessa. */
+   Silvana lo digiti lei stessa.
+   La logica per UN esercizio è fattorizzata in suggestForSets: serve anche
+   fuori da qui, quando si risolve una scelta in sospeso a metà allenamento
+   (vedi resolvePendingChoice) e a quel punto va calcolato il suggerimento
+   solo per l'esercizio appena scelto, non per tutto il log. */
+function suggestForSets(curSets, exId, pastLogs){
+  const logs = (pastLogs||[]).filter(l=>l && l.esercizi);
+  let prevEx = null;
+  for(const log of logs){
+    const cand = log.esercizi[exId];
+    if(cand && cand.sets && cand.sets.length){ prevEx = cand; break; }
+  }
+  if(!prevEx) return null;
+  const hasLato = curSets.some(s=>s.lato);
+  const arr = curSets.map((s,i)=>{
+    let src;
+    if(hasLato){
+      const sameLato = prevEx.sets.filter(r=>r.lato===s.lato);
+      const posInLato = curSets.slice(0,i+1).filter(r=>r.lato===s.lato).length - 1;
+      src = sameLato[posInLato];
+    } else {
+      src = prevEx.sets[i];
+    }
+    if(!src) return null;
+    const hasVal = (src.kg!=='' && src.kg!=null) || (src.reps!=='' && src.reps!=null);
+    if(!hasVal) return null;
+    return { kg: src.kg||'', reps: src.reps||'', rpe: src.rpe||'' };
+  });
+  return arr.some(Boolean) ? arr : null;
+}
 function buildSuggestions(newLog, pastLogs){
   const sug = {};
-  const logs = (pastLogs||[]).filter(l=>l && l.esercizi);
-  if(!logs.length) return sug;
   Object.keys(newLog.esercizi).forEach(exId=>{
-    let prevEx = null;
-    for(const log of logs){
-      const cand = log.esercizi[exId];
-      if(cand && cand.sets && cand.sets.length){ prevEx = cand; break; }
-    }
-    if(!prevEx) return;
-    const curSets = newLog.esercizi[exId].sets;
-    const hasLato = curSets.some(s=>s.lato);
-    const arr = curSets.map((s,i)=>{
-      let src;
-      if(hasLato){
-        const sameLato = prevEx.sets.filter(r=>r.lato===s.lato);
-        const posInLato = curSets.slice(0,i+1).filter(r=>r.lato===s.lato).length - 1;
-        src = sameLato[posInLato];
-      } else {
-        src = prevEx.sets[i];
-      }
-      if(!src) return null;
-      const hasVal = (src.kg!=='' && src.kg!=null) || (src.reps!=='' && src.reps!=null);
-      if(!hasVal) return null;
-      return { kg: src.kg||'', reps: src.reps||'', rpe: src.rpe||'' };
-    });
-    if(arr.some(Boolean)) sug[exId] = arr;
+    const entry = newLog.esercizi[exId];
+    if(entry.pending) return; // scelta ancora da fare: nessun suggerimento finché non si sceglie (vedi resolvePendingChoice)
+    const arr = suggestForSets(entry.sets, exId, pastLogs);
+    if(arr) sug[exId] = arr;
   });
   return sug;
 }
@@ -7117,7 +7182,11 @@ async function startNewWorkout(giornoId){
     // perché non basta la sola sessione immediatamente precedente).
     pastLogs = sessions.filter(s=>s.date!==today).map(s=>s.log);
   }catch(e){}
-  const proceed = ()=> avviaConSceltaGruppi(giornoId, giorno, pastLogs);
+  // Non si chiede più a inizio sessione quale variante fare per gli eventuali
+  // esercizi a scelta (es. Hip Thrust, Glute Press/Leg press): si parte
+  // sempre diretti, e quegli slot restano "in sospeso" finché non si
+  // sceglie durante l'allenamento stesso (vedi blankLog/renderPendingCard).
+  const proceed = ()=> beginBlankWorkout(giornoId, giorno, pastLogs, {});
   if(todaySession){
     showConfirm(
       'Hai già registrato un allenamento di questo tipo oggi. Sei sicura di voler ricominciare lo stesso allenamento nello stesso giorno?',
@@ -7142,35 +7211,13 @@ async function startNewWorkout(giornoId){
   }
   proceed();
 }
-/* Se la giornata ha esercizi alternativi tra loro (stesso `gruppo`, es.
-   Glute Press / Leg press 45° nel Giorno 1), chiede con un rapido tocco
-   quale fare oggi prima di iniziare — uno per gruppo, in sequenza se ce ne
-   fosse più di uno in futuro. Se non ci sono gruppi in questa giornata,
-   parte diretta come prima. */
-function avviaConSceltaGruppi(giornoId, giorno, pastLogs){
-  const gruppi = gruppiDiScelta(giorno);
-  if(!gruppi.length){ beginBlankWorkout(giornoId, giorno, pastLogs, {}); return; }
-  const scelte = {};
-  const chiediProssimo = (i)=>{
-    if(i >= gruppi.length){ beginBlankWorkout(giornoId, giorno, pastLogs, scelte); return; }
-    const opzioni = gruppi[i];
-    const a = opzioni[0], b = opzioni[1];
-    showConfirm(
-      `Cosa vuoi fare oggi: ${a.n} o ${b.n}?`,
-      ()=>{ scelte[a.gruppo] = a.id; chiediProssimo(i+1); },
-      a.n,
-      b.n,
-      ()=>{ scelte[a.gruppo] = b.id; chiediProssimo(i+1); }
-    );
-  };
-  chiediProssimo(0);
-}
 function beginBlankWorkout(giornoId, giorno, pastLogs, scelte){
   state.giornoId = giornoId;
   state.cicloId = giorno.cicloId;
   state.sessionId = generateSessionId();
   state.returnTo = 'cicli';
   state.log = blankLog(giorno, scelte);
+  state.pastLogs = pastLogs || [];
   state.suggestions = buildSuggestions(state.log, pastLogs);
   state.screen = 'workout';
   renderWorkout();
@@ -7180,6 +7227,7 @@ async function openExistingSession(giornoId, sessionId){
   state.sessionId = sessionId;
   state.returnTo = 'cronologia';
   state.suggestions = {};
+  state.pastLogs = []; // qui non si ricalcolano suggerimenti: vedi resolvePendingChoice
   try{
     const res = await window.storage.get(logKey(giornoId, sessionId), false);
     state.log = (res && res.value) ? JSON.parse(res.value) : null;
@@ -7187,16 +7235,22 @@ async function openExistingSession(giornoId, sessionId){
   const giorno = giornoById(giornoId);
   state.cicloId = (state.log && state.log.cicloId) || (giorno && giorno.cicloId) || null;
   if(!state.log){
-    state.log = giorno ? blankLog(giorno) : { date:todayLocalISO(), giornoId, giornoLabel:'', giornoMeta:'', cicloId:null, esercizi:{} };
+    state.log = giorno ? blankLog(giorno, {}) : { date:todayLocalISO(), giornoId, giornoLabel:'', giornoMeta:'', cicloId:null, esercizi:{} };
   }
   state.screen = 'workout';
   renderWorkout();
 }
 /* Lista di esercizi da mostrare per la sessione corrente: sempre derivata dagli id
    effettivamente presenti nel log (non dalla scheda "live"), così una sessione
-   passata mostra sempre esattamente ciò che era stato registrato quel giorno. */
+   passata mostra sempre esattamente ciò che era stato registrato quel giorno.
+   Le chiavi "in sospeso" (vedi pendingKey) sono segnalate con pending:true —
+   non hanno una definizione "live" vera e propria, verranno risolte con
+   renderPendingCard/resolvePendingChoice. */
 function buildDisplayList(){
-  return Object.keys(state.log.esercizi).map(id=>({ id, live: EXBYID[id] || null }));
+  return Object.keys(state.log.esercizi).map(id=>{
+    if(isPendingKey(id)) return { id, pending:true, live:null };
+    return { id, pending:false, live: EXBYID[id] || null };
+  });
 }
 /* Percorre la lista da mostrare e accorpa in un'unica card superset ogni
    coppia di esercizi CONSECUTIVI che condividono lo stesso ex.superset
@@ -7204,14 +7258,18 @@ function buildDisplayList(){
    scheda, quindi il primo della coppia è sempre quello da fare per primo in
    ogni giro. Se manca la definizione "live" di uno dei due (es. esercizio
    rimosso dalla scheda in una sessione storica) o uno dei due è perLato
-   (combinazione non gestita), si ricade sulle due card singole di sempre. */
+   (combinazione non gestita), si ricade sulle due card singole di sempre.
+   Una voce "in sospeso" (scelta di gruppo non ancora fatta, es. quale
+   variante di Hip Thrust) diventa una card dedicata (renderPendingCard):
+   non può mai far parte di un superset. */
 function renderExerciseList(displayList){
   let html = '';
   for(let i=0;i<displayList.length;i++){
     const entry = displayList[i];
+    if(entry.pending){ html += renderPendingCard(entry.id); continue; }
     const next = displayList[i+1];
     const exLive = entry.live;
-    const nextLive = next && next.live;
+    const nextLive = next && !next.pending && next.live;
     const isPaired = !!(exLive && exLive.superset && nextLive && nextLive.superset === exLive.superset
       && !exLive.perLato && !nextLive.perLato);
     if(isPaired){
@@ -7325,6 +7383,74 @@ function exNameBtnHtml(id, name){
       <span class="info-ico">${ICO_EX_INFO}</span>
     </button>
   `;
+}
+/* Etichetta breve mostrata in cima alla card "in sospeso" per ciascun
+   gruppo di esercizi a scelta — se un gruppo futuro non è in questa mappa,
+   si ripiega sui nomi delle singole opzioni uniti da "/". */
+const GRUPPO_LABEL = { 'lp-gp':'Glute Press / Leg press 45°', 'hip-thrust':'Hip Thrust' };
+/* Card mostrata al posto dell'esercizio per uno slot "in sospeso" (scelta di
+   gruppo non ancora fatta, vedi pendingKey/blankLog): elenca le opzioni
+   disponibili per QUEL gruppo, lette dalla scheda live del giorno corrente
+   (qui, a differenza del resto della lista esercizi, serve davvero la
+   scheda live: finché non si sceglie non c'è ancora nessun id nel log da
+   cui ripartire). Un tocco su un'opzione chiama resolvePendingChoice, che
+   sostituisce questa voce con la card normale dell'esercizio scelto, senza
+   spostarla di posizione nella lista. */
+function renderPendingCard(pendingId){
+  const gruppo = pendingGruppoFromKey(pendingId);
+  const giorno = giornoById(state.giornoId);
+  const opzioni = (giorno ? gruppiDiScelta(giorno) : []).find(arr=>arr[0].gruppo===gruppo) || [];
+  if(!opzioni.length){
+    return `
+      <div class="ex-card">
+        <div class="ex-head"><span class="ex-name-plain">Scelta non più disponibile in scheda</span></div>
+      </div>
+    `;
+  }
+  const label = GRUPPO_LABEL[gruppo] || opzioni.map(o=>o.n).join(' / ');
+  return `
+    <div class="ex-card pending-card" data-pending="${pendingId}">
+      <div class="ex-head">
+        <div class="ex-title-row"><span class="ex-name-plain">${label}</span></div>
+        <div class="ex-note">Scegli quale fai oggi — anche adesso, davanti al macchinario libero.</div>
+      </div>
+      <div class="pending-options">
+        ${opzioni.map(o=>`
+          <button class="pending-opt" data-choose-ex="${o.id}">
+            <span class="pending-opt-main">
+              <span class="pending-opt-name">${o.n}</span>
+              ${o.sc ? `<span class="pending-opt-sc">${o.sc}</span>` : ''}
+            </span>
+            ${ICO.chev}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+/* Risolve una scelta in sospeso: sostituisce la voce pending nel log con
+   l'esercizio scelto, mantenendo la POSIZIONE nella lista (ricostruendo
+   l'oggetto esercizi nello stesso ordine di chiavi, sostituendo solo quella
+   in questione) — così l'esercizio scelto resta dove si trovava nella
+   scheda, invece di finire in fondo per come JavaScript ordina le chiavi di
+   un oggetto. Calcola anche il suo suggerimento (kg/rip/RPE dell'ultima
+   volta), usando state.pastLogs salvato da beginBlankWorkout: se la
+   sessione è stata ripresa da Cronologia (state.pastLogs è vuoto in quel
+   caso) semplicemente non ci sarà un suggerimento, come già succede oggi
+   per qualunque esercizio quando si modifica una sessione passata. */
+function resolvePendingChoice(pendingId, chosenId){
+  const ex = EXBYID[chosenId];
+  if(!ex) return;
+  const nuovaVoce = { name:ex.n, sc:ex.sc, sets:buildSetsFor(ex) };
+  const riordinato = {};
+  Object.keys(state.log.esercizi).forEach(k=>{
+    riordinato[k === pendingId ? chosenId : k] = k === pendingId ? nuovaVoce : state.log.esercizi[k];
+  });
+  state.log.esercizi = riordinato;
+  const sug = suggestForSets(nuovaVoce.sets, chosenId, state.pastLogs);
+  if(sug) state.suggestions[chosenId] = sug;
+  queueSave();
+  renderWorkout();
 }
 function renderExercise(entry){
   const id = entry.id;
@@ -7493,6 +7619,15 @@ function wireExerciseEvents(){
     btn.addEventListener('click', ()=>{
       const id = btn.dataset.info;
       if(EXBYID[id]) openExerciseInfo(EXBYID[id]);
+    });
+  });
+  // Card "in sospeso" (scelta di gruppo non ancora fatta): un tocco su una
+  // delle opzioni risolve la scelta (vedi resolvePendingChoice), che
+  // ridisegna tutto lo schermo — non serve altro binding qui.
+  app.querySelectorAll('.pending-card').forEach(card=>{
+    const pendingId = card.dataset.pending;
+    card.querySelectorAll('.pending-opt').forEach(btn=>{
+      btn.addEventListener('click', ()=> resolvePendingChoice(pendingId, btn.dataset.chooseEx));
     });
   });
   // bindRow lavora su UNA riga, usando il suo data-ex e data-si: ogni riga
