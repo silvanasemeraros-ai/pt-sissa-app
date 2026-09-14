@@ -407,6 +407,17 @@ input{font-family:inherit;}
 .lato-label.debole::after{background:rgba(255,92,57,0.3);}
 .lato-label.forte{color:var(--teal);}
 .lato-label.forte::after{background:rgba(63,199,184,0.3);}
+.superset-card{border-color:rgba(255,92,57,0.3);}
+.ss-tag{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:0.08em;text-transform:uppercase;
+  font-weight:700;margin:16px 0 6px;display:flex;align-items:center;gap:8px;
+}
+.ss-tag:first-child{margin-top:0;}
+.ss-tag::after{content:"";flex:1;height:1px;background:var(--border);}
+.ss-tag.a{color:var(--accent);}
+.ss-tag.a::after{background:rgba(255,92,57,0.3);}
+.ss-tag.b{color:var(--teal);}
+.ss-tag.b::after{background:rgba(63,199,184,0.3);}
 .set-table{padding:6px 16px 12px;}
 .set-row{
   display:grid;grid-template-columns:22px 1fr 1fr 1fr 34px;gap:6px;align-items:center;
@@ -1008,12 +1019,12 @@ const CICLI = [
                 esec:"Tirata: tira la corda verso il viso separando le due estremità, gomiti alti e indietro, ruotando le spalle verso l'esterno. Ritorno: lascia tornare le braccia in avanti controllate.",
                 muscolo:"Deltoide posteriore ed extrarotatori della spalla: l'esercizio più utile in scheda contro le spalle chiuse in avanti da lavoro al computer. Cerca la sensazione dietro le spalle e tra le scapole.",
                 resp:"Espira nella tirata, inspira nel ritorno."}},
-        {id:'pushdown-tricipiti', n:'Pushdown tricipiti', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'Superset con hammer curl · 60″ tra i due, 90″ dopo il giro',
+        {id:'pushdown-tricipiti', n:'Pushdown tricipiti', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'Superset con hammer curl · 60″ tra i due, 90″ dopo il giro', superset:'g2-tricipiti-bicipiti',
           info:{setup:"In piedi davanti al cavo alto, piedi alla larghezza dei fianchi o uno leggermente avanti, busto eretto con schiena neutra e leggermente inclinato in avanti dai fianchi. Presa sulla barra o corda, gomiti fissi ai lati del busto per tutta la serie, senza farli allontanare durante la discesa.",
                 esec:"Concentrica: estendi gli avambracci verso il basso senza muovere i gomiti, contraendo il tricipite in fondo. Eccentrica: torna su controllata fino a circa 90° di flessione del gomito.",
                 muscolo:"Tricipite in isolamento. Se senti le spalle lavorare più delle braccia, i gomiti si stanno allontanando dai fianchi.",
                 resp:"Espira estendendo verso il basso, inspira tornando su."}},
-        {id:'hammer-curl-manubri', n:'Hammer curl con manubri', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'Superset con pushdown · 60″ tra i due, 90″ dopo il giro',
+        {id:'hammer-curl-manubri', n:'Hammer curl con manubri', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'Superset con pushdown · 60″ tra i due, 90″ dopo il giro', superset:'g2-tricipiti-bicipiti',
           info:{setup:"In piedi con i piedi alla larghezza dei fianchi, schiena neutra ed eretta, addome leggermente contratto per non oscillare. Un manubrio per mano con presa neutra (palmi l'uno verso l'altro), gomiti vicini al busto e fermi per tutta la serie.",
                 esec:"Concentrica: piega i gomiti portando i manubri verso le spalle, senza oscillare il busto. Eccentrica: scendi controllata fino quasi alla distensione completa.",
                 muscolo:"Bicipite e brachiale, con la presa neutra che coinvolge di più l'avambraccio rispetto al curl tradizionale. Con un carico ancora leggero su questo esercizio, l'obiettivo è costruire tecnica pulita prima di aggiungere peso.",
@@ -1089,12 +1100,12 @@ const CICLI = [
                 esec:"Salita: solleva il manubrio lateralmente fino all'altezza della spalla, guidando con il gomito. Discesa: scendi controllata senza far toccare il manubrio alla gamba tra una ripetizione e l'altra.",
                 muscolo:"Deltoide laterale — l'inclinazione della panca elimina lo slancio del busto e isola meglio la spalla rispetto alla versione in piedi del Giorno 2. Corretto se senti un forte affaticamento localizzato già dopo poche ripetizioni.",
                 resp:"Espira in salita, inspira in discesa."}},
-        {id:'french-press-manubri', n:'French press con manubri', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60-90 sec', note:'Superset con biceps curl · 60-90″ dopo il giro',
+        {id:'french-press-manubri', n:'French press con manubri', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60-90 sec', note:'Superset con biceps curl · 60-90″ dopo il giro', superset:'g4-tricipiti-bicipiti',
           info:{setup:"Sdraiata su panca (o seduta), manubri tenuti sopra la testa con gomiti puntati verso l'alto e vicini tra loro. Se sei sdraiata, schiena e bacino restano appoggiati alla panca nella loro curva naturale per tutta la serie, senza inarcarti per aiutarti a spingere: se senti i fianchi sollevarsi dalla panca, il peso è troppo alto. Piedi ben appoggiati a terra (o sulla panca se preferisci), per avere un punto d'appoggio stabile.",
                 esec:"Eccentrica: piega i gomiti abbassando il manubrio dietro la testa, gomiti fermi e puntati verso il soffitto. Concentrica: estendi le braccia tornando su, contraendo i tricipiti.",
                 muscolo:"Tricipite (soprattutto il capo lungo, che si allunga di più con le braccia sopra la testa). Se senti le spalle lavorare più delle braccia, i gomiti si stanno allargando: tienili puntati avanti/in alto.",
                 resp:"Inspira scendendo, espira estendendo verso l'alto."}},
-        {id:'biceps-curl-panca-45', n:'Biceps curl panca 45°', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', note:'Superset con french press · 60-90″ dopo il giro',
+        {id:'biceps-curl-panca-45', n:'Biceps curl panca 45°', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', note:'Superset con french press · 60-90″ dopo il giro', superset:'g4-tricipiti-bicipiti',
           info:{setup:"Seduta su panca inclinata a 45° (o sdraiata a pancia in giù), schiena ben appoggiata contro lo schienale nella sua curva naturale, piedi appoggiati a terra. Braccia che pendono libere lungo i fianchi, un manubrio per mano con presa neutra (palmi rivolti verso le cosce) in partenza.",
                 esec:"Concentrica: piega i gomiti portando i manubri verso le spalle, senza staccare i gomiti dal corpo né usare slancio. Eccentrica: distendi controllata fino a braccia quasi distese, sfruttando l'inclinazione per un buon allungamento.",
                 muscolo:"Bicipite in isolamento, con l'inclinazione della panca che aumenta l'allungamento rispetto al curl in piedi. Con un carico ancora leggero su questo esercizio, l'obiettivo è costruire forza con tecnica pulita prima di rincorrere il peso.",
@@ -1339,6 +1350,7 @@ const ICO_MUSCLE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" s
 const ICO_BREATH = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 12a6 6 0 1 0 12 0 6 6 0 1 0-12 0"/><path d="M12 8v8"/></svg>';
 const ICO_WARN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
 const ICO_TOOL = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94z"/></svg>';
+const ICO_EX_INFO = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>';
 function openExerciseInfo(ex){
   document.getElementById('infoTitle').textContent = ex.n;
   const info = ex.info || {};
@@ -7185,6 +7197,31 @@ async function openExistingSession(giornoId, sessionId){
 function buildDisplayList(){
   return Object.keys(state.log.esercizi).map(id=>({ id, live: EXBYID[id] || null }));
 }
+/* Percorre la lista da mostrare e accorpa in un'unica card superset ogni
+   coppia di esercizi CONSECUTIVI che condividono lo stesso ex.superset
+   (vedi renderSupersetCard) — sempre nell'ordine in cui compaiono nella
+   scheda, quindi il primo della coppia è sempre quello da fare per primo in
+   ogni giro. Se manca la definizione "live" di uno dei due (es. esercizio
+   rimosso dalla scheda in una sessione storica) o uno dei due è perLato
+   (combinazione non gestita), si ricade sulle due card singole di sempre. */
+function renderExerciseList(displayList){
+  let html = '';
+  for(let i=0;i<displayList.length;i++){
+    const entry = displayList[i];
+    const next = displayList[i+1];
+    const exLive = entry.live;
+    const nextLive = next && next.live;
+    const isPaired = !!(exLive && exLive.superset && nextLive && nextLive.superset === exLive.superset
+      && !exLive.perLato && !nextLive.perLato);
+    if(isPaired){
+      html += renderSupersetCard(entry, next);
+      i++; // la seconda metà della coppia è già stata resa dentro la card
+    } else {
+      html += renderExercise(entry);
+    }
+  }
+  return html;
+}
 function renderWorkout(){
   closeAllOverlays();
   const giorno = giornoById(state.giornoId);
@@ -7210,7 +7247,7 @@ function renderWorkout(){
         <span style="margin-left:auto;flex-shrink:0;color:var(--teal);">${ICO.chev}</span>
       </button>
       ${headerSub ? `<div class="section-label">${headerSub}</div>` : ''}
-      ${displayList.map(entry=>renderExercise(entry)).join('')}
+      ${renderExerciseList(displayList)}
       <button class="cta" id="btnSaveManual">${saveLabel}</button>
     </div>
     <div class="timer-bar">
@@ -7278,6 +7315,16 @@ function openWarmupInfo(giornoId, headerLabel, headerMeta){
   }
   document.getElementById('infoSheet').classList.add('open');
 }
+/* Bottone nome esercizio + icona info: fattorizzato perché usato sia dalle
+   card singole sia (due volte) dalle card superset qui sotto. */
+function exNameBtnHtml(id, name){
+  return `
+    <button class="ex-name-btn" data-info="${id}">
+      <span class="ex-name">${name}</span>
+      <span class="info-ico">${ICO_EX_INFO}</span>
+    </button>
+  `;
+}
 function renderExercise(entry){
   const id = entry.id;
   const ex = entry.live;
@@ -7296,12 +7343,7 @@ function renderExercise(entry){
     <div class="ex-card" data-ex="${id}">
       <div class="ex-head">
         <div class="ex-title-row">
-          ${ex ? `
-          <button class="ex-name-btn" data-info="${id}">
-            <span class="ex-name">${name}</span>
-            <span class="info-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg></span>
-          </button>
-          ` : `<span class="ex-name-plain">${name}</span>`}
+          ${ex ? exNameBtnHtml(id, name) : `<span class="ex-name-plain">${name}</span>`}
           <div class="ex-badges">
             ${sc ? `<div class="ex-badge">${sc}</div>` : ''}
             ${ex && ex.rpe && ex.rpe !== '-' ? `<div class="ex-badge rpe">RPE ${ex.rpe}</div>` : ''}
@@ -7319,7 +7361,7 @@ function renderExercise(entry){
       ${isPerLato ? renderLatoBlock('debole', LATO_DEBOLE, rows, id) + renderLatoBlock('forte', LATO_FORTE, rows, id) : `
       <div class="set-table">
         <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span>RPE</span><span></span></div>
-        <div class="rows-container">${rows.map((r,si)=>renderSetRow(r,si,sugFor(id,si))).join('')}</div>
+        <div class="rows-container">${rows.map((r,si)=>renderSetRow(r,si,sugFor(id,si),id)).join('')}</div>
       </div>
       <div class="ex-actions">
         <button class="set-btn" data-act="add">+ Aggiungi serie</button>
@@ -7341,7 +7383,7 @@ function renderLatoBlock(lato, label, rows, exId){
       <div class="lato-label ${lato}">Lato ${lato} — ${label}</div>
       <div class="set-table">
         <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span>RPE</span><span></span></div>
-        <div class="rows-container" data-lato="${lato}">${filtered.map(x=>renderSetRow(x.r, x.i, sugFor(exId, x.i))).join('')}</div>
+        <div class="rows-container" data-lato="${lato}">${filtered.map(x=>renderSetRow(x.r, x.i, sugFor(exId, x.i), exId)).join('')}</div>
       </div>
       <div class="ex-actions">
         <button class="set-btn" data-act="add" data-lato="${lato}">+ Aggiungi serie</button>
@@ -7350,7 +7392,76 @@ function renderLatoBlock(lato, label, rows, exId){
     </div>
   `;
 }
-function renderSetRow(r, si, sug){
+/* Card combinata per una coppia di esercizi in superset (stesso valore in
+   ex.superset per entrambi, es. Pushdown tricipiti + Hammer curl): invece di
+   due card separate (tutte le serie della prima, poi tutte le serie della
+   seconda) mostra le serie INTRECCIATE round per round, nello stesso ordine
+   in cui si eseguono davvero in palestra — serie 1 del primo, serie 1 del
+   secondo, serie 2 del primo, ecc. — così in app si vede chiaramente che i
+   due esercizi vanno fatti alternati, non uno dopo l'altro per intero.
+   Ogni riga porta il proprio data-ex (vedi renderSetRow): il timer di
+   recupero avviato quando si spunta "fatta" usa quindi sempre il recupero
+   giusto per quell'esercizio specifico (es. 60″ dopo il primo, 90″ dopo il
+   secondo, prima di ripartire dal giro successivo). */
+function renderSupersetCard(entryA, entryB){
+  const idA = entryA.id, idB = entryB.id;
+  const exA = entryA.live, exB = entryB.live;
+  const rowsA = state.log.esercizi[idA].sets;
+  const rowsB = state.log.esercizi[idB].sets;
+  const giri = Math.max(rowsA.length, rowsB.length);
+  let roundsHtml = '';
+  for(let i=0;i<giri;i++){
+    if(i < rowsA.length){
+      roundsHtml += `
+        <div class="ss-tag a">${exA.n} — giro ${i+1}</div>
+        ${renderSetRow(rowsA[i], i, sugFor(idA,i), idA)}
+      `;
+    }
+    if(i < rowsB.length){
+      roundsHtml += `
+        <div class="ss-tag b">${exB.n} — giro ${i+1}</div>
+        ${renderSetRow(rowsB[i], i, sugFor(idB,i), idB)}
+      `;
+    }
+  }
+  return `
+    <div class="ex-card superset-card" data-superset-a="${idA}" data-superset-b="${idB}">
+      <div class="ex-head">
+        <div class="ex-title-row">
+          ${exNameBtnHtml(idA, exA.n)}
+          <div class="ex-badges">
+            <div class="ex-badge">Superset</div>
+            ${exA.sc ? `<div class="ex-badge">${exA.sc}</div>` : ''}
+          </div>
+        </div>
+        <div class="ex-title-row" style="margin-top:8px;">
+          ${exNameBtnHtml(idB, exB.n)}
+          <div class="ex-badges">
+            ${exB.sc ? `<div class="ex-badge">${exB.sc}</div>` : ''}
+          </div>
+        </div>
+        <div class="ex-note">Superset: si alternano i due esercizi ad ogni giro (una serie dell'uno, poi una serie dell'altro), non prima uno per intero e poi l'altro.</div>
+      </div>
+      <div class="rec-row">
+        <span class="rlabel">Dopo ${exA.n}: <b>${exA.recLabel}</b>, poi ${exB.n}</span>
+        <button class="rec-start" data-rec="${exA.rec}" data-name="${exA.n}">${ICO.play} avvia</button>
+      </div>
+      <div class="rec-row">
+        <span class="rlabel">Dopo ${exB.n}: <b>${exB.recLabel}</b>, poi il giro successivo</span>
+        <button class="rec-start" data-rec="${exB.rec}" data-name="${exB.n}">${ICO.play} avvia</button>
+      </div>
+      <div class="set-table">
+        <div class="col-labels"><span></span><span>Kg</span><span>Rip.</span><span>RPE</span><span></span></div>
+        <div class="rows-container">${roundsHtml}</div>
+      </div>
+      <div class="ex-actions">
+        <button class="set-btn" data-act="add-round">+ Aggiungi giro</button>
+        <button class="set-btn" data-act="remove-round">− Rimuovi ultimo giro</button>
+      </div>
+    </div>
+  `;
+}
+function renderSetRow(r, si, sug, exId){
   // sug (se presente) sono i kg/rip/RPE dell'ultima sessione precedente per
   // questa stessa serie: mostrati come placeholder leggero (grigio, sparisce
   // appena si scrive), mai come valore gia' scritto nel campo -- cosi'
@@ -7360,7 +7471,7 @@ function renderSetRow(r, si, sug){
   const phReps = (sug && sug.reps !== '' && sug.reps != null) ? sug.reps : '0';
   const phRpe = (sug && sug.rpe) ? sug.rpe : '–';
   return `
-    <div class="set-row" data-si="${si}">
+    <div class="set-row" data-si="${si}" data-ex="${exId}">
       <span class="set-idx">${si+1}</span>
       <input type="number" inputmode="decimal" step="0.5" placeholder="${phKg}" value="${r.kg}" data-f="kg">
       <input type="number" inputmode="numeric" step="1" placeholder="${phReps}" value="${r.reps}" data-f="reps">
@@ -7383,38 +7494,42 @@ function wireExerciseEvents(){
       if(EXBYID[id]) openExerciseInfo(EXBYID[id]);
     });
   });
-  app.querySelectorAll('.ex-card').forEach(card=>{
-    const exId = card.dataset.ex;
-    // bindRows lavora su TUTTE le righe della card (una o due sezioni lato),
-    // usando sempre l'indice vero data-si nell'array sets — così funziona
-    // identico sia per gli esercizi normali sia per quelli perLato.
-    function bindRows(){
-      card.querySelectorAll('.set-row').forEach(row=>{
-        const si = parseInt(row.dataset.si);
-        row.querySelectorAll('input').forEach(inp=>{
-          inp.addEventListener('input', ()=>{
-            state.log.esercizi[exId].sets[si][inp.dataset.f] = inp.value;
-            queueSave();
-          });
-        });
-        const doneBtn = row.querySelector('.set-done');
-        doneBtn.addEventListener('click', ()=>{
-          const nowDone = !state.log.esercizi[exId].sets[si].done;
-          state.log.esercizi[exId].sets[si].done = nowDone;
-          doneBtn.classList.toggle('on');
-          queueSave();
-          // Segnare una serie come fatta avvia (o fa ripartire da capo, se
-          // era gia' in corso) il timer di recupero specifico di quell'
-          // esercizio: ogni esercizio ha la sua pausa consigliata, quindi
-          // non serve piu' premere manualmente "avvia" dopo ogni serie.
-          if(nowDone){
-            const exLive = EXBYID[exId];
-            if(exLive) startTimerWithDuration(exLive.rec, exLive.n);
-          }
-        });
+  // bindRow lavora su UNA riga, usando il suo data-ex e data-si: ogni riga
+  // (card singola, sezione lato, o metà di una coppia superset) porta ormai
+  // sempre il proprio esercizio, quindi il binding è identico ovunque e nei
+  // superset il timer di recupero avviato da "fatta" è sempre quello giusto
+  // per QUELL'esercizio (es. 60″ dopo il primo, 90″ dopo il secondo) invece
+  // che quello, unico, della card.
+  function bindRow(row){
+    const exId = row.dataset.ex;
+    const si = parseInt(row.dataset.si);
+    row.querySelectorAll('input').forEach(inp=>{
+      inp.addEventListener('input', ()=>{
+        state.log.esercizi[exId].sets[si][inp.dataset.f] = inp.value;
+        queueSave();
       });
-    }
-    bindRows();
+    });
+    const doneBtn = row.querySelector('.set-done');
+    doneBtn.addEventListener('click', ()=>{
+      const nowDone = !state.log.esercizi[exId].sets[si].done;
+      state.log.esercizi[exId].sets[si].done = nowDone;
+      doneBtn.classList.toggle('on');
+      queueSave();
+      // Segnare una serie come fatta avvia (o fa ripartire da capo, se
+      // era gia' in corso) il timer di recupero specifico di quell'
+      // esercizio: ogni esercizio ha la sua pausa consigliata, quindi
+      // non serve piu' premere manualmente "avvia" dopo ogni serie.
+      if(nowDone){
+        const exLive = EXBYID[exId];
+        if(exLive) startTimerWithDuration(exLive.rec, exLive.n);
+      }
+    });
+  }
+  app.querySelectorAll('.set-row').forEach(bindRow);
+
+  // Card normali (singole o perLato): stesso +/- serie di sempre.
+  app.querySelectorAll('.ex-card:not(.superset-card)').forEach(card=>{
+    const exId = card.dataset.ex;
     card.querySelectorAll('.set-btn').forEach(btn=>{
       btn.addEventListener('click', ()=>{
         const arr = state.log.esercizi[exId].sets;
@@ -7444,14 +7559,42 @@ function wireExerciseEvents(){
         card.querySelectorAll('.rows-container').forEach(rc=>{
           const rcLato = rc.dataset.lato;
           const filtered = arr.map((r,i)=>({r,i})).filter(x=> rcLato ? x.r.lato===rcLato : true);
-          rc.innerHTML = filtered.map(x=>renderSetRow(x.r, x.i, sugFor(exId, x.i))).join('');
+          rc.innerHTML = filtered.map(x=>renderSetRow(x.r, x.i, sugFor(exId, x.i), exId)).join('');
+          rc.querySelectorAll('.set-row').forEach(bindRow);
         });
-        bindRows();
         queueSave();
       });
     });
     const recBtn = card.querySelector('.rec-start');
     if(recBtn) recBtn.addEventListener('click', ()=> startTimerWithDuration(parseInt(recBtn.dataset.rec), recBtn.dataset.name));
+  });
+
+  // Card superset: due bottoni "avvia" (uno per esercizio) e un unico
+  // +/- "giro" che aggiunge o toglie una serie a ENTRAMBI gli esercizi
+  // insieme, perché un giro di superset esiste solo come coppia. Dopo la
+  // modifica si ri-disegna l'intera schermata: più semplice e sicuro che
+  // ricostruire a mano l'intreccio delle righe, e tutti i valori già
+  // digitati restano intatti perché sono scritti in state.log ad ogni tasto.
+  app.querySelectorAll('.ex-card.superset-card').forEach(card=>{
+    const idA = card.dataset.supersetA, idB = card.dataset.supersetB;
+    card.querySelectorAll('.rec-start').forEach(btn=>{
+      btn.addEventListener('click', ()=> startTimerWithDuration(parseInt(btn.dataset.rec), btn.dataset.name));
+    });
+    card.querySelectorAll('.set-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const arrA = state.log.esercizi[idA].sets;
+        const arrB = state.log.esercizi[idB].sets;
+        if(btn.dataset.act === 'add-round'){
+          arrA.push({kg:'',reps:'',rpe:'',done:false});
+          arrB.push({kg:'',reps:'',rpe:'',done:false});
+        } else if(btn.dataset.act === 'remove-round'){
+          if(arrA.length > 1) arrA.pop();
+          if(arrB.length > 1) arrB.pop();
+        }
+        queueSave();
+        renderWorkout();
+      });
+    });
   });
 }
 /* ============== REST TIMER ==============
