@@ -347,6 +347,19 @@ input{font-family:inherit;}
   border-radius:12px;padding:12px 14px;margin-bottom:16px;font-size:12.5px;color:var(--teal);
 }
 .warmup-note svg{width:16px;height:16px;flex-shrink:0;}
+/* Banner "settimana del ciclo", schermata Allenamento: stessa forma del
+   warmup-note ma con due righe (etichetta + suggerimento) e due varianti di
+   colore — teal per una settimana normale, arancio (accent) per una
+   settimana di scarico consigliato, cosi' si nota subito la differenza
+   senza dover leggere il testo per intero. */
+.week-banner{
+  display:flex;align-items:flex-start;gap:10px;background:var(--teal-dim);border:1px solid rgba(63,199,184,0.25);
+  border-radius:12px;padding:12px 14px;margin-bottom:16px;color:var(--teal);
+}
+.week-banner.scarico{background:var(--accent-dim);border-color:rgba(255,92,57,0.3);color:var(--accent);}
+.week-banner svg{width:18px;height:18px;flex-shrink:0;margin-top:1px;}
+.week-banner-label{font-size:11px;font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:3px;}
+.week-banner-msg{font-size:12.5px;line-height:1.5;color:var(--text-muted);}
 .info-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:20px;overflow:hidden;}
 .info-panel-head{display:flex;align-items:center;justify-content:space-between;padding:16px;cursor:pointer;gap:10px;}
 .info-panel-head .iph-title{font-weight:700;font-size:14px;}
@@ -963,6 +976,7 @@ const LATO_DEBOLE = 'Sinistra';
 const LATO_FORTE = 'Destra';
 const CICLI = [
   { id:'set2026', nome:'Ciclo Settembre 2026', periodo:'Settembre – Ottobre 2026', sub:'4 giorni · upper / lower', stato:'attuale',
+    periodizzazione:{scaricoOgni:5}, // ogni 5 settimane di allenamento (contate dalla prima sessione registrata su questo ciclo) l'app consiglia una settimana piu' leggera — vedi la sezione "SETTIMANA DEL CICLO" piu' sotto per i dettagli
     giorni:[
     { id:'set2026-g1', label:'Giorno 1', meta:'Lower A', sub:'Quadricipiti e gluteo massimo',
       esercizi:[
@@ -1913,6 +1927,13 @@ function renderAllenamento(){
       <p class="tagline">Allenamento, misure, progressi.<br><span class="accent">Tutto in un unico posto.</span></p>
     </div>
     <div class="wrap">
+      <div class="week-banner" id="weekBanner" style="display:none;">
+        <span id="weekBannerIco"></span>
+        <div>
+          <div class="week-banner-label" id="weekBannerLabel">—</div>
+          <div class="week-banner-msg" id="weekBannerMsg">—</div>
+        </div>
+      </div>
       <button class="cta-next" id="btnNext" style="display:none;">
         <div class="cta-next-eyebrow">Prossimo allenamento</div>
         <div class="cta-next-title" id="ctaNextTitle">—</div>
@@ -1966,6 +1987,70 @@ function renderAllenamento(){
     });
   });
   loadAllenamentoSummary();
+  loadWeekBanner();
+}
+/* ============== SETTIMANA DEL CICLO (contatore + suggerimento) ==============
+   Problema che risolve: Silvana si allena sempre "a tavoletta" (stesso
+   sforzo ogni volta, senza mai alleggerire di proposito) e perde il conto
+   di quante settimane sono passate dall'inizio del ciclo — quindi una
+   periodizzazione scritta solo su un documento non viene mai seguita
+   davvero. Qui la settimana si calcola da sola (nessun dato da inserire a
+   mano) e il suggerimento compare direttamente nella schermata Allenamento.
+
+   Come si calcola la settimana 1: non e' la data in cui il ciclo e' stato
+   creato nell'app, ma la data della PRIMA sessione di allenamento
+   effettivamente registrata per uno qualsiasi dei giorni del ciclo attuale
+   — cioe' il giorno in cui Silvana ha davvero iniziato ad allenarsi su
+   questo ciclo. Se non ha ancora registrato nessuna sessione, il banner
+   resta nascosto (non c'e' ancora nulla da contare).
+
+   Frequenza dello scarico: ogni ciclo puo' definire un campo opzionale
+   `periodizzazione:{scaricoOgni:N}` sull'oggetto CICLI (vedi 'set2026').
+   Se non e' definito, si usa un valore di default (vedi DELOAD_DEFAULT
+   qui sotto). Ogni ciclo futuro con una periodizzazione piu' dettagliata
+   e specifica per settimana (come si prevede per il ciclo di
+   novembre-dicembre 2026, ancora in bozza) potra' sostituire questa
+   logica generica con un campo `periodizzazione:{settimane:[...]}` che
+   descrive ogni settimana singolarmente — da implementare quando quel
+   ciclo verra' portato in app. */
+const DELOAD_DEFAULT = 5; // ogni quante settimane, in assenza di indicazioni specifiche del ciclo, si consiglia una settimana piu' leggera
+async function primaSessioneCiclo(ciclo){
+  const dateLists = await Promise.all(ciclo.giorni.map(g=>listSessionsDetailed(g.id)));
+  const tutteLeDate = dateLists.flat().map(s=>s.date).filter(Boolean);
+  if(!tutteLeDate.length) return null;
+  return tutteLeDate.reduce((min,d)=> d < min ? d : min);
+}
+function settimanaDaData(dataInizioISO){
+  const inizio = new Date(dataInizioISO+'T00:00:00');
+  const oggi = new Date(todayLocalISO()+'T00:00:00');
+  const giorniTrascorsi = Math.max(0, Math.round((oggi-inizio)/(1000*60*60*24)));
+  return Math.floor(giorniTrascorsi/7) + 1; // settimana 1 = dal giorno della prima sessione ai 6 giorni successivi
+}
+function suggerimentoSettimana(ciclo, settimana){
+  const ogni = (ciclo.periodizzazione && ciclo.periodizzazione.scaricoOgni) || DELOAD_DEFAULT;
+  const posizioneNelBlocco = ((settimana-1) % ogni) + 1;
+  if(posizioneNelBlocco === ogni){
+    return { tipo:'scarico',
+      label:`Settimana ${settimana} · scarico consigliato`,
+      msg:`Prova ad alleggerire un po' rispetto al solito: qualche ripetizione in meno a fine serie, o un peso leggermente più basso sugli esercizi principali. Serve a far smaltire la fatica accumulata prima di spingere di nuovo.` };
+  }
+  return { tipo:'normale',
+    label:`Settimana ${settimana} del ciclo`,
+    msg:`Allenamento normale: cerca di migliorare qualcosa rispetto alla sessione precedente sullo stesso giorno — un po' più peso, una ripetizione in più, o semplicemente un RPE più preciso.` };
+}
+async function loadWeekBanner(){
+  const banner = document.getElementById('weekBanner');
+  const ciclo = cicloAttuale();
+  if(!banner || !ciclo || !ciclo.giorni.length) return;
+  const inizio = await primaSessioneCiclo(ciclo);
+  if(!inizio) return; // ciclo non ancora iniziato: nessuna sessione registrata, niente da mostrare
+  const settimana = settimanaDaData(inizio);
+  const sugg = suggerimentoSettimana(ciclo, settimana);
+  banner.classList.toggle('scarico', sugg.tipo==='scarico');
+  document.getElementById('weekBannerIco').innerHTML = sugg.tipo==='scarico' ? ICO.reset : ICO.info;
+  document.getElementById('weekBannerLabel').textContent = sugg.label;
+  document.getElementById('weekBannerMsg').textContent = sugg.msg;
+  banner.style.display = '';
 }
 async function loadAllenamentoSummary(){
   const btnNext = document.getElementById('btnNext');
