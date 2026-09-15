@@ -206,6 +206,11 @@ input{font-family:inherit;}
   font-size:11px;color:var(--text-faint);font-family:var(--mono);
 }
 .giorno-card .glast b{color:var(--teal);font-weight:600;}
+/* GIORNO PREVIEW (schermata di sola consultazione, vedi renderGiornoPreview) */
+.preview-head{margin-bottom:14px;}
+.preview-sub{font-size:12px;color:var(--text-muted);margin-bottom:8px;}
+.preview-last{font-size:11px;color:var(--text-faint);font-family:var(--mono);}
+.preview-last b{color:var(--teal);font-weight:600;}
 /* ============== ALIMENTAZIONE ============== */
 .target-banner{
   background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);
@@ -7048,7 +7053,7 @@ async function renderGiorniOfCiclo(cicloId){
   };
   app.querySelectorAll('.giorno-card').forEach(btn=>{
     btn.addEventListener('click', async ()=>{
-      await startNewWorkout(btn.dataset.gid);
+      await renderGiornoPreview(btn.dataset.gid);
     });
   });
   ciclo.giorni.forEach(async (g)=>{
@@ -7056,6 +7061,73 @@ async function renderGiorniOfCiclo(cicloId){
     const el = app.querySelector(`[data-last="${g.id}"]`);
     if(el) el.innerHTML = last ? `Ultima sessione: <b>${fmtDate(last)}</b>` : `Nessuna sessione registrata`;
   });
+}
+/* Schermata di sola CONSULTAZIONE per una giornata del ciclo: dal 15 set 2026
+   toccare una giorno-card in renderGiorniOfCiclo NON avvia più subito un
+   allenamento (rischio di farlo partire per sbaglio solo per dare
+   un'occhiata alla scheda). Qui si vede la lista esercizi con serie/rip,
+   RPE, recupero, note ed eventuali alternative di gruppo (vedi
+   gruppiDiScelta) in sola lettura — il tocco sul nome apre comunque la
+   scheda tecnica completa (openExerciseInfo). Solo il pulsante "Inizia
+   questo allenamento" in cima chiama davvero startNewWorkout. */
+async function renderGiornoPreview(giornoId){
+  state.screen = 'giornoPreview';
+  closeAllOverlays();
+  setTimerBarVisible(false);
+  const giorno = giornoById(giornoId);
+  if(!giorno){ renderGiorniOfCiclo(state.cicloId); return; }
+  const cicloId = giorno.cicloId || state.cicloId;
+  // Mappa id->[opzioni del suo gruppo], per annotare ogni esercizio con le
+  // sue eventuali alternative (stesso slot, si sceglie durante l'allenamento).
+  const gruppoOf = {};
+  gruppiDiScelta(giorno).forEach(arr=>arr.forEach(ex=>{ gruppoOf[ex.id] = arr; }));
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" id="btnBack">${ICO.back}</button>
+      <div class="titles"><h1>${giorno.label}</h1><div class="eyebrow" style="margin-top:3px;">${giorno.meta}</div></div>
+    </div>
+    <div class="wrap">
+      <div class="preview-head">
+        <div class="preview-sub">${giorno.sub}</div>
+        <div class="preview-last" id="previewLast">Caricamento…</div>
+      </div>
+      <button class="cta" id="btnStartWorkout">Inizia questo allenamento</button>
+      <div class="section-label" style="margin-top:18px;">Esercizi (${contaSlot(giorno)})</div>
+      ${giorno.esercizi.map(ex=>renderPreviewExercise(ex, gruppoOf[ex.id])).join('')}
+    </div>
+  `;
+  document.getElementById('btnBack').onclick = ()=>renderGiorniOfCiclo(cicloId);
+  document.getElementById('btnStartWorkout').onclick = ()=>startNewWorkout(giornoId);
+  wireExerciseEvents();
+  const last = await lastSessionDate(giornoId);
+  const lastEl = document.getElementById('previewLast');
+  if(lastEl) lastEl.innerHTML = last ? `Ultima sessione: <b>${fmtDate(last)}</b>` : `Nessuna sessione registrata`;
+}
+/* Card di sola lettura per un esercizio nella schermata di consultazione:
+   stessa impostazione visiva di renderExercise (vedi più sotto), ma senza
+   tabella serie/log perché qui non esiste ancora nessuna sessione — solo
+   nome (apribile per la scheda tecnica), serie×rip, RPE, nota, eventuale
+   alternativa di gruppo e recupero consigliato. */
+function renderPreviewExercise(ex, opzioniGruppo){
+  const partners = (opzioniGruppo || []).filter(o=>o.id !== ex.id).map(o=>o.n);
+  return `
+    <div class="ex-card">
+      <div class="ex-head">
+        <div class="ex-title-row">
+          ${exNameBtnHtml(ex.id, ex.n)}
+          <div class="ex-badges">
+            ${ex.sc ? `<div class="ex-badge">${ex.sc}</div>` : ''}
+            ${ex.rpe && ex.rpe !== '-' ? `<div class="ex-badge rpe">RPE ${ex.rpe}</div>` : ''}
+          </div>
+        </div>
+        ${ex.note ? `<div class="ex-note">${ex.note}</div>` : ''}
+        ${partners.length ? `<div class="ex-note">Alternativa a ${partners.join(' / ')} — si sceglie durante l'allenamento</div>` : ''}
+      </div>
+      <div class="rec-row">
+        <span class="rlabel">Recupero consigliato: <b>${ex.recLabel}</b></span>
+      </div>
+    </div>
+  `;
 }
 function fmtDate(iso){
   const d = new Date(iso+'T00:00:00');
