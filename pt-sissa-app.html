@@ -1172,6 +1172,230 @@ const CICLI = [
                 resp:"Espira salendo, inspira scendendo."}},
       ]},
   ]},
+  /* ============== CICLO NOVEMBRE-DICEMBRE 2026 — stato 'futuro' ==============
+     Aggiunto il 16 settembre 2026: bozza considerata definitiva da Silvana
+     (vedi documento Word "Bozza_Ciclo_Novembre-Dicembre_2026.docx"), inserita
+     qui in sola consultazione. Tutti gli id degli esercizi hanno il prefisso
+     "nov26-" per restare completamente separati dal ciclo di settembre-ottobre
+     (nessuna condivisione di storico tra i due cicli, per coerenza con come
+     l'app tratta già i cicli precedenti come archivi a sé stanti). Uno stato
+     'futuro' (diverso da 'attuale' e 'precedente') blocca l'avvio di sessioni
+     e l'inserimento dati: vedi renderGiornoPreview più sotto, dove per questo
+     stato il pulsante "Inizia questo allenamento" non viene nemmeno creato. */
+  { id:'nov2026', nome:'Ciclo Novembre–Dicembre 2026', periodo:'Novembre 2026 – Gennaio 2027', sub:'4 giorni · upper / lower · in arrivo', stato:'futuro',
+    periodizzazione:{scaricoOgni:5},
+    giorni:[
+    { id:'nov26-g1', label:'Giorno 1', meta:'Lower A', sub:'Quadricipiti e gluteo massimo',
+      esercizi:[
+        {id:'nov26-hack-squat', n:'Hack squat', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
+          info:{setup:"Piedi in appoggio sulla pedana, leggermente più larghi delle spalle, punte leggermente verso l'esterno, peso distribuito su tutta la pianta (non solo sulle punte). Schiena e spalle premute contro lo schienale imbottito, con la normale curva della zona lombare (la parte bassa della schiena) mantenuta aderente al cuscinetto — né appiattita né inarcata. Mani sulle maniglie laterali della seduta, usate solo come punto d'appoggio, non per spingere. Sblocca i fermi solo dopo esserti posizionata.",
+                esec:"Fase eccentrica (discesa, 2-3 secondi): pieghi le ginocchia portando i cuscinetti verso il basso in modo controllato, senza staccare i talloni, finché le cosce sono parallele al pavimento o poco oltre. Fase concentrica (spinta): spingi con i talloni per tornare su, senza bloccare di scatto le ginocchia in cima. Un segnale utile per capire fin dove scendere: se senti la parte bassa della schiena staccarsi dallo schienale e arrotondarsi, sei scesa troppo — fermati un po' prima, anche se non hai ancora raggiunto il parallelo.",
+                muscolo:"Lavora soprattutto il quadricipite, con gluteo e femorali come sinergici nella fase finale. Sensazione corretta: spinta uniforme su tutto il piede. Errore comune: spingere solo sulle punte, che scarica il lavoro sui polpacci e stressa le ginocchia.",
+                resp:"Inspira durante la discesa, espira spingendo verso l'alto.",
+                attrezzatura:"Hai preferito tenere questa macchina (invece della Super Calf Hack) perché dà più focus sul gluteo insieme al quadricipite."}},
+        {id:'nov26-glute-press', n:'Glute Press', s:3, sc:'3×12-15', rpe:'7-8', rec:120, recLabel:'2 min', gruppo:'nov26-lp-gp',
+          info:{setup:"Seduta e reclinata sul macchinario dedicato (GluteBuilder Glute Press), schiena e bacino ben aderenti allo schienale, anche in flessione profonda (ginocchia verso il petto) nella posizione di partenza. Pianta del piede intera in appoggio sulla pedana centrale, non solo il tallone. Mani sulle maniglie laterali, usate solo per stabilizzarti, non per spingere.",
+                esec:"Concentrica (spinta): estendi le anche spingendo la pedana lontano da te, contraendo forte il gluteo a fine movimento — è l'anca che si apre a guidare la spinta, non il ginocchio. Eccentrica: torna controllata alla posizione di partenza, lasciando che le anche si flettano di nuovo verso il petto.",
+                muscolo:"Gluteo massimo come motore principale — stesso schema di movimento (estensione dell'anca) dell'Hip Thrust, ma da seduta invece che sdraiata. Sensazione corretta: contrazione forte del gluteo a fine spinta; se senti soprattutto il quadricipite o il ginocchio lavorare, probabilmente stai spingendo con la gamba invece che con l'anca.",
+                resp:"Inspira tornando in flessione, espira nella spinta.",
+                attrezzatura:"A differenza del leg press classico, qui il movimento è un'estensione dell'anca e non una spinta del ginocchio: lavora il gluteo in modo molto più mirato, con i quadricipiti quasi solo di supporto."}},
+        {id:'nov26-leg-press-45', n:'Leg press 45°', s:3, sc:'3×12-15', rpe:'7-8', rec:120, recLabel:'2 min', gruppo:'nov26-lp-gp',
+          info:{setup:"Seduta con schiena e bacino ben aderenti al sedile — bacino in posizione neutra, senza lasciare che si sollevi o ruoti quando spingi — piedi sulla pedana all'altezza delle spalle, al centro, pianta intera in appoggio (non solo talloni o punte). Mani sulle maniglie laterali della seduta, senza spingere con le braccia. Sblocca i fermi laterali solo dopo aver posizionato i piedi.",
+                esec:"Discesa (eccentrica): sblocca i fermi e piega le ginocchia verso il petto in modo controllato, senza che il bacino si stacchi dal sedile, fino a circa 90° o dove la schiena resta comoda. Spinta (concentrica): spingi con tutta la pianta del piede fino quasi alla distensione.",
+                muscolo:"Quadricipiti con enfasi maggiore se i piedi sono centrali e alti sulla pedana, glutei come sinergici. Errore comune: staccare il bacino dal sedile in fondo alla discesa — se succede, riduci l'ampiezza.",
+                resp:"Inspira in discesa, espira in spinta.",
+                attrezzatura:"Alternativa al Glute Press per questo slot della scheda: quando arrivi a questo esercizio scegli lì per lì quale dei due fare oggi, in base a cosa trovi libero in sala — ognuno mantiene comunque il proprio storico di allenamenti separato."}},
+        {id:'nov26-hip-thrust-macchina', n:'Hip Thrust guidato', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min', gruppo:'nov26-hip-thrust',
+          note:'Settimane 3-4 del ciclo: diventa un superset isometrico-dinamico — 3″ di tenuta nella posizione più alta, poi subito 8-10 ripetizioni dinamiche. Mento e collo neutri per tutta la tenuta.',
+          info:{setup:"Seduta con la parte alta della schiena appoggiata allo schienale reclinabile imbottito, cuscinetto posizionato sul bacino (appena sopra le anche, non sullo stomaco), piedi piantati per terra o sulla pedana alla larghezza dei fianchi, ginocchia a circa 90° a fine movimento. Mani sulle maniglie laterali della macchina, usate solo per stabilizzarti, non per spingere. Bacino in posizione neutra in partenza, prima di iniziare la spinta. Regola schienale e leva prima di caricare il peso.",
+                esec:"Concentrica: spingi con i talloni sollevando il bacino, portando il corpo in linea retta dalle spalle alle ginocchia, contraendo forte i glutei in alto. Eccentrica: scendi controllata senza far cadere di colpo il peso.",
+                muscolo:"Gluteo massimo come motore principale. Sensazione corretta: contrazione forte dei glutei in cima, non nella schiena bassa. Rispetto al bilanciere la macchina guida il movimento e stabilizza il busto.",
+                resp:"Inspira in discesa, espira nella spinta verso l'alto.",
+                attenzione:"Anche con la macchina mantieni lo sguardo verso l'alto/avanti e il mento leggermente rientrato per tutta la serie, senza spingere la testa indietro contro lo schienale. Lo schienale guidato riduce molto il rischio rispetto al bilanciere, ma vista la tua storia di fastidio cervicale è una buona abitudine da mantenere comunque.",
+                attrezzatura:"È la versione che usi di solito: schienale reclinabile con peso a stack (si sceglie con un piolo), movimento guidato su un unico binario. Se la trovi occupata, durante l'allenamento puoi scegliere al volo una delle altre due varianti qui sotto (a dischi o con bilanciere): ognuna tiene il proprio storico separato, senza mai mescolarsi con questa."}},
+        {id:'nov26-hip-thrust-dischi', n:'Hip Thrust machine (a dischi)', s:4, sc:'4×10-12', rpe:'8', rec:150, recLabel:'2-3 min', gruppo:'nov26-hip-thrust',
+          note:'Settimane 3-4 del ciclo: diventa un superset isometrico-dinamico — 3″ di tenuta nella posizione più alta, poi subito 8-10 ripetizioni dinamiche. Mento e collo neutri per tutta la tenuta.',
+          info:{setup:"Seduta sotto la leva imbottita del macchinario a dischi (diverso da quello a piolo): il cuscinetto va posizionato sul bacino, appena sopra le anche. Schiena alta appoggiata allo schienale — spesso meno reclinabile e meno imbottito di quello della versione guidata — piedi piantati per terra o sulla pedana alla larghezza dei fianchi, ginocchia a circa 90° a fine spinta. Carica i dischi sui perni laterali PRIMA di sederti sotto la leva, per praticità e sicurezza. Mani sulle maniglie o sui braccioli laterali, usate solo per stabilizzarti.",
+                esec:"Concentrica: spingi con i talloni sollevando la leva ed estendendo le anche, portando il corpo in linea retta dalle spalle alle ginocchia, contraendo forte i glutei in alto. Eccentrica: abbassa la leva in modo controllato, senza lasciarla cadere di scatto tra una ripetizione e l'altra.",
+                muscolo:"Stesso schema di movimento (estensione dell'anca) delle altre due varianti — gluteo massimo come motore principale. Sensazione corretta: uguale a quella dell'Hip Thrust guidato, contrazione forte del gluteo in cima; se qui fai più fatica a trovare l'assetto o senti di più la schiena bassa nelle prime volte, è normale — lo schienale è meno confortevole.",
+                resp:"Inspira in discesa, espira nella spinta verso l'alto.",
+                attenzione:"Come per le altre varianti, mantieni lo sguardo verso l'alto/avanti e il mento leggermente rientrato per tutta la serie, senza spingere la testa indietro contro lo schienale. Vista la tua storia di fastidio cervicale, presta ancora più attenzione qui: lo schienale è meno guidato di quello della versione a piolo.",
+                attrezzatura:"Stesso movimento dell'Hip Thrust guidato, ma su un macchinario diverso: il carico si imposta con dischi su una leva invece che con un piolo sullo stack, e lo schienale è spesso meno regolabile — per questo la trovi più scomoda. Il peso che usi qui non è confrontabile con quello dell'altra macchina, quindi tiene un proprio storico separato: usala quando quella guidata è occupata, senza preoccuparti di 'ripartire da zero' — è solo un'altra variante, non un test."}},
+        {id:'nov26-hip-thrust-bilanciere', n:'Hip Thrust con bilanciere', s:4, sc:'4×10-12', rpe:'8', rec:180, recLabel:'3 min', gruppo:'nov26-hip-thrust',
+          note:'Settimane 3-4 del ciclo: diventa un superset isometrico-dinamico — 3″ di tenuta nella posizione più alta, poi subito 8-10 ripetizioni dinamiche. Mento e collo neutri per tutta la tenuta.',
+          info:{setup:"Parte alta della schiena (le scapole) appoggiata al bordo di una panca piana, bilanciere posizionato sopra il bacino con un cuscinetto/paraginocchia (barbell pad) per proteggere le anche dal contatto diretto con la barra. Piedi piantati per terra alla larghezza dei fianchi, leggermente più vicini al corpo di quanto sembri naturale, ginocchia che a fine spinta formeranno un angolo di circa 90°. Mani che afferrano il bilanciere ai lati del bacino, usate solo per tenerlo fermo e in linea, non per sollevarlo con le braccia. Parti con le anche abbassate verso il pavimento (senza toccarlo), mento leggermente rientrato.",
+                esec:"Concentrica: spingi con i talloni estendendo le anche verso l'alto, fino a portare il corpo in linea retta dalle spalle alle ginocchia, contraendo forte i glutei in cima e senza inarcare la schiena bassa per \"aiutarti\" — l'estensione deve venire dall'anca, non dalla zona lombare. Eccentrica: abbassa le anche in modo controllato verso il pavimento, mantenendo il bilanciere aderente al bacino per tutto il movimento.",
+                muscolo:"Gluteo massimo come motore principale, con una richiesta di stabilizzazione (core, adduttori) più alta delle due macchine, perché qui sei tu — non il macchinario — a tenere il bilanciere in equilibrio e in traiettoria. Sensazione corretta: stessa contrazione forte del gluteo in cima delle altre due varianti; se senti soprattutto la schiena bassa lavorare, il movimento sta partendo dalla lombare invece che dall'anca — riduci il carico e rallenta finché non senti il gluteo guidare la spinta.",
+                resp:"Inspira abbassando le anche, espira nella spinta verso l'alto.",
+                attenzione:"Anche qui mantieni lo sguardo verso l'alto/avanti e il mento leggermente rientrato per tutta la serie, senza estendere la testa all'indietro contro il bordo della panca. Il bilanciere non sostiene la testa come lo schienale delle macchine, quindi presta attenzione doppia vista la tua storia di fastidio cervicale — se senti anche solo un accenno di tensione al collo, fermati e valuta di tornare a una delle due varianti guidate per quel giorno.",
+                attrezzatura:"È la variante meno guidata delle tre: permette in teoria i carichi più alti, ma richiede più attenzione tecnica perché la stabilità la fornisci tu, non la macchina. Usa sempre un barbell pad sul bilanciere per proteggere il bacino, e nelle prime sessioni con questa variante parti più leggera di quanto faresti sulle macchine, anche se il numero sul bilanciere sembra poco — prima la posizione, poi il carico. Storico separato dalle altre due, come sempre."}},
+        {id:'nov26-affondi-bulgari', n:'Affondi bulgari con manubri', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', perLato:true, gruppo:'nov26-affondi-bulgari',
+          info:{setup:"Piede posteriore appoggiato con il collo del piede su una panca dietro di te, gamba anteriore avanti a circa un passo e mezzo (abbastanza da poter scendere in verticale senza che il ginocchio anteriore superi troppo la punta del piede), peso sulla gamba anteriore concentrato sul centro/tallone del piede. Un manubrio per mano, braccia distese lungo i fianchi con presa neutra (palmi rivolti verso le cosce). Busto leggermente inclinato in avanti mantenendo la schiena neutra (le curve naturali della colonna, né arrotondata né inarcata), sguardo avanti.",
+                esec:"Discesa: piega il ginocchio anteriore scendendo verticalmente finché il ginocchio posteriore quasi tocca terra, senza far avanzare troppo il ginocchio oltre la punta del piede. Spinta: risali spingendo con tallone e avampiede della gamba anteriore.",
+                muscolo:"Quadricipite e gluteo della gamba anteriore, lavorati singolarmente — utile per correggere squilibri tra le due gambe. Cerca la sensazione di lavoro sulla gamba avanti, non su quella d'appoggio dietro.",
+                resp:"Inspira in discesa, espira in risalita.",
+                attrezzatura:"Una delle tre opzioni per questo slot della scheda (insieme alla versione al multipower e al Reverse Lunge alla macchina GluteBuilder qui sotto): scegli lì per lì quale fare, in base a cosa preferisci o trovi libero — ognuna mantiene comunque il proprio storico separato."}},
+        {id:'nov26-affondi-bulgari-multipower', n:'Affondi bulgari al multipower', s:3, sc:'3×10-12', rpe:'7-8', rec:120, recLabel:'2 min', perLato:true, gruppo:'nov26-affondi-bulgari',
+          info:{setup:"Bilanciere caricato sul multipower (la macchina Smith, con il bilanciere vincolato su binari verticali) posizionato sull'alta schiena come in uno squat, non sul collo. Piede posteriore appoggiato con il collo del piede su una panca dietro di te, gamba anteriore avanti — leggermente più avanti rispetto alla versione con manubri, perché qui il bilanciere si muove su un binario verticale fisso e non segue un arco naturale: serve più spazio per restare in equilibrio sopra il piede d'appoggio senza spingere il ginocchio oltre la punta.",
+                esec:"Discesa: piega il ginocchio anteriore scendendo verticalmente (il binario del multipower guida già la traiettoria) finché il ginocchio posteriore quasi tocca terra. Spinta: risali spingendo con tallone e avampiede della gamba anteriore, sbloccando il gancio di sicurezza solo dopo esserti posizionata.",
+                muscolo:"Stesso schema della versione con manubri — quadricipite e gluteo della gamba anteriore, lavorati singolarmente. Il binario fisso del multipower toglie parte del lavoro di equilibrio richiesto dai manubri liberi: puoi concentrarti di più sul carico e meno sul bilanciamento, per questo qui in genere riesci a caricare di più.",
+                resp:"Inspira in discesa, espira in risalita.",
+                attenzione:"Poiché il bilanciere si muove su un binario verticale fisso, il piede anteriore va posizionato più avanti del solito per mantenere il ginocchio allineato senza spingerlo oltre la punta del piede — prova la posizione senza peso prima di caricare il bilanciere.",
+                attrezzatura:"Una delle tre opzioni per questo slot della scheda (insieme alla versione con manubri e al Reverse Lunge alla macchina GluteBuilder qui sotto). Essendo guidata dal multipower il carico che riesci a muovere non è confrontabile con quello dei manubri liberi (di solito più alto) — per questo tiene un proprio storico separato. Anche il recupero è un po' più lungo (2 min contro 90 sec) proprio perché qui il carico tende a essere maggiore."}},
+        {id:'nov26-reverse-lunge-glutebuilder', n:'Reverse Lunge (macchina GluteBuilder)', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec', perLato:true, gruppo:'nov26-affondi-bulgari',
+          info:{setup:"Stessa posizione di partenza degli Affondi bulgari con manubri: piede anteriore piantato sulla pedana bassa della macchina, piede posteriore appoggiato con la punta sulla pedana rialzata sul retro (collegata al braccio dei pesi), ginocchio posteriore leggermente piegato. Mani salde sulle maniglie verticali ai lati.",
+                esec:"Eccentrica (discesa): scendi in affondo piegando il ginocchio anteriore, bacino che scende dritto verso il basso — movimento guidato dalla macchina su un binario fisso. Concentrica (risalita): spingi con il tallone del piede anteriore per risalire E allo stesso tempo tiri le maniglie verso di te con le braccia — è questa combinazione a sollevare davvero il peso, non la gamba da sola.",
+                muscolo:"Stesso muscolo target degli affondi bulgari: gluteo massimo e quadricipite della gamba anteriore (di lavoro). Essendo un movimento guidato, serve meno equilibrio rispetto alla versione libera con manubri.",
+                resp:"Inspira in discesa, espira nella spinta/trazione di risalita.",
+                attenzione:"Se senti che stai tirando molto con le braccia e poco con la gamba davanti, il lavoro si sta spostando troppo sulle braccia — rallenta la spinta della gamba anteriore prima di tirare le maniglie, così resta il gluteo a guidare il movimento. Verificata con Silvana su un video dimostrativo ufficiale GLUTEBUILDER, confermata come la variante \"Reverse Lunge\" elencata sul sito ufficiale del produttore (\"Glute Lunge\" è il nome commerciale della macchina, \"Reverse Lunge\" quello di questo specifico esercizio).",
+                attrezzatura:"Terza opzione di questo slot, nuova rispetto al ciclo di settembre-ottobre: aggiunta accanto a manubri e multipower, non li sostituisce. Storico separato dalle altre due."}},
+        {id:'nov26-leg-extension', n:'Leg extension', s:3, sc:'3×15', rpe:'8', rec:75, recLabel:'60-90 sec',
+          info:{setup:"Seduta con schiena e bacino ben aderenti allo schienale (schiena in posizione neutra, senza inarcarti per aiutarti a spingere), caviglie dietro il rullo imbottito, ginocchia allineate al perno della macchina. Mani sulle maniglie laterali della seduta, per stabilizzare il busto senza tirare.",
+                esec:"Concentrica: estendi le gambe fino quasi alla distensione completa, contraendo il quadricipite in cima. Eccentrica: torna giù controllata senza far sbattere i pesi.",
+                muscolo:"Isola il quadricipite in modo puro. Corretto se senti tensione diffusa su tutta la coscia; se senti solo la parte alta vicino all'anca, riduci il carico e rallenta.",
+                resp:"Espira estendendo, inspira tornando giù.",
+                attrezzatura:"Questa macchina fa anche il leg curl seduto del Giorno 3 — stessa stazione, due funzioni."}},
+        {id:'nov26-calf-raises-piedi', n:'Calf raises in piedi', s:3, sc:'3×15-20', rpe:'8', rec:60, recLabel:'60 sec',
+          info:{setup:"In piedi su un rialzo (step o macchina dedicata) con gli avampiedi appoggiati sul bordo e i talloni sospesi nel vuoto, piedi alla larghezza dei fianchi. Busto eretto con schiena neutra, senza piegarti in avanti per spingere. Mani appoggiate a un supporto solo per l'equilibrio, non per scaricare peso sulle braccia.",
+                esec:"Concentrica: sali sulle punte il più in alto possibile, contraendo forte i polpacci. Eccentrica: scendi lentamente lasciando i talloni andare sotto il livello del rialzo per un buon allungamento.",
+                muscolo:"Polpacci (gastrocnemio e soleo). Errore comune: movimento troppo veloce senza scendere completamente, perdendo la parte più efficace dell'esercizio.",
+                resp:"Espira salendo, inspira scendendo.",
+                attrezzatura:"Puoi farli come preferisci: con un manubrio per mano su un rialzo, oppure sul macchinario dedicato (es. Super Calf Hack Machine) — movimento e tecnica restano gli stessi."}},
+      ]},
+    { id:'nov26-g2', label:'Giorno 2', meta:'Upper A', sub:'Spinta e correzione posturale',
+      esercizi:[
+        {id:'nov26-lat-machine-v', n:'Lat machine presa stretta a V', s:4, sc:'4×10-12', rpe:'7-8', rec:120, recLabel:'2 min',
+          info:{setup:"Seduta con le cosce bloccate sotto il cuscinetto, piedi appoggiati a terra o sul supporto per stabilità, presa a V (maniglia stretta, palmi l'uno verso l'altro) — quella con cui ti trovi già bene. Busto leggermente inclinato indietro, petto in fuori, con un piccolo arco naturale nella schiena bassa (la normale curva lombare, non un'inarcatura esagerata). Se ti ritrovi a inclinarti sempre più indietro o ad arrotondare la parte alta della schiena a fine serie, il carico è troppo alto.",
+                esec:"Concentrica: porta la maniglia verso la parte alta del petto, gomiti stretti lungo i fianchi, avvicinando le scapole. Eccentrica: lascia risalire controllata fino a braccia quasi distese.",
+                muscolo:"Gran dorsale con enfasi medio-bassa, bicipiti e trapezio medio come sinergici — la presa stretta e neutra coinvolge un po' di più le braccia. Sensazione corretta: lavoro sotto le ascelle e ai lati della schiena; se senti solo le braccia stai tirando troppo con i bicipiti.",
+                resp:"Espira nella tirata, inspira nel ritorno."}},
+        {id:'nov26-push-up', n:'Push-up', s:3, sc:'3×8-12', rpe:'7-8', rec:90, recLabel:'90 sec',
+          info:{setup:"Mani a terra leggermente più larghe delle spalle, dita rivolte in avanti (o leggermente verso l'esterno se più comoda per i polsi). Corpo in linea retta da testa a talloni, bacino in leggera retroversione — l'osso pubico portato leggermente verso l'ombelico — per non far cadere i fianchi verso il pavimento, addome contratto per tutta la serie. Piedi uniti o leggermente divaricati, appoggiati sulle punte. Sguardo verso il pavimento poco davanti alle mani, collo in linea con il resto della schiena, senza estenderlo all'indietro.",
+                esec:"Eccentrica (discesa): piega i gomiti abbassando il corpo verso il basso in modo controllato, gomiti che puntano a circa 45° dal busto (non completamente aperti lateralmente a 90°), fino a sfiorare quasi il petto al pavimento. Concentrica (spinta): spingi con le braccia tornando alla posizione di partenza, senza far cadere i fianchi né sollevare il sedere durante la spinta.",
+                muscolo:"Petto (grande pettorale) con tricipiti e deltoide anteriore come sinergici. Sensazione corretta: lavoro diffuso su petto e braccia; se senti solo le spalle affaticarsi, probabilmente i fianchi stanno cedendo o i gomiti si aprono troppo lateralmente.",
+                resp:"Inspira scendendo, espira spingendo verso l'alto.",
+                attrezzatura:"Se 8-12 ripetizioni pulite a terra sono troppo impegnative, appoggia le mani su una panca o un rialzo stabile: stessa tecnica, ma con meno peso corporeo da spingere."}},
+        {id:'nov26-rematore-manubrio-panca', n:'Rematore con manubrio su panca (one-arm dumbbell row)', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec per lato', perLato:true,
+          info:{setup:"Un ginocchio e la mano corrispondente appoggiati su una panca, l'altro piede a terra un po' più indietro, ginocchio morbido, non bloccato. Un manubrio nella mano libera con presa neutra (palmo rivolto verso la panca), braccio disteso verso il basso. Schiena parallela al pavimento nella sua curva naturale (né arrotondata né iperinarcata), sguardo verso il basso/avanti, senza torcere il busto per tirare più su.",
+                esec:"Tirata: tira il manubrio verso il fianco, portando il gomito indietro e in alto, avvicinando la scapola. Ritorno: lascia scendere il manubrio controllato fino a braccia quasi distese.",
+                muscolo:"Gran dorsale e trapezio medio/romboidi, ottimo per il lavoro posturale sulle spalle. Se senti solo il braccio, stai tirando troppo con il bicipite.",
+                resp:"Espira nella tirata, inspira nel ritorno."}},
+        {id:'nov26-alzate-laterali-manubri', n:'Alzate laterali con manubri', s:3, sc:'3×12-15', rpe:'8', rec:60, recLabel:'60 sec',
+          info:{setup:"In piedi con i piedi alla larghezza dei fianchi, schiena neutra ed eretta, addome leggermente contratto per non ondeggiare durante il movimento. Un manubrio per mano lungo i fianchi, presa neutra (palmi rivolti verso le cosce), gomiti leggermente piegati e bloccati in quella posizione per tutta la serie.",
+                esec:"Concentrica: alza le braccia lateralmente fino all'altezza delle spalle, guidando con i gomiti (non con le mani). Eccentrica: scendi controllata fino quasi a toccare i fianchi.",
+                muscolo:"Deltoide laterale, il muscolo che dà larghezza e 'apertura' visiva alle spalle. Se senti il trapezio lavorare più del deltoide, probabilmente stai sollevando troppo in alto o con troppo carico.",
+                resp:"Espira alzando le braccia, inspira scendendo."}},
+        {id:'nov26-face-pull-corda', n:'Face pull al cavo con corda', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
+          info:{setup:"Cavo regolato all'altezza del viso, presa sulla corda con i pollici verso di te, un piede leggermente avanti e uno indietro per stabilità, un passo indietro dalla colonna del cavo per mantenere tensione sul cavo anche a inizio serie. Busto leggermente indietro rispetto ai fianchi, schiena neutra, addome contratto.",
+                esec:"Tirata: tira la corda verso il viso separando le due estremità, gomiti alti e indietro, ruotando le spalle verso l'esterno. Ritorno: lascia tornare le braccia in avanti controllate.",
+                muscolo:"Deltoide posteriore ed extrarotatori della spalla: l'esercizio più utile in scheda contro le spalle chiuse in avanti da lavoro al computer. Cerca la sensazione dietro le spalle e tra le scapole.",
+                resp:"Espira nella tirata, inspira nel ritorno."}},
+        {id:'nov26-pushdown-tricipiti', n:'Pushdown tricipiti', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', note:'Superset con hammer curl · 60″ tra i due, 90″ dopo il giro', superset:'nov26-g2-tricipiti-bicipiti',
+          info:{setup:"In piedi davanti al cavo alto, piedi alla larghezza dei fianchi o uno leggermente avanti, busto eretto con schiena neutra e leggermente inclinato in avanti dai fianchi. Presa sulla barra o corda, gomiti fissi ai lati del busto per tutta la serie, senza farli allontanare durante la discesa.",
+                esec:"Concentrica: estendi gli avambracci verso il basso senza muovere i gomiti, contraendo il tricipite in fondo. Eccentrica: torna su controllata fino a circa 90° di flessione del gomito.",
+                muscolo:"Tricipite in isolamento. Se senti le spalle lavorare più delle braccia, i gomiti si stanno allontanando dai fianchi.",
+                resp:"Espira estendendo verso il basso, inspira tornando su."}},
+        {id:'nov26-hammer-curl-manubri', n:'Hammer curl con manubri', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:'Superset con pushdown · 60″ tra i due, 90″ dopo il giro', superset:'nov26-g2-tricipiti-bicipiti',
+          info:{setup:"In piedi con i piedi alla larghezza dei fianchi, schiena neutra ed eretta, addome leggermente contratto per non oscillare. Un manubrio per mano con presa neutra (palmi l'uno verso l'altro), gomiti vicini al busto e fermi per tutta la serie.",
+                esec:"Concentrica: piega i gomiti portando i manubri verso le spalle, senza oscillare il busto. Eccentrica: scendi controllata fino quasi alla distensione completa.",
+                muscolo:"Bicipite e brachiale, con la presa neutra che coinvolge di più l'avambraccio rispetto al curl tradizionale.",
+                resp:"Espira salendo, inspira scendendo."}},
+        {id:'nov26-plank', n:'Plank', s:3, sc:'3×30-40 sec', rec:60, recLabel:'60 sec',
+          info:{setup:"A terra in appoggio sugli avambracci (gomiti sotto le spalle, avambracci paralleli) e sulle punte dei piedi, piedi alla larghezza dei fianchi. Corpo in linea retta dalla testa ai talloni, bacino in leggera retroversione, né troppo alto né troppo basso.",
+                esec:"Isometrico: mantieni la posizione per l'intera durata contraendo addome e glutei, senza far cedere i fianchi verso il basso né alzarli a 'tetto'. Respira normalmente per tutta la tenuta.",
+                muscolo:"Core (retto e trasverso dell'addome, obliqui) in contrazione isometrica, insieme a glutei e spalle come stabilizzatori. Se senti solo la schiena bassa lavorare, il bacino sta probabilmente cedendo verso il basso.",
+                resp:"Respira in modo continuo e regolare per tutta la tenuta, senza trattenere il fiato."}},
+      ]},
+    { id:'nov26-g3', label:'Giorno 3', meta:'Lower B', sub:'Femorali e gluteo medio/piccolo',
+      esercizi:[
+        {id:'nov26-stacco-rumeno-manubri', n:'Stacco rumeno (RDL) con manubri', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
+          info:{setup:"In piedi con i piedi alla larghezza dei fianchi, un manubrio per mano tenuto lungo i fianchi (non davanti alle cosce come con il bilanciere), palmi rivolti verso il corpo, ginocchia leggermente piegate e fisse per tutto il movimento, schiena neutra, sguardo avanti/basso senza sollevare il mento.",
+                esec:"Eccentrica: spingi i fianchi indietro facendo scorrere i manubri lungo le gambe, schiena dritta, finché senti un buon allungamento dei femorali. Concentrica: spingi i fianchi in avanti tornando eretta, contraendo i glutei in cima.",
+                muscolo:"Femorali e gluteo massimo, con la schiena bassa come stabilizzatore isometrico. Sensazione corretta: stiramento intenso dietro la coscia. Errore comune: arrotondare la schiena o piegare troppo le ginocchia.",
+                resp:"Inspira in discesa, espira nella risalita.",
+                attrezzatura:"D'ora in poi è l'unico stacco rumeno in scheda per questo giorno (niente più scelta con il bilanciere, come invece accade oggi nel ciclo di settembre-ottobre): più comodo da imparare perché ogni braccio si muove in modo indipendente e naturale."}},
+        {id:'nov26-cable-pull-through', n:'Cable Pull-Through', s:3, sc:'3×12-15', rpe:'7-8', rec:90, recLabel:'90 sec',
+          info:{setup:"In piedi, di spalle al cavo basso, corda agganciata alla carrucola più bassa. Afferra la corda con entrambe le mani passandola tra le gambe, un paio di passi in avanti per mettere in tensione. Piedi alla larghezza dei fianchi, ginocchia leggermente piegate, bacino spinto indietro in partenza, schiena dritta, sguardo avanti.",
+                esec:"Eccentrica (indietro): lascia che il cavo ti tiri, spingendo ancora di più il bacino all'indietro, ginocchia morbide, schiena dritta — il movimento parte dall'anca. Concentrica (spinta): estendi le anche portando il bacino in avanti, contrai forte il gluteo a fine movimento, senza inarcare la schiena.",
+                muscolo:"Gluteo massimo, con il picco di lavoro nel punto di massima estensione dell'anca — il punto in cui lo stacco rumeno perde tensione. Se senti soprattutto la parte bassa della schiena, il movimento parte dalla lombare invece che dall'anca: riduci il peso e rallenta.",
+                resp:"Inspira tornando indietro, espira nella spinta in avanti.",
+                attrezzatura:"Nuovo in questo ciclo: messo subito dopo lo Stacco rumeno apposta, per dare tensione al gluteo proprio dove lo stacco la perde — insieme coprono tutto l'arco del movimento."}},
+        {id:'nov26-hyperextension-glutei', n:'Hyperextension focus glutei', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec', note:"discesa lenta in 3″",
+          info:{setup:"Sulla macchina, fianchi appoggiati sul cuscinetto (con l'osso del bacino appena sopra il bordo, non lo stomaco), caviglie bloccate sotto i rulli, busto piegato in avanti a circa 90°. Mani incrociate sul petto o dietro la testa, senza tirare con le braccia per aiutarti a risalire.",
+                esec:"Risalita: solleva il busto contraendo forte i glutei fino ad allineare il corpo, senza iperestendere oltre la linea retta. Discesa lenta in 3 secondi: qui è la chiave dell'esercizio, mantenendo la tensione sui glutei fino in fondo.",
+                muscolo:"Gluteo massimo. La discesa lenta aumenta il tempo sotto tensione — molto efficace per stimolare la crescita. Se senti la schiena bassa più dei glutei, stringili consapevolmente prima di iniziare.",
+                resp:"Espira in risalita, inspira nella discesa lenta."}},
+        {id:'nov26-abduzione-cavo-piedi', n:'Abduzione dell\'anca al cavo, in piedi', s:3, sc:'3×12-15', rpe:'7-8', rec:90, recLabel:'90 sec', perLato:true,
+          info:{setup:"Cavigliera agganciata al cavo basso, in piedi di fianco alla colonna del cavo — la gamba più vicina alla colonna è quella che lavora. Una mano appoggiata al supporto della macchina per l'equilibrio, busto eretto e stabile.",
+                esec:"Concentrica: porta la gamba lontano dal corpo (verso l'esterno), senza inclinare il busto dal lato opposto per aiutarti. Eccentrica: ritorno controllato verso la posizione di partenza, senza far sbattere la cavigliera contro l'altra gamba.",
+                muscolo:"Gluteo medio come motore principale, gluteo piccolo come sinergico — stesso muscolo dell'Abductor machine, ma qui in piedi richiede più equilibrio e il cavo dà una resistenza costante per tutto il movimento, invece che solo nella parte finale come sulla macchina seduta.",
+                resp:"Espira nell'abduzione (gamba che si allontana), inspira nel ritorno.",
+                attrezzatura:"Sostituisce l'Abductor machine in questo ciclo: esercizio già scritto e testato a settembre (poi tolto solo per motivi di tempo, non di efficacia), qui riproposto come esercizio singolo — non più in superset."}},
+        {id:'nov26-pendulum-kickback', n:'Pendulum Kick Back (macchina guidata)', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60 sec', perLato:true,
+          info:{setup:"In ginocchio/appoggiata sulla macchina, ginocchio d'appoggio sul cuscinetto imbottito, piede della gamba che lavora agganciato al braccio a pendolo, mani salde sulle maniglie anteriori per stabilità, busto leggermente in avanti con schiena neutra e bacino stabile, senza lasciarlo ruotare verso il lato che lavora.",
+                esec:"Spinta: spingi la gamba indietro e verso l'alto seguendo l'arco guidato del pendolo, contraendo forte il gluteo in fondo. Ritorno: riporta la gamba in avanti controllata, seguendo la stessa traiettoria guidata.",
+                muscolo:"Gluteo massimo in isolamento. Il braccio a pendolo guida la traiettoria al posto tuo, quindi il rischio di compensare con la schiena bassa è molto più basso rispetto alla versione al cavo.",
+                resp:"Espira nella spinta, inspira nel ritorno."}},
+        {id:'nov26-kneeling-glute-isolator', n:'Kneeling Glute Isolator', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec',
+          info:{setup:"In ginocchio sulla macchina con entrambe le ginocchia appoggiate sul cuscinetto imbottito, cuscinetto/cinghia posteriore agganciato ai fianchi, mani sulle maniglie anteriori solo per l'equilibrio, busto inclinato in avanti in partenza, bacino in posizione neutra prima di iniziare la spinta.",
+                esec:"Spinta: estendi le anche spingendo i fianchi indietro e verso l'alto contro la resistenza, portando il busto in una posizione più eretta e contraendo forte i glutei in cima al movimento — le ginocchia restano ferme sul cuscinetto per tutto il movimento, è il bacino che si muove. Ritorno: fletti le anche tornando controllata alla posizione di partenza con il busto in avanti.",
+                muscolo:"Gluteo massimo di entrambi i lati insieme, non un lato alla volta — limita molto la possibilità di compensare con la schiena rispetto agli altri esercizi glutei in scheda.",
+                resp:"Espira nella spinta, inspira nel ritorno.",
+                attrezzatura:"Non tirare con le braccia sulle maniglie durante il movimento — servono solo a stabilizzarti, il lavoro deve venire dal gluteo."}},
+        {id:'nov26-leg-curl-seduto', n:'Leg curl seduto (macchina)', s:3, sc:'3×12-15', rpe:'8', rec:75, recLabel:'60-90 sec',
+          info:{setup:"Seduta sulla macchina con schiena appoggiata allo schienale, gambe distese in avanti con le caviglie sopra il rullo imbottito, cosce bloccate sotto il cuscinetto superiore, ginocchia allineate al perno della macchina. Mani sulle maniglie laterali della seduta, usate solo per stabilizzarti.",
+                esec:"Concentrica: piega le ginocchia portando il rullo verso il basso e indietro, sotto il sedile, contraendo i femorali in fondo al movimento. Eccentrica: distendi le gambe controllata fino alla posizione di partenza, senza far ricadere di scatto il peso.",
+                muscolo:"Femorali in isolamento. Corretto se senti il lavoro lungo tutta la parte posteriore della coscia; se il bacino si solleva dal sedile durante lo sforzo, il carico è eccessivo per il controllo attuale.",
+                resp:"Espira piegando le ginocchia, inspira tornando giù.",
+                attrezzatura:"Stessa macchina del leg extension del Giorno 1 — due funzioni sulla stessa stazione, entrambe da seduta."}},
+      ]},
+    { id:'nov26-g4', label:'Giorno 4', meta:'Upper B', sub:'Tirata e spalle/postura',
+      esercizi:[
+        {id:'nov26-lat-machine-larga', n:'Lat machine presa larga', s:4, sc:'4×8-10', rpe:'7-8', rec:120, recLabel:'2 min',
+          info:{setup:"Seduta con cosce bloccate sotto l'imbottitura, presa larga sulla barra oltre la larghezza delle spalle. Busto leggermente inclinato indietro con un piccolo arco naturale nella schiena bassa, petto in fuori. Piedi appoggiati a terra o sul supporto.",
+                esec:"Tirata: porta la barra verso la parte alta del petto avvicinando le scapole, gomiti verso il basso e leggermente indietro. Ritorno: lascia risalire controllata fino a braccia quasi distese.",
+                muscolo:"Gran dorsale con enfasi sulla parte alta ed esterna della schiena e più lavoro del trapezio medio, con meno bicipiti rispetto alla presa a V del Giorno 2.",
+                resp:"Espira nella tirata, inspira nel ritorno."}},
+        {id:'nov26-pulley-row-stretta', n:'Pulley (seated row) presa stretta/neutra', s:3, sc:'3×12', rpe:'7-8', rec:90, recLabel:'90 sec',
+          info:{setup:"Seduta con ginocchia leggermente piegate, piedi sul supporto, busto eretto con un piccolo arco naturale nella schiena bassa, presa stretta/neutra su una maniglia a V. Spalle basse e rilassate, non sollevate verso le orecchie.",
+                esec:"Tirata: tira la maniglia verso l'addome portando i gomiti stretti lungo i fianchi, avvicinando le scapole. Ritorno: lascia tornare le braccia in avanti con una leggera flessione del busto per un buon allungamento.",
+                muscolo:"Trapezio medio e romboidi (tra le scapole), utili per il tuo obiettivo di aprire le spalle e migliorare la postura.",
+                resp:"Espira nella tirata, inspira nel ritorno."}},
+        {id:'nov26-shoulder-press-manubri', n:'Shoulder press con manubri da seduta', s:3, sc:'3×10-12', rpe:'7-8', rec:90, recLabel:'90 sec',
+          info:{setup:"Seduta su panca con schienale verticale o leggermente inclinato, un manubrio per mano all'altezza delle spalle, palmi rivolti in avanti. Scapole leggermente indietro e basse contro lo schienale. Piedi ben appoggiati a terra.",
+                esec:"Concentrica: spingi i manubri verso l'alto fino quasi alla distensione completa, senza inarcare eccessivamente la schiena. Eccentrica: scendi controllata fino a portare i manubri di nuovo all'altezza delle spalle.",
+                muscolo:"Deltoide anteriore e mediale, con tricipiti come sinergici.",
+                resp:"Espira nella spinta, inspira in discesa.",
+                attenzione:"Mantieni lo sguardo fisso avanti e il mento leggermente rientrato per tutta la serie. È un esercizio overhead: se anche solo un accenno di tensione al collo compare in una ripetizione, fermati e passa a un carico più leggero."}},
+        {id:'nov26-rear-delt-fly-macchina', n:'Rear delt fly (macchina)', s:3, sc:'3×15', rpe:'7', rec:60, recLabel:'60 sec',
+          info:{setup:"Seduta sulla macchina Peck Back lato rear delt, petto contro lo schienale imbottito, maniglie impugnate davanti a te all'altezza delle spalle, braccia leggermente piegate. Piedi appoggiati a terra per stabilità.",
+                esec:"Apertura: apri le braccia lateralmente e indietro, portando le maniglie il più indietro possibile, contraendo le scapole. Ritorno: torna in avanti controllata senza far sbattere le placche.",
+                muscolo:"Deltoide posteriore, un tassello importante contro le spalle chiuse in avanti.",
+                resp:"Espira nell'apertura, inspira nel ritorno."}},
+        {id:'nov26-alzate-laterali-panca-30', n:'Alzate laterali su panca 30°', s:3, sc:'3×12', rpe:'8', rec:60, recLabel:'60 sec', perLato:true,
+          info:{setup:"Sdraiata su un fianco su panca inclinata a circa 30°, fianchi impilati uno sopra l'altro, gambe distese e leggermente sfalsate per stabilità o piegate se più comodo. Un manubrio nella mano del braccio in alto, presa neutra, braccio leggermente piegato lungo il fianco.",
+                esec:"Salita: solleva il manubrio lateralmente fino all'altezza della spalla, guidando con il gomito. Discesa: scendi controllata senza far toccare il manubrio alla gamba tra una ripetizione e l'altra.",
+                muscolo:"Deltoide laterale — l'inclinazione della panca elimina lo slancio del busto e isola meglio la spalla rispetto alla versione in piedi del Giorno 2.",
+                resp:"Espira in salita, inspira in discesa."}},
+        {id:'nov26-french-press-manubri', n:'French press con manubri', s:3, sc:'3×12', rpe:'7-8', rec:60, recLabel:'60-90 sec', note:'Superset con biceps curl · 60-90″ dopo il giro', superset:'nov26-g4-tricipiti-bicipiti',
+          info:{setup:"Sdraiata su panca (o seduta), manubri tenuti sopra la testa con gomiti puntati verso l'alto e vicini tra loro. Schiena e bacino restano appoggiati alla panca nella loro curva naturale per tutta la serie. Piedi ben appoggiati a terra.",
+                esec:"Eccentrica: piega i gomiti abbassando il manubrio dietro la testa, gomiti fermi e puntati verso il soffitto. Concentrica: estendi le braccia tornando su, contraendo i tricipiti.",
+                muscolo:"Tricipite (soprattutto il capo lungo, che si allunga di più con le braccia sopra la testa).",
+                resp:"Inspira scendendo, espira estendendo verso l'alto."}},
+        {id:'nov26-biceps-curl-panca-45', n:'Biceps curl panca 45°', s:3, sc:'3×12', rpe:'7-8', rec:75, recLabel:'60-90 sec', note:'Superset con french press · 60-90″ dopo il giro', superset:'nov26-g4-tricipiti-bicipiti',
+          info:{setup:"Seduta su panca inclinata a 45° (o sdraiata a pancia in giù), schiena ben appoggiata contro lo schienale nella sua curva naturale, piedi appoggiati a terra. Braccia che pendono libere lungo i fianchi, un manubrio per mano con presa neutra in partenza.",
+                esec:"Concentrica: piega i gomiti portando i manubri verso le spalle, senza staccare i gomiti dal corpo né usare slancio. Eccentrica: distendi controllata fino a braccia quasi distese, sfruttando l'inclinazione per un buon allungamento.",
+                muscolo:"Bicipite in isolamento, con l'inclinazione della panca che aumenta l'allungamento rispetto al curl in piedi.",
+                resp:"Espira salendo, inspira scendendo."}},
+        {id:'nov26-reverse-crunch', n:'Reverse Crunch a corpo libero', s:3, sc:'3×15-20', rec:50, recLabel:'45-60 sec',
+          info:{setup:"Sdraiata supina (a terra o su panca piana), mani lungo i fianchi o leggermente sotto il bacino come appoggio, ginocchia piegate a circa 90°, piedi sollevati da terra.",
+                esec:"Concentrica: contrai la parte bassa degli addominali sollevando il bacino da terra e portando le ginocchia verso il petto — un \"arrotolamento\" del bacino verso l'alto, non un calcio delle gambe. Eccentrica: torna giù controllata, senza far cadere le gambe di scatto né inarcare la schiena in fondo.",
+                muscolo:"Retto addominale, soprattutto la porzione bassa. Errore comune: usare lo slancio delle gambe o spingere con le mani sotto il bacino invece di far lavorare l'addome.",
+                resp:"Espira contraendo/sollevando, inspira scendendo.",
+                attenzione:"A differenza del crunch classico, niente presa dietro la nuca: zero tensione sul collo, scelta deliberata vista la tua storia di fastidio cervicale.",
+                attrezzatura:"Nuovo in questo ciclo: esercizio addominale in più rispetto al ciclo di settembre-ottobre."}},
+      ]},
+  ]},
 ];
 /* Helper: cicli/giorni/esercizi — sempre riflettono la struttura sopra */
 CICLI.forEach(c=> c.giorni.forEach(g=> g.cicloId = c.id));
@@ -1179,6 +1403,12 @@ const EXBYID = {};
 CICLI.forEach(c=> c.giorni.forEach(g=> g.esercizi.forEach(ex=> EXBYID[ex.id] = ex)));
 function cicloAttuale(){ return CICLI.find(c=>c.stato==='attuale'); }
 function cicliPrecedenti(){ return CICLI.filter(c=>c.stato==='precedente'); }
+/* Cicli futuri (dal 16 settembre 2026): bozze già considerate definitive ma
+   che non sono ancora partite. Consultabili come qualunque altro ciclo
+   (renderGiorniOfCiclo/renderGiornoPreview), ma senza poter avviare
+   allenamenti né registrare dati — vedi il controllo su ciclo.stato==='futuro'
+   dentro renderGiornoPreview. */
+function cicliFuturi(){ return CICLI.filter(c=>c.stato==='futuro'); }
 function cicloById(id){ return CICLI.find(c=>c.id===id); }
 function giornoById(id){ for(const c of CICLI){ const g=c.giorni.find(x=>x.id===id); if(g) return g; } return null; }
 function allGiorni(){ return CICLI.flatMap(c=>c.giorni); }
@@ -7045,6 +7275,7 @@ function renderCicli(){
   closeAllOverlays();
   setTimerBarVisible(false);
   const attuale = cicloAttuale();
+  const futuri = cicliFuturi();
   const precedenti = cicliPrecedenti();
   app.innerHTML = `
     <div class="topbar">
@@ -7063,6 +7294,19 @@ function renderCicli(){
           <div class="hc-arrow">${ICO.chev}</div>
         </button>
       ` : `<div class="cron-empty" style="padding:24px 20px;">Nessuna scheda attiva al momento.</div>`}
+      ${futuri.length ? `
+        <div class="section-label">Allenamenti futuri</div>
+        ${futuri.map(c=>`
+          <button class="home-card ciclo-prev ciclo-futuro" data-cid="${c.id}" style="margin-bottom:8px;">
+            <div class="hc-ico" style="background:var(--teal-dim);color:var(--teal);">${ICO.clockHome}</div>
+            <div class="hc-info">
+              <div class="hc-title">${c.nome}</div>
+              <div class="hc-sub">${c.periodo || c.sub} · solo consultazione</div>
+            </div>
+            <div class="hc-arrow">${ICO.chev}</div>
+          </button>
+        `).join('')}
+      ` : ''}
       <div class="section-label">Allenamenti precedenti</div>
       ${precedenti.length ? precedenti.map(c=>`
         <button class="home-card ciclo-prev" data-cid="${c.id}" style="margin-bottom:8px;">
@@ -7093,7 +7337,7 @@ async function renderGiorniOfCiclo(cicloId){
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><h1>${ciclo.nome}</h1><div class="eyebrow" style="margin-top:3px;">${ciclo.periodo || ciclo.sub}${ciclo.stato==='precedente' ? ' · archiviato' : ''}</div></div>
+      <div class="titles"><h1>${ciclo.nome}</h1><div class="eyebrow" style="margin-top:3px;">${ciclo.periodo || ciclo.sub}${ciclo.stato==='precedente' ? ' · archiviato' : ciclo.stato==='futuro' ? ' · in arrivo' : ''}</div></div>
     </div>
     <div class="wrap">
       <div class="info-panel" id="infoPanel">
@@ -7144,7 +7388,7 @@ async function renderGiorniOfCiclo(cicloId){
   ciclo.giorni.forEach(async (g)=>{
     const last = await lastSessionDate(g.id);
     const el = app.querySelector(`[data-last="${g.id}"]`);
-    if(el) el.innerHTML = last ? `Ultima sessione: <b>${fmtDate(last)}</b>` : `Nessuna sessione registrata`;
+    if(el) el.innerHTML = last ? `Ultima sessione: <b>${fmtDate(last)}</b>` : (ciclo.stato==='futuro' ? 'Ciclo non ancora iniziato' : 'Nessuna sessione registrata');
   });
 }
 /* Schermata di sola CONSULTAZIONE per una giornata del ciclo: dal 15 set 2026
@@ -7162,6 +7406,11 @@ async function renderGiornoPreview(giornoId){
   const giorno = giornoById(giornoId);
   if(!giorno){ renderGiorniOfCiclo(state.cicloId); return; }
   const cicloId = giorno.cicloId || state.cicloId;
+  const ciclo = cicloById(cicloId);
+  // Ciclo 'futuro' (dal 16 settembre 2026): solo consultazione, si può
+  // guardare esercizi e schede tecniche ma non avviare un allenamento —
+  // il pulsante "Inizia questo allenamento" qui sotto non viene creato.
+  const isFuturo = !!(ciclo && ciclo.stato === 'futuro');
   // Mappa id->[opzioni del suo gruppo], per annotare ogni esercizio con le
   // sue eventuali alternative (stesso slot, si sceglie durante l'allenamento).
   const gruppoOf = {};
@@ -7174,19 +7423,25 @@ async function renderGiornoPreview(giornoId){
     <div class="wrap">
       <div class="preview-head">
         <div class="preview-sub">${giorno.sub}</div>
-        <div class="preview-last" id="previewLast">Caricamento…</div>
+        ${isFuturo ? '' : `<div class="preview-last" id="previewLast">Caricamento…</div>`}
       </div>
-      <button class="cta" id="btnStartWorkout">Inizia questo allenamento</button>
+      ${isFuturo
+        ? `<div class="warmup-note">${ICO.info}<span>Ciclo non ancora attivo: qui puoi solo consultare esercizi e schede tecniche. Quando il ciclo partirà, potrai avviare gli allenamenti e registrare i dati.</span></div>`
+        : `<button class="cta" id="btnStartWorkout">Inizia questo allenamento</button>`}
       <div class="section-label" style="margin-top:18px;">Esercizi (${contaSlot(giorno)})</div>
       ${giorno.esercizi.map(ex=>renderPreviewExercise(ex, gruppoOf[ex.id])).join('')}
     </div>
   `;
   document.getElementById('btnBack').onclick = ()=>renderGiorniOfCiclo(cicloId);
-  document.getElementById('btnStartWorkout').onclick = ()=>startNewWorkout(giornoId);
+  if(!isFuturo){
+    document.getElementById('btnStartWorkout').onclick = ()=>startNewWorkout(giornoId);
+  }
   wireExerciseEvents();
-  const last = await lastSessionDate(giornoId);
-  const lastEl = document.getElementById('previewLast');
-  if(lastEl) lastEl.innerHTML = last ? `Ultima sessione: <b>${fmtDate(last)}</b>` : `Nessuna sessione registrata`;
+  if(!isFuturo){
+    const last = await lastSessionDate(giornoId);
+    const lastEl = document.getElementById('previewLast');
+    if(lastEl) lastEl.innerHTML = last ? `Ultima sessione: <b>${fmtDate(last)}</b>` : `Nessuna sessione registrata`;
+  }
 }
 /* Card di sola lettura per un esercizio nella schermata di consultazione:
    stessa impostazione visiva di renderExercise (vedi più sotto), ma senza
