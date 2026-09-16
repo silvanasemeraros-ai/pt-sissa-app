@@ -1182,12 +1182,13 @@ const CICLI = [
      'futuro' (diverso da 'attuale' e 'precedente') blocca l'avvio di sessioni
      e l'inserimento dati: vedi renderGiornoPreview più sotto, dove per questo
      stato il pulsante "Inizia questo allenamento" non viene nemmeno creato. */
-  { id:'nov2026', nome:'Ciclo Novembre–Dicembre 2026', periodo:'Novembre 2026 – Gennaio 2027', sub:'4 giorni · upper / lower · in arrivo', stato:'futuro',
+  { id:'nov2026', nome:'Ciclo Novembre–Dicembre 2026', periodo:'Novembre – Dicembre 2026', sub:'4 giorni · upper / lower · in arrivo', stato:'futuro',
     periodizzazione:{scaricoOgni:5},
     giorni:[
     { id:'nov26-g1', label:'Giorno 1', meta:'Lower A', sub:'Quadricipiti e gluteo massimo',
       esercizi:[
         {id:'nov26-hack-squat', n:'Hack squat', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
+          note:'Settimane 3-4 del ciclo (Intensificazione): scendi a 6-8 ripetizioni per serie, aumentando il carico — più margine per spingere pesante su questo multiarticolare, come nelle schede della tua vecchia PT.',
           info:{setup:"Piedi in appoggio sulla pedana, leggermente più larghi delle spalle, punte leggermente verso l'esterno, peso distribuito su tutta la pianta (non solo sulle punte). Schiena e spalle premute contro lo schienale imbottito, con la normale curva della zona lombare (la parte bassa della schiena) mantenuta aderente al cuscinetto — né appiattita né inarcata. Mani sulle maniglie laterali della seduta, usate solo come punto d'appoggio, non per spingere. Sblocca i fermi solo dopo esserti posizionata.",
                 esec:"Fase eccentrica (discesa, 2-3 secondi): pieghi le ginocchia portando i cuscinetti verso il basso in modo controllato, senza staccare i talloni, finché le cosce sono parallele al pavimento o poco oltre. Fase concentrica (spinta): spingi con i talloni per tornare su, senza bloccare di scatto le ginocchia in cima. Un segnale utile per capire fin dove scendere: se senti la parte bassa della schiena staccarsi dallo schienale e arrotondarsi, sei scesa troppo — fermati un po' prima, anche se non hai ancora raggiunto il parallelo.",
                 muscolo:"Lavora soprattutto il quadricipite, con gluteo e femorali come sinergici nella fase finale. Sensazione corretta: spinta uniforme su tutto il piede. Errore comune: spingere solo sulle punte, che scarica il lavoro sui polpacci e stressa le ginocchia.",
@@ -1309,6 +1310,7 @@ const CICLI = [
     { id:'nov26-g3', label:'Giorno 3', meta:'Lower B', sub:'Femorali e gluteo medio/piccolo',
       esercizi:[
         {id:'nov26-stacco-rumeno-manubri', n:'Stacco rumeno (RDL) con manubri', s:4, sc:'4×10-12', rpe:'7-8', rec:150, recLabel:'2-3 min',
+          note:'Settimane 3-4 del ciclo (Intensificazione): scendi a 6-8 ripetizioni per serie, aumentando il carico — più margine per spingere pesante su questo multiarticolare, come nelle schede della tua vecchia PT.',
           info:{setup:"In piedi con i piedi alla larghezza dei fianchi, un manubrio per mano tenuto lungo i fianchi (non davanti alle cosce come con il bilanciere), palmi rivolti verso il corpo, ginocchia leggermente piegate e fisse per tutto il movimento, schiena neutra, sguardo avanti/basso senza sollevare il mento.",
                 esec:"Eccentrica: spingi i fianchi indietro facendo scorrere i manubri lungo le gambe, schiena dritta, finché senti un buon allungamento dei femorali. Concentrica: spingi i fianchi in avanti tornando eretta, contraendo i glutei in cima.",
                 muscolo:"Femorali e gluteo massimo, con la schiena bassa come stabilizzatore isometrico. Sensazione corretta: stiramento intenso dietro la coscia. Errore comune: arrotondare la schiena o piegare troppo le ginocchia.",
@@ -7358,7 +7360,7 @@ async function renderGiorniOfCiclo(cicloId){
             <li><b>Ipertrofia</b> = crescita muscolare.</li>
             <li><b>Deload</b> = settimana a volume e intensità ridotti per recuperare.</li>
           </ul>
-          <p><b>Periodizzazione:</b> settembre-ottobre (6 settimane) — 5 settimane di accumulo a RPE 7-8, poi 1 di deload (2 serie invece di 3-4, RPE 5-6). Da novembre: blocco forza di 6-7 settimane (carichi più alti, ripetizioni più basse), seguito da un nuovo deload.</p>
+          <p><b>Periodizzazione:</b> settembre-ottobre (6 settimane) — 5 settimane di accumulo a RPE 7-8, poi 1 di deload (2 serie invece di 3-4, RPE 5-6). Da novembre: nuovo ciclo di circa 8 settimane — accumulo (settimane 1-2), intensificazione (settimane 3-4: RPE 8-9, e sui multiarticolari principali come Stacco rumeno e Hack squat le ripetizioni scendono a 6-8 per caricare di più), scarico (settimana 5), poi un nuovo blocco più pesante (settimane 6-7) fino alla chiusura del ciclo — con l'app che segnala in automatico in che settimana sei.</p>
         </div>
       </div>
       <div class="section-label">Seleziona il giorno</div>
