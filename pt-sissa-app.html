@@ -1425,58 +1425,68 @@ function cicloById(id){ return CICLI.find(c=>c.id===id); }
 function giornoById(id){ for(const c of CICLI){ const g=c.giorni.find(x=>x.id===id); if(g) return g; } return null; }
 function allGiorni(){ return CICLI.flatMap(c=>c.giorni); }
 /* ============== RISCALDAMENTO PER GIORNO ==============
-   Riscaldamenti specifici per giorno, pensati sui gruppi muscolari coinvolti
-   quel giorno (quadricipiti/glutei, spinta/postura, femorali/gluteo medio,
-   tirata/spalle). Chiave = id del giorno. */
+   Rivisto il 24 settembre 2026 insieme a Silvana, giorno per giorno, sul
+   modello delle schede a 4 giorni della sua vecchia PT (pochi esercizi
+   mirati, ripetuti in piu' giri): 6 esercizi per giorno, 2 giri di fila,
+   scelti in base all'allenamento di quel giorno. Lo stesso riscaldamento
+   vale per il ciclo di settembre-ottobre e per quello di novembre-dicembre
+   (stessa struttura dei 4 giorni). Ogni voce: n = nome, d = ripetizioni per
+   giro, come = breve descrizione di esecuzione. */
+const WARMUP_DEFS = {
+  lowerA: {
+    giri:2, durata:'circa 8 minuti',
+    focus:'Caviglie mobili per scendere bene nello squat e negli affondi, anca aperta davanti per affondi e Hip Thrust, glutei attivi fin dal primo esercizio.',
+    avvicinamento:"1-2 serie leggere di Hack squat prima delle serie vere.",
+    esercizi:[
+      {n:'Cat-cow', d:'8 ripetizioni', come:"A quattro zampe: alterna schiena arrotondata verso l'alto (espira) e schiena che scende con lo sguardo avanti (inspira), lentamente."},
+      {n:"World's greatest stretch", d:'4 per lato', come:"Affondo lungo in avanti, mano opposta a terra: porta il gomito verso il piede avanti, poi ruota il busto aprendo il braccio verso il soffitto."},
+      {n:'Mobilità caviglia al muro (dorsiflessione)', d:'10 per lato', come:"Piede a un palmo dal muro: porta il ginocchio a toccare il muro senza staccare il tallone, poi torna indietro."},
+      {n:'Squat a corpo libero con braccia in alto', d:'10 ripetizioni', come:"Braccia distese sopra la testa per tutto il movimento: scendi in squat tenendo il busto il più dritto possibile."},
+      {n:'Affondi laterali dinamici', d:'6 per lato', come:"Passo largo di lato, piega la gamba che si sposta tenendo l'altra distesa (senti l'interno coscia), poi spingi e torna al centro."},
+      {n:'Ponte glutei con banda sopra le ginocchia', d:'12 ripetizioni', come:"Supina, piedi a terra, banda sopra le ginocchia: spingi il bacino in alto contraendo i glutei e tieni le ginocchia aperte contro la banda."},
+    ]},
+  upperA: {
+    giri:2, durata:'circa 8 minuti',
+    focus:'Scapole mobili e controllate per tirate e push-up, parte alta della schiena che ruota (collo tranquillo), cuffia dei rotatori pronta per alzate e face pull.',
+    avvicinamento:"1 serie leggera di Lat machine presa a V prima delle serie vere.",
+    esercizi:[
+      {n:'Child to cobra', d:'8 ripetizioni', come:"Dalla posizione del bambino (glutei sui talloni, braccia avanti) scivola in avanti fino a pancia a terra e solleva il petto sulle mani (cobra), poi torna indietro."},
+      {n:'Rotazione toracica coricata su un fianco', d:'6 per lato', come:"Sdraiata su un fianco, ginocchia piegate a 90° e braccia distese davanti unite: apri il braccio di sopra verso il lato opposto seguendolo con lo sguardo, ginocchia ferme."},
+      {n:'Elevazioni e depressioni scapolari alla lat', d:'10 ripetizioni', come:"Alla lat con peso leggero e braccia distese: senza piegare i gomiti, abbassa le scapole verso le tasche dietro e poi lasciale risalire."},
+      {n:'Rotazione delle spalle con banda elastica', d:'10 ripetizioni', come:"Banda tesa tra le mani a braccia distese: portala da davanti le cosce fino dietro la schiena passando sopra la testa, e ritorno. Allarga la presa se non passa."},
+      {n:'Rotazione esterna di spalla con elastico', d:'12 per lato', come:"Gomito piegato a 90° attaccato al fianco: ruota l'avambraccio verso l'esterno tirando l'elastico, senza staccare il gomito."},
+      {n:'Plank con shoulder tap', d:'6 per lato', come:"In plank sulle mani, piedi un po' larghi: tocca con una mano la spalla opposta, alternando, senza far ruotare il bacino."},
+    ]},
+  lowerB: {
+    giri:2, durata:'circa 8-9 minuti',
+    focus:"Femorali pronti a lavorare in allungamento nello stacco rumeno, addome stabile per proteggere la schiena bassa, gluteo medio attivo.",
+    avvicinamento:"1-2 serie leggere del primo esercizio della scheda prima delle serie vere.",
+    esercizi:[
+      {n:'Cat-cow', d:'8 ripetizioni', come:"A quattro zampe: alterna schiena arrotondata verso l'alto (espira) e schiena che scende con lo sguardo avanti (inspira), lentamente."},
+      {n:'Caterpillar walk', d:'5 ripetizioni', come:"In piedi, piega il busto e porta le mani a terra (ginocchia il più distese possibile), cammina con le mani fino al plank, poi torna con le mani verso i piedi e risali."},
+      {n:'Dead bug', d:'6 per lato', come:"Supina, braccia verso il soffitto e ginocchia a 90°: distendi braccio e gamba opposti tenendo la schiena bassa schiacciata a terra, poi cambia lato."},
+      {n:'Sequenza da squat a stacco rumeno', d:'8 ripetizioni', come:"Scendi in squat e prendi le punte dei piedi, poi distendi le gambe tenendo le mani vicino ai piedi (allungamento dietro le cosce) e risali srotolando la schiena."},
+      {n:'Affondi laterali dinamici', d:'6 per lato', come:"Passo largo di lato, piega la gamba che si sposta tenendo l'altra distesa (senti l'interno coscia), poi spingi e torna al centro."},
+      {n:'Monster walk con banda elastica', d:'10 passi per lato', come:"Banda sopra le ginocchia o alle caviglie, leggera posizione di mezzo squat: cammina di lato a passi corti mantenendo la banda sempre in tensione."},
+    ]},
+  upperB: {
+    giri:2, durata:'circa 8 minuti',
+    focus:'Spalle che salgono bene sopra la testa (Shoulder press, Lat presa larga) senza inarcare la schiena, scapole che si abbassano a comando, spalla posteriore e cuffia attive.',
+    avvicinamento:"1 serie leggera di Lat machine presa larga prima delle serie vere.",
+    esercizi:[
+      {n:'Cat-cow', d:'8 ripetizioni', come:"A quattro zampe: alterna schiena arrotondata verso l'alto (espira) e schiena che scende con lo sguardo avanti (inspira), lentamente."},
+      {n:'Bird dog', d:'6 per lato', come:"A quattro zampe: distendi braccio e gamba opposti fino ad allinearli al busto, tenendo il bacino fermo, poi torna e cambia lato."},
+      {n:'Wall angel', d:'10 ripetizioni', come:"Schiena, testa e glutei appoggiati al muro, braccia a W contro il muro: falle scivolare in alto e giù senza staccarle e senza inarcare la schiena bassa."},
+      {n:'Elevazioni e depressioni scapolari alla lat', d:'10 ripetizioni', come:"Alla lat con peso leggero e braccia distese: senza piegare i gomiti, abbassa le scapole verso le tasche dietro e poi lasciale risalire."},
+      {n:'Rotazione esterna di spalla con elastico', d:'12 per lato', come:"Gomito piegato a 90° attaccato al fianco: ruota l'avambraccio verso l'esterno tirando l'elastico, senza staccare il gomito."},
+      {n:'Band pull-apart', d:'15 ripetizioni', come:"Braccia distese davanti a te con la banda tesa: aprile verso l'esterno fino a portare la banda al petto, stringendo le scapole, poi torna controllata."},
+    ]},
+};
 const WARMUP_BY_GIORNO = {
-  'set2026-g1': [
-    {n:'Cat-cow', d:'10 ripetizioni'},
-    {n:"World's greatest stretch", d:'5 per lato'},
-    {n:'Squat a corpo libero', d:'15 ripetizioni'},
-    {n:'Affondi in camminata', d:'10 per gamba'},
-    {n:'Leg swings avanti-indietro', d:'10 per gamba'},
-    {n:'Ponte glutei', d:'15 ripetizioni'},
-    {n:'Air squat con pausa in basso', d:'10 ripetizioni'},
-    {n:'Monster walk leggero con fascia', d:'10 passi per lato'},
-    {n:'Mobilità caviglia al muro (dorsiflessione)', d:'10 per lato'},
-    {n:'Squat con bilanciere scarico', d:'8 ripetizioni'},
-  ],
-  'set2026-g2': [
-    {n:'Cat-cow', d:'10 ripetizioni'},
-    {n:'Rotazione toracica a quattro zampe', d:'8 per lato'},
-    {n:'Band pull-apart', d:'15 ripetizioni'},
-    {n:'Face pull leggero con elastico', d:'15 ripetizioni'},
-    {n:'Circonduzioni di spalle', d:'10 avanti, 10 indietro'},
-    {n:'Wall slide', d:'10 ripetizioni'},
-    {n:'Retrazioni scapolari in plank', d:'10 ripetizioni'},
-    {n:'Rotazione esterna di spalla con elastico', d:'12 per lato'},
-    {n:'Stretch pettorale al muro', d:"20″ per lato"},
-    {n:'Piegamenti leggeri (anche sulle ginocchia)', d:'8 ripetizioni'},
-  ],
-  'set2026-g3': [
-    {n:'Cat-cow', d:'10 ripetizioni'},
-    {n:"World's greatest stretch", d:'5 per lato'},
-    {n:'Leg swings laterali', d:'10 per gamba'},
-    {n:'Monster walk con fascia elastica', d:'10 passi per lato'},
-    {n:'Ponte glutei monopodalico', d:'8 per gamba'},
-    {n:'Good morning a corpo libero', d:'12 ripetizioni'},
-    {n:'Affondi laterali', d:'8 per lato'},
-    {n:'Clamshell (attivazione gluteo medio)', d:'12 per lato'},
-    {n:'Stacco rumeno a corpo libero', d:'10 ripetizioni'},
-    {n:'Squat sumo leggero', d:'10 ripetizioni'},
-  ],
-  'set2026-g4': [
-    {n:'Cat-cow', d:'10 ripetizioni'},
-    {n:'Rotazione toracica a quattro zampe', d:'8 per lato'},
-    {n:'Band pull-apart', d:'15 ripetizioni'},
-    {n:'Retrazioni scapolari (o scapular pull-up alla sbarra)', d:'10 ripetizioni'},
-    {n:'Face pull con elastico', d:'15 ripetizioni'},
-    {n:'Circonduzioni di spalle', d:'10 avanti, 10 indietro'},
-    {n:'Rotazione esterna di spalla con elastico', d:'12 per lato'},
-    {n:'Dead hang leggero alla sbarra', d:"15-20″"},
-    {n:'Row leggero con elastico', d:'12 ripetizioni'},
-    {n:"Stretch dorsali (child's pose con braccia estese)", d:"20″"},
-  ],
+  'set2026-g1': WARMUP_DEFS.lowerA, 'nov26-g1': WARMUP_DEFS.lowerA,
+  'set2026-g2': WARMUP_DEFS.upperA, 'nov26-g2': WARMUP_DEFS.upperA,
+  'set2026-g3': WARMUP_DEFS.lowerB, 'nov26-g3': WARMUP_DEFS.lowerB,
+  'set2026-g4': WARMUP_DEFS.upperB, 'nov26-g4': WARMUP_DEFS.upperB,
 };
 function warmupForGiorno(giornoId){ return WARMUP_BY_GIORNO[giornoId] || null; }
 /* ============== STATE ============== */
@@ -7383,7 +7393,7 @@ async function renderGiorniOfCiclo(cicloId){
         </div>
         <div class="info-panel-body" id="infoPanelBody">
           <p><b>Split:</b> 4 giorni fissi — gambe e glutei nei Giorni 1 e 3, parte superiore nei Giorni 2 e 4, con più esercizi di tirata che di spinta per lavorare sulla postura.</p>
-          <p><b>Riscaldamento:</b> 8-10 minuti di mobilità prima di ogni sessione — cat-cow, world's greatest stretch, squat a corpo libero, rotazione toracica, ponte glutei.</p>
+          <p><b>Riscaldamento:</b> circa 8 minuti di mobilità prima di ogni sessione, diversa per ogni giorno in base all'allenamento: 6 esercizi da ripetere per 2 giri, con le ripetizioni indicate per ciascuno, poi 1-2 serie leggere del primo esercizio. La trovi toccando "Riscaldamento" all'inizio di ogni allenamento.</p>
           <p><b>Glossario rapido:</b></p>
           <ul>
             <li><b>RPE</b> = sforzo percepito da 1 a 10 (8 = ancora ~2 ripetizioni prima del cedimento).</li>
@@ -7461,11 +7471,17 @@ async function renderGiornoPreview(giornoId){
       ${isFuturo
         ? `<div class="warmup-note">${ICO.info}<span>Ciclo non ancora attivo: qui puoi solo consultare esercizi e schede tecniche. Quando il ciclo partirà, potrai avviare gli allenamenti e registrare i dati.</span></div>`
         : `<button class="cta" id="btnStartWorkout">Inizia questo allenamento</button>`}
+      ${warmupForGiorno(giornoId) ? `<button class="warmup-note" id="btnWarmupPreview" style="width:100%;text-align:left;border:1px solid rgba(63,199,184,0.25);margin-top:12px;">
+        ${ICO.timerIco}<span>Riscaldamento: ${warmupForGiorno(giornoId).esercizi.length} esercizi × ${warmupForGiorno(giornoId).giri} giri, ${warmupForGiorno(giornoId).durata}. Tocca per vedere esercizi e ripetizioni.</span>
+        <span style="margin-left:auto;flex-shrink:0;color:var(--teal);">${ICO.chev}</span>
+      </button>` : ''}
       <div class="section-label" style="margin-top:18px;">Esercizi (${contaSlot(giorno)})</div>
       ${giorno.esercizi.map(ex=>renderPreviewExercise(ex, gruppoOf[ex.id])).join('')}
     </div>
   `;
   document.getElementById('btnBack').onclick = ()=>renderGiorniOfCiclo(cicloId);
+  const btnWp = document.getElementById('btnWarmupPreview');
+  if(btnWp) btnWp.onclick = ()=> openWarmupInfo(giornoId, giorno.label, giorno.meta);
   if(!isFuturo){
     document.getElementById('btnStartWorkout').onclick = ()=>startNewWorkout(giornoId);
   }
@@ -7761,7 +7777,7 @@ function renderWorkout(){
         <span class="save-pill" id="savePill">salvato</span>
       </div>
       <button class="warmup-note" id="btnWarmup" style="width:100%;text-align:left;border:1px solid rgba(63,199,184,0.25);">
-        ${ICO.timerIco}<span>Riscaldamento con mobilità 8-10 minuti prima di iniziare (non incluso qui sotto). Tocca per vedere gli esercizi.</span>
+        ${ICO.timerIco}<span>${(()=>{const w=warmupForGiorno(state.giornoId);return w?`Riscaldamento: ${w.esercizi.length} esercizi × ${w.giri} giri, ${w.durata} (non incluso qui sotto). Tocca per vedere esercizi e ripetizioni.`:'Riscaldamento con mobilità 8-10 minuti prima di iniziare (non incluso qui sotto).';})()}</span>
         <span style="margin-left:auto;flex-shrink:0;color:var(--teal);">${ICO.chev}</span>
       </button>
       ${headerSub ? `<div class="section-label">${headerSub}</div>` : ''}
@@ -7813,22 +7829,27 @@ function renderWorkout(){
   wireTimer();
 }
 function openWarmupInfo(giornoId, headerLabel, headerMeta){
-  const list = warmupForGiorno(giornoId);
+  const w = warmupForGiorno(giornoId);
   document.getElementById('infoTitle').textContent = 'Riscaldamento';
-  if(!list){
+  if(!w){
     document.getElementById('infoScroll').innerHTML = `<div class="info-block"><p>Nessun riscaldamento specifico configurato per questo giorno: usa 8-10 minuti di mobilità generale prima di iniziare.</p></div>`;
   } else {
     document.getElementById('infoScroll').innerHTML = `
       <div class="info-block">
         <div class="info-block-label">${ICO_MOVE} ${headerLabel || ''} ${headerMeta ? '· '+headerMeta : ''}</div>
-        <p>Circa 8-10 minuti, pensati per i muscoli che userai oggi.</p>
+        <p><b>${w.esercizi.length} esercizi × ${w.giri} giri</b> (${w.durata}): fai tutti gli esercizi uno dopo l'altro con le ripetizioni indicate, poi ricomincia dal primo per il secondo giro. Nessuna pausa tra gli esercizi, al massimo 30 secondi tra un giro e l'altro.</p>
+        <p style="margin-top:6px;"><b>A cosa serve oggi:</b> ${w.focus}</p>
       </div>
-      ${list.map((w,i)=>`
+      ${w.esercizi.map((e,i)=>`
         <div class="info-block">
-          <div class="info-block-label">${ICO_SETUP} ${i+1}. ${w.n}</div>
-          <p>${w.d}</p>
+          <div class="info-block-label">${ICO_SETUP} ${i+1}. ${e.n} · ${e.d} per giro</div>
+          <p>${e.come}</p>
         </div>
       `).join('')}
+      <div class="info-block">
+        <div class="info-block-label">${ICO_MOVE} Dopo il riscaldamento</div>
+        <p>${w.avvicinamento}</p>
+      </div>
     `;
   }
   document.getElementById('infoSheet').classList.add('open');
