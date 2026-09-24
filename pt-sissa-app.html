@@ -4936,6 +4936,27 @@ function opzioniPerPasto(){
     if(!out[pid]) out[pid] = [];
     ALIM_OPZIONI_EXTRA_MANUALI[pid].forEach(op=> out[pid].push(op));
   });
+  /* Pranzo e cena condividono le ricette (richiesta di Silvana, 24 set 2026):
+     a pranzo si puo' scegliere anche una qualsiasi ricetta delle cene (es. il
+     panino con tartare) e viceversa. Le ricette "prese in prestito" vengono
+     accodate DOPO quelle native del pasto, con un id stabile derivato
+     dall'id originale (prefisso 'x-') cosi' le scelte salvate restano
+     ritrovabili; `daPasto` indica da quale pasto arrivano (solo per l'etichetta
+     nel selettore). Se una ricetta con lo stesso nome esiste gia' nel pasto,
+     non viene duplicata. */
+  const nativePranzo = (out.pranzo||[]).slice();
+  const nativeCena = (out.cena||[]).slice();
+  const incrocia = (dest, sorgente, daPasto)=>{
+    const nomi = new Set(out[dest].map(o=>o.titolo));
+    sorgente.forEach(op=>{
+      if(nomi.has(op.titolo)) return;
+      out[dest].push(Object.assign({}, op, { id:'x-'+op.id, pastoId:dest, daPasto }));
+    });
+  };
+  if(out.pranzo && out.cena){
+    incrocia('pranzo', nativeCena, 'cena');
+    incrocia('cena', nativePranzo, 'pranzo');
+  }
   ALIM_OPZIONI_CACHE = out;
   return out;
 }
@@ -6344,7 +6365,7 @@ function mealRowHTML(pastoId, entry){
           <div class="meal-row-icon">${ALIM_PASTI_ICONA[pastoId]}</div>
           <div class="meal-row-info">
             <div class="meal-row-name">${ALIM_PASTI_LABEL[pastoId]}</div>
-            <div class="meal-row-opt">${viaExtra?'🔁 ':''}${titolo}${op&&!viaExtra?` <span class="meal-row-var">variante ${op.letteraOrigine}</span>`:''}${showPorzione?` <span class="meal-row-porzione">porzione ${Math.round(fattore*100)}%</span>`:''}</div>
+            <div class="meal-row-opt">${viaExtra?'🔁 ':''}${titolo}${op&&!viaExtra?` <span class="meal-row-var">variante ${op.letteraOrigine}${op.daPasto?` · da ${op.daPasto}`:''}</span>`:''}${showPorzione?` <span class="meal-row-porzione">porzione ${Math.round(fattore*100)}%</span>`:''}</div>
             ${showConsiglio ? `<div class="meal-row-consigliato">Per restare in target ti conviene circa ${consigliato} kcal qui (invece di ${op.kcal})</div>` : ''}
           </div>
           <div class="meal-row-kcal" id="mealKcalTotal-${pastoId}">${kcalRiga}<span>kcal</span></div>
@@ -6513,7 +6534,7 @@ function renderPickerOpzioneBody(pastoId){
               <span class="opz-item-titolo">${o.titolo}${sel?' <span class="opz-item-badge">In uso</span>':''}</span>
               <span class="opz-item-kcal" id="${sel?`opzKcalTotal-${o.id}`:''}">${sel?Math.round(pastoOpTotals(o,pastoId,entry).kcal):o.kcal} kcal</span>
             </div>
-            <div class="opz-item-macro"><span id="${sel?`opzMacroTotal-${o.id}`:''}">${sel?(()=>{const t=pastoOpTotals(o,pastoId,entry);return `P ${fmtMacro(t.p)}g · C ${fmtMacro(t.c)}g · G ${fmtMacro(t.g)}g`;})():`P ${o.p}g · C ${o.c}g · G ${o.g}g`}</span> · <span class="opz-item-var">variante ${o.letteraOrigine}</span></div>
+            <div class="opz-item-macro"><span id="${sel?`opzMacroTotal-${o.id}`:''}">${sel?(()=>{const t=pastoOpTotals(o,pastoId,entry);return `P ${fmtMacro(t.p)}g · C ${fmtMacro(t.c)}g · G ${fmtMacro(t.g)}g`;})():`P ${o.p}g · C ${o.c}g · G ${o.g}g`}</span> · <span class="opz-item-var">variante ${o.letteraOrigine}${o.daPasto?` · ricetta da ${o.daPasto}`:''}</span></div>
           </button>
           <button class="opz-item-toggle" data-toggle-opid="${o.id}">${sel?'Ingredienti e quantità — modificabili ▾':'Ingredienti e quantità ▾'}</button>
           <div class="opz-item-detail" id="opzDetail-${o.id}">
