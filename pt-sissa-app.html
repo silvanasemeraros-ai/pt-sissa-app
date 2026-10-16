@@ -975,7 +975,7 @@ function yesterdayLocalISO(){
 const LATO_DEBOLE = 'Sinistra';
 const LATO_FORTE = 'Destra';
 const CICLI = [
-  { id:'set2026', nome:'Ciclo Settembre 2026', periodo:'Settembre – Ottobre 2026', sub:'4 giorni · upper / lower', stato:'attuale',
+  { id:'set2026', nome:'Ciclo Settembre 2026', periodo:'Settembre – Ottobre 2026', sub:'4 giorni · upper / lower', stato:'attuale', inizio:'2026-09-01', fine:'2026-10-31',
     periodizzazione:{scaricoOgni:5}, // ogni 5 settimane di allenamento (contate dalla prima sessione registrata su questo ciclo) l'app consiglia una settimana piu' leggera — vedi la sezione "SETTIMANA DEL CICLO" piu' sotto per i dettagli
     giorni:[
     { id:'set2026-g1', label:'Giorno 1', meta:'Lower A', sub:'Gluteo massimo e quadricipiti',
@@ -1234,7 +1234,7 @@ const CICLI = [
      'futuro' (diverso da 'attuale' e 'precedente') blocca l'avvio di sessioni
      e l'inserimento dati: vedi renderGiornoPreview più sotto, dove per questo
      stato il pulsante "Inizia questo allenamento" non viene nemmeno creato. */
-  { id:'nov2026', nome:'Ciclo Novembre–Dicembre 2026', periodo:'Novembre – Dicembre 2026', sub:'4 giorni · upper / lower · in arrivo', stato:'futuro',
+  { id:'nov2026', nome:'Ciclo Novembre–Dicembre 2026', periodo:'Novembre – Dicembre 2026', sub:'4 giorni · upper / lower', stato:'futuro', inizio:'2026-11-01',
     periodizzazione:{scaricoOgni:5},
     giorni:[
     { id:'nov26-g1', label:'Giorno 1', meta:'Lower A', sub:'Gluteo massimo, medio e quadricipiti',
@@ -1468,6 +1468,13 @@ const CICLI = [
                 resp:"Espira piegando le ginocchia, inspira tornando giù.",
                 glutei:"<b>Gluteo:</b> non coinvolto: lavorano solo i femorali (dietro la coscia). È normale non sentire il gluteo.",
                 attrezzatura:"Stessa macchina del leg extension del Giorno 1 — due funzioni sulla stessa stazione, entrambe da seduta."}},
+        {id:'nov26-vacuum', n:'Vacuum addominale', s:3, sc:'3×20 sec', rec:45, recLabel:'30-45 sec',
+          info:{setup:"Per le prime settimane: sdraiata a pancia in su (supina), ginocchia piegate e piedi appoggiati a terra alla larghezza dei fianchi, braccia lungo i fianchi. Schiena neutra: la parte bassa mantiene la sua piccola curva naturale, senza schiacciarla a terra e senza inarcarla. Quando ti viene facile, puoi farlo a quattro zampe (mani sotto le spalle, ginocchia sotto le anche) e più avanti in piedi o seduta.",
+                esec:"PRIMA DI INIZIARE — trova il muscolo: appoggia una mano sulla pancia, due dita sotto l'ombelico, e fai un colpetto di tosse o soffia forte come per spegnere una candela: la pancia sotto le dita che si indurisce e rientra è il trasverso, il muscolo che userai. 1) INSPIRA (3-4 secondi): dal naso, lentamente, lasciando che la pancia si gonfi un po'. 2) ESPIRA (5-6 secondi): dalla bocca, labbra socchiuse come se soffiassi su una candela senza spegnerla, finché non hai svuotato del tutto i polmoni — nelle ultime \"gocce\" d'aria sentirai già la pancia che rientra da sola. 3) RISUCCHIA: a polmoni vuoti chiudi la bocca e tira l'ombelico verso la colonna e leggermente verso l'alto, sotto le costole, come per chiudere un paio di jeans strettissimi; la pancia diventa piatta o un po' concava e le costole si sollevano leggermente. Bacino, schiena e spalle restano fermi. 4) TIENI (20 secondi): mantieni la pancia risucchiata facendo piccoli respiri corti dal naso con la parte alta del petto, come piccoli sorsi d'aria; conta lentamente; se senti la pancia che \"scappa\" in fuori, ritirala dentro. 5) RILASCIA (2-3 secondi): lascia andare la pancia piano, non di colpo, poi fai 2-3 respiri normali e profondi. Questa è una serie: riposa 30-45 secondi e ripeti per 3 serie. È una contrazione di tenuta (isometrica), non un movimento: niente si muove tranne la pancia che rientra. ERRORI COMUNI: trattenere il fiato a petto chiuso invece di respirare piano; spingere la pancia in fuori o \"indurirla\" come in un crunch (lavora il retto addominale, non il trasverso); spingere verso il basso come per un ponzamento (la tensione va verso l'alto e dentro, mai verso il basso); schiacciare la schiena a terra o sollevare il bacino; irrigidire collo e spalle.",
+                muscolo:"Trasverso dell'addome: il muscolo più profondo dell'addome, che avvolge la vita come un corsetto naturale e tiene la pancia contenuta. Non è un esercizio per \"bruciare\" la pancia (non esiste il dimagrimento localizzato), ma per rinforzare questo corsetto, migliorare il controllo del core e aiutare la postura. Corretto se senti la pancia sotto l'ombelico che rientra e \"si stringe\" in profondità; sbagliato se il bacino si muove, la schiena si inarca o si appiattisce, o se stai solo trattenendo il fiato senza contrarre.",
+                resp:"La chiave è l'espirazione completa all'inizio: senza aria nei polmoni la pancia rientra molto di più. Durante la tenuta respira piano e corto con il petto, senza mai lasciare uscire la pancia. Se ti viene da trattenere il fiato, accorcia la tenuta (anche 10-15 secondi all'inizio va benissimo).",
+                attenzione:"Fallo lontano dai pasti abbondanti (a fine seduta va bene, a stomaco pieno no). Collo e spalle rilassati, mento leggermente rientrato: tutta la tensione è sulla pancia, non sul collo. Se ti gira la testa, rilascia subito e respira normalmente prima della serie successiva.",
+                attrezzatura:"Nuovo in questo ciclo, aggiunto il 16 ottobre 2026: nessuna attrezzatura, basta un tappetino. Progressione: quando 3×20 secondi ti vengono facili, passa a 3×30 secondi, poi alla versione a quattro zampe."}},
       ]},
     { id:'nov26-g4', label:'Giorno 4', meta:'Upper B', sub:'Tirata e spalle/postura',
       esercizi:[
@@ -1521,14 +1528,35 @@ const CICLI = [
 CICLI.forEach(c=> c.giorni.forEach(g=> g.cicloId = c.id));
 const EXBYID = {};
 CICLI.forEach(c=> c.giorni.forEach(g=> g.esercizi.forEach(ex=> EXBYID[ex.id] = ex)));
-function cicloAttuale(){ return CICLI.find(c=>c.stato==='attuale'); }
-function cicliPrecedenti(){ return CICLI.filter(c=>c.stato==='precedente'); }
+/* PASSAGGIO AUTOMATICO TRA CICLI (16 ottobre 2026, richiesta di Silvana).
+   Se un ciclo ha le date "inizio"/"fine" (formato AAAA-MM-GG, ora italiana),
+   il suo stato viene ricalcolato da solo in base alla data di oggi:
+   prima di "inizio" -> 'futuro' (solo consultazione), tra "inizio" e "fine"
+   -> 'attuale', dopo "fine" -> 'precedente' (finisce in "Allenamenti
+   precedenti", con storico e statistiche intatti). Lo "stato" scritto nei
+   dati resta solo come valore di partenza per i cicli senza date.
+   Esempio: il 1° novembre 2026 il ciclo di novembre diventa l'allenamento
+   attuale e quello di settembre passa tra i precedenti, senza toccare nulla.
+   Ricalcolato a ogni chiamata (costo trascurabile), cosi' funziona anche se
+   l'app resta aperta a cavallo della mezzanotte. */
+function aggiornaStatiCicli(){
+  const oggi = todayLocalISO();
+  CICLI.forEach(c=>{
+    if(!c.inizio && !c.fine) return;
+    if(c.inizio && oggi < c.inizio) c.stato = 'futuro';
+    else if(c.fine && oggi > c.fine) c.stato = 'precedente';
+    else c.stato = 'attuale';
+  });
+}
+aggiornaStatiCicli();
+function cicloAttuale(){ aggiornaStatiCicli(); return CICLI.find(c=>c.stato==='attuale'); }
+function cicliPrecedenti(){ aggiornaStatiCicli(); return CICLI.filter(c=>c.stato==='precedente'); }
 /* Cicli futuri (dal 16 settembre 2026): bozze già considerate definitive ma
    che non sono ancora partite. Consultabili come qualunque altro ciclo
    (renderGiorniOfCiclo/renderGiornoPreview), ma senza poter avviare
    allenamenti né registrare dati — vedi il controllo su ciclo.stato==='futuro'
    dentro renderGiornoPreview. */
-function cicliFuturi(){ return CICLI.filter(c=>c.stato==='futuro'); }
+function cicliFuturi(){ aggiornaStatiCicli(); return CICLI.filter(c=>c.stato==='futuro'); }
 function cicloById(id){ return CICLI.find(c=>c.id===id); }
 function giornoById(id){ for(const c of CICLI){ const g=c.giorni.find(x=>x.id===id); if(g) return g; } return null; }
 function allGiorni(){ return CICLI.flatMap(c=>c.giorni); }
@@ -7563,6 +7591,7 @@ async function renderGiornoPreview(giornoId){
   // Ciclo 'futuro' (dal 16 settembre 2026): solo consultazione, si può
   // guardare esercizi e schede tecniche ma non avviare un allenamento —
   // il pulsante "Inizia questo allenamento" qui sotto non viene creato.
+  aggiornaStatiCicli();
   const isFuturo = !!(ciclo && ciclo.stato === 'futuro');
   // Mappa id->[opzioni del suo gruppo], per annotare ogni esercizio con le
   // sue eventuali alternative (stesso slot, si sceglie durante l'allenamento).
