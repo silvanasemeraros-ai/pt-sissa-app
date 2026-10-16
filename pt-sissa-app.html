@@ -302,6 +302,13 @@ input{font-family:inherit;}
 .spesa-row:last-child{border-bottom:none;}
 .spesa-row .sp-name{font-weight:600;}
 .spesa-row .sp-qty{font-family:var(--mono);color:var(--accent);font-weight:700;flex-shrink:0;}
+/* Spunta "preso" al supermercato (16 ottobre 2026) */
+.spesa-row.spesa-check{cursor:pointer;justify-content:flex-start;-webkit-tap-highlight-color:transparent;}
+.spesa-row.spesa-check .sp-name{flex:1;}
+.spesa-row.spesa-check.preso .sp-name{text-decoration:line-through;color:var(--text-faint);font-weight:400;}
+.spesa-row.spesa-check.preso .sp-qty{color:var(--text-faint);font-weight:400;}
+.spesa-progress{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;font-family:var(--mono);font-size:11.5px;color:var(--text-muted);}
+.spesa-progress button{background:none;border:none;color:var(--accent);font-family:var(--mono);font-size:11.5px;text-decoration:underline;padding:4px 0;cursor:pointer;}
 .spesa-note-list{font-size:12.5px;color:var(--text-muted);line-height:1.7;}
 .profilo-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:6px 16px;margin-bottom:16px;}
 .profilo-row{display:flex;justify-content:space-between;align-items:baseline;gap:14px;padding:11px 0;border-bottom:1px solid var(--border);}
@@ -4553,12 +4560,33 @@ function computeListaSpesa(settimana){
   items.sort((a,b)=> a.n.localeCompare(b.n, 'it'));
   return { items, notes, assignedCount };
 }
+/* Spunte della lista della spesa: salvate su Firestore (stesso storage di
+   tutto il resto), cosi' restano anche chiudendo l'app al supermercato.
+   La chiave di ogni voce e' nome+unita'. Le spunte si azzerano da sole se
+   cambi le varianti della settimana (la lista non e' piu' la stessa),
+   oppure a mano con "Azzera spunte". */
+const ALIM_SPESA_CHECK_KEY = 'alim-spesa-check-v1';
+function spesaItemKey(it){ return it.n+'|'+it.unit; }
+async function loadSpesaChecks(firma){
+  try{
+    const r = await window.storage.get(ALIM_SPESA_CHECK_KEY, false);
+    const v = r && r.value ? JSON.parse(r.value) : null;
+    if(v && v.firma === firma && v.checked) return v.checked;
+  }catch(e){}
+  return {};
+}
+async function saveSpesaChecks(firma, checked){
+  try{ await window.storage.set(ALIM_SPESA_CHECK_KEY, JSON.stringify({ firma, checked }), false); }
+  catch(e){ showToast('Errore salvataggio — riprova'); }
+}
 async function renderListaSpesa(){
   state.screen = 'alimListaSpesa';
   closeAllOverlays();
   setTimerBarVisible(false);
   const settimana = await loadAlimSettimana();
   const { items, notes, assignedCount } = computeListaSpesa(settimana);
+  const firma = JSON.stringify(ALIM_SETTIMANA_GIORNI.map(d=> settimana[d.key] || ''));
+  const checked = await loadSpesaChecks(firma);
   const recap = ALIM_SETTIMANA_GIORNI.map(d=>{
     const gid = settimana[d.key];
     if(gid === ALIM_NIENTE_ID) return `${d.label.slice(0,3)} Niente`;
@@ -4576,14 +4604,10 @@ async function renderListaSpesa(){
         <div class="cron-empty">Non hai ancora assegnato nessun giorno.<br>Torna indietro e scegli una variante per almeno un giorno.</div>
       ` : `
         <div class="section-label">Da comprare</div>
-        <div class="spesa-group">
-          ${items.map(it=>`
-            <div class="spesa-row">
-              <span class="sp-name">${it.n}</span>
-              <span class="sp-qty">${it.qty == null ? 'q.b.' : (fmtMacro(it.qty)+' '+it.unit)}</span>
-            </div>
-          `).join('')}
-        </div>
+        <div class="spesa-progress"><span id="spesaCount"></span><button id="btnAzzeraSpesa">Azzera spunte</button></div>
+        <div class="spesa-group" id="spesaDaPrendere"></div>
+        <div class="section-label" id="spesaPresiLabel">Già nel carrello</div>
+        <div class="spesa-group" id="spesaPresi"></div>
         ${notes.length ? `
           <div class="section-label">Inoltre, per le cene di questa settimana</div>
           <div class="spesa-note-list">${notes.map(n=>`· ${n}`).join('<br>')}</div>
@@ -4592,6 +4616,41 @@ async function renderListaSpesa(){
     </div>
   `;
   document.getElementById('btnBack').onclick = renderComponiSettimana;
+  if(assignedCount === 0) return;
+  /* Tocca una riga per spuntarla: passa in fondo, barrata, nella sezione
+     "Già nel carrello"; ritoccala per rimetterla tra quelle da prendere. */
+  const rowHTML = it=>{
+    const k = spesaItemKey(it), on = !!checked[k];
+    return `<div class="spesa-row spesa-check ${on?'preso':''}" data-k="${encodeURIComponent(k)}">
+      <span class="ing-check ${on?'on':''}" style="margin-right:12px;">${ICO.check}</span>
+      <span class="sp-name">${it.n}</span>
+      <span class="sp-qty">${it.qty == null ? 'q.b.' : (fmtMacro(it.qty)+' '+it.unit)}</span>
+    </div>`;
+  };
+  const disegna = ()=>{
+    const da = items.filter(it=>!checked[spesaItemKey(it)]);
+    const presi = items.filter(it=> checked[spesaItemKey(it)]);
+    document.getElementById('spesaDaPrendere').innerHTML = da.length ? da.map(rowHTML).join('') : '<div class="cron-empty" style="padding:14px 0;">Hai preso tutto ✓</div>';
+    document.getElementById('spesaPresi').innerHTML = presi.map(rowHTML).join('');
+    document.getElementById('spesaPresiLabel').style.display = presi.length ? '' : 'none';
+    document.getElementById('spesaCount').textContent = `${presi.length}/${items.length} presi`;
+    app.querySelectorAll('.spesa-row.spesa-check').forEach(row=>{
+      row.onclick = ()=>{
+        const k = decodeURIComponent(row.dataset.k);
+        if(checked[k]) delete checked[k]; else checked[k] = true;
+        disegna();
+        saveSpesaChecks(firma, checked);
+      };
+    });
+  };
+  disegna();
+  document.getElementById('btnAzzeraSpesa').onclick = ()=>{
+    showConfirm('Togliere tutte le spunte dalla lista della spesa?', async ()=>{
+      Object.keys(checked).forEach(k=> delete checked[k]);
+      disegna();
+      await saveSpesaChecks(firma, checked);
+    }, 'Azzera', 'Annulla');
+  };
 }
 /* Contributo di un singolo ingrediente ai macro, scalato dalla quantita'
    effettivamente inserita rispetto alla quantita' di base del piano. */
