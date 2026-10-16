@@ -4907,7 +4907,21 @@ function ricetteUniche(tipoPasto){
       elenco.push(pasto);
     }
   });
+  /* Dal 16 ottobre 2026 il Menu mostra anche le opzioni aggiunte a mano
+     (ALIM_OPZIONI_EXTRA_MANUALI: nuovi piatti Sissa Chef, chia pudding,
+     barrette), convertite nello stesso formato dei pasti di ALIM_GIORNI. */
+  (ALIM_OPZIONI_EXTRA_MANUALI[tipoPasto]||[]).forEach(op=>{
+    if(viste.has(op.titolo)) return;
+    viste.add(op.titolo);
+    elenco.push({ id:tipoPasto, label:ALIM_PASTI_LABEL[tipoPasto], nome:op.titolo, ingredienti:op.ingredienti });
+  });
   return elenco;
+}
+function preparazioneHTML(nome){
+  const passi = ALIM_PREPARAZIONI[nome];
+  if(!passi || !passi.length) return '';
+  return `<div class="pasto-card"><div class="pasto-head"><div class="pasto-title">Come si cucina</div></div>
+    <ol style="margin:6px 0 4px 18px;padding:0;line-height:1.5;">${passi.map(x=>`<li style="margin-bottom:6px;">${x}</li>`).join('')}</ol></div>`;
 }
 function menuRicettaCardHTML(pasto, tipoPasto){
   const t = pastoTotalsDefault(pasto);
@@ -4926,7 +4940,9 @@ async function renderMenuAlimentazione(){
   state.screen = 'alimMenu';
   closeAllOverlays();
   setTimerBarVisible(false);
+  const colazioni = ricetteUniche('colazione');
   const pranzi = ricetteUniche('pranzo');
+  const spuntini = ricetteUniche('spuntinoPM');
   const cene = ricetteUniche('cena');
   app.innerHTML = `
     <div class="topbar">
@@ -4935,9 +4951,17 @@ async function renderMenuAlimentazione(){
     </div>
     <div class="wrap">
       <div class="warmup-note">${ICO.info}<span>Qui puoi solo consultare: per registrare una giornata usa "Cosa mangi stasera?" dalla schermata principale di Alimentazione.</span></div>
-      <div class="section-label">Pranzi</div>
+      <div class="section-label">Colazioni</div>
+      <div class="home-grid">
+        ${colazioni.map(p=>menuRicettaCardHTML(p,'colazione')).join('')}
+      </div>
+      <div class="section-label" style="margin-top:18px;">Pranzi</div>
       <div class="home-grid">
         ${pranzi.map(p=>menuRicettaCardHTML(p,'pranzo')).join('')}
+      </div>
+      <div class="section-label" style="margin-top:18px;">Spuntini</div>
+      <div class="home-grid">
+        ${spuntini.map(p=>menuRicettaCardHTML(p,'spuntinoPM')).join('')}
       </div>
       <div class="section-label" style="margin-top:18px;">Cene</div>
       <div class="home-grid">
@@ -4959,11 +4983,12 @@ function renderMenuRicettaDetail(tipoPasto, nomePasto){
   app.innerHTML = `
     <div class="topbar">
       <button class="back" id="btnBack">${ICO.back}</button>
-      <div class="titles"><div class="eyebrow">${tipoPasto === 'pranzo' ? 'PRANZO' : 'CENA'}</div><h1>${pasto.nome}</h1></div>
+      <div class="titles"><div class="eyebrow">${(ALIM_PASTI_LABEL[tipoPasto]||tipoPasto).toUpperCase()}</div><h1>${pasto.nome}</h1></div>
     </div>
     <div class="wrap">
       <div class="warmup-note">${ICO.info}<span>Sola consultazione: quantità di riferimento del piano, non modificabili da qui.</span></div>
       ${pastoCardReadOnlyHTML(pasto)}
+      ${preparazioneHTML(pasto.nome)}
     </div>
   `;
   document.getElementById('btnBack').onclick = renderMenuAlimentazione;
@@ -5054,6 +5079,161 @@ const ALIM_OPZIONI_EXTRA_MANUALI = {
       kcal:164, p:5.6, c:23.6, g:5.2 },
   ],
 };
+/* Nuovi piatti aggiunti il 16 ottobre 2026 dal "Piano settimanale con le
+   ricette Sissa Chef" di Silvana (2 colazioni, 3 pranzi, 4 spuntini, 3 cene).
+   Stesso formato delle altre opzioni manuali: vengono accodati qui sotto ad
+   ALIM_OPZIONI_EXTRA_MANUALI, quindi compaiono nel selettore di ogni pasto
+   (e pranzi/cene si incrociano come tutte le altre ricette). Macro per
+   ingrediente stimati da valori nutrizionali medi per 100 g (crudo, pesato
+   come indica il piano): i totali giornalieri del piano tornano entro ~2%.
+   ALIM_PREPARAZIONI contiene i passaggi "Come si cucina", mostrati nel Menu
+   (anche per tre ricette gia' presenti: pasta tonno, pasta mozzarella, frittata). */
+const ALIM_OPZIONI_SISSA_CHEF_OTT26 = {
+  colazione: [
+    { id:'op-colazione-pane-prosciutto-yogurt', pastoId:'colazione', titolo:"Pane tostato con prosciutto cotto, yogurt e banana", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Pane bianco", def:60, unit:'g', kcal:162.0, p:5.1, c:33.0, g:0.9 }, { n:"Prosciutto cotto magro", def:40, unit:'g', kcal:42.8, p:7.9, c:0.4, g:1.2 }, { n:"Yogurt bianco magro", def:150, unit:'g', kcal:55.5, p:5.7, c:7.2, g:0.2 }, { n:"Marmellata", def:20, unit:'g', kcal:48.0, p:0.1, c:11.8, g:0.0 }, { n:"Banana", def:100, unit:'g', kcal:76.0, p:0.9, c:20.2, g:0.2 }],
+      kcal:384, p:19.7, c:72.6, g:2.5 },
+    { id:'op-colazione-yogurt-biscotti-cereali', pastoId:'colazione', titolo:"Yogurt, banana e biscotti con cereali", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Yogurt bianco magro", def:200, unit:'g', kcal:74.0, p:7.6, c:9.6, g:0.2 }, { n:"Banana", def:100, unit:'g', kcal:76.0, p:0.9, c:20.2, g:0.2 }, { n:"Biscotti secchi", def:30, unit:'g', kcal:126.0, p:2.1, c:22.8, g:2.7 }, { n:"Cereali (cocopops / riso soffiato)", def:40, unit:'g', kcal:156.0, p:1.6, c:33.6, g:1.2 }, { n:"Latte d'avena", def:200, unit:'ml', kcal:100.0, p:1.0, c:16.0, g:3.6 }],
+      kcal:532, p:13.2, c:102.2, g:7.9 },
+  ],
+  pranzo: [
+    { id:'op-pranzo-riso-tacchino-zucchine', pastoId:'pranzo', titolo:"Riso con tacchino, zucchine e patate", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Riso", def:70, unit:'g', kcal:245.7, p:4.7, c:55.3, g:0.4 }, { n:"Fesa di tacchino", def:130, unit:'g', kcal:139.1, p:31.2, c:0.0, g:1.6 }, { n:"Zucchine", def:150, unit:'g', kcal:21.0, p:2.0, c:2.7, g:0.2 }, { n:"Patate", def:100, unit:'g', kcal:77.0, p:2.0, c:17.0, g:0.1 }, { n:"Olio extravergine di oliva", def:15, unit:'g', kcal:134.8, p:0.0, c:0.0, g:15.0 }],
+      kcal:618, p:39.9, c:75.0, g:17.3 },
+    { id:'op-pranzo-pasta-crema-zucchine-tacchino', pastoId:'pranzo', titolo:"Pasta con crema di zucchine e straccetti di tacchino", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Pasta", def:78, unit:'g', kcal:278.5, p:9.8, c:55.8, g:1.2 }, { n:"Zucchine", def:260, unit:'g', kcal:36.4, p:3.4, c:4.7, g:0.3 }, { n:"Fesa di tacchino", def:100, unit:'g', kcal:107.0, p:24.0, c:0.0, g:1.2 }, { n:"Scalogno (facoltativo)", def:20, unit:'g', kcal:14.4, p:0.5, c:3.4, g:0.0 }, { n:"Olio extravergine di oliva", def:13, unit:'g', kcal:116.9, p:0.0, c:0.0, g:13.0 }],
+      kcal:553, p:37.7, c:63.9, g:15.7 },
+    { id:'op-pranzo-pasta-pollo-patate-carote', pastoId:'pranzo', titolo:"Pasta con pollo, patate e carote", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Pasta", def:70, unit:'g', kcal:249.9, p:8.8, c:50.0, g:1.0 }, { n:"Petto di pollo", def:130, unit:'g', kcal:136.5, p:30.3, c:0.0, g:1.6 }, { n:"Patate", def:120, unit:'g', kcal:92.4, p:2.4, c:20.4, g:0.1 }, { n:"Carote", def:100, unit:'g', kcal:35.0, p:1.1, c:7.6, g:0.2 }, { n:"Olio extravergine di oliva", def:15, unit:'g', kcal:134.8, p:0.0, c:0.0, g:15.0 }],
+      kcal:649, p:42.6, c:78.0, g:17.9 },
+  ],
+  spuntinoPM: [
+    { id:'op-spuntinoPM-yogurt-mela-cotta', pastoId:'spuntinoPM', titolo:"Yogurt con mela cotta", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Yogurt bianco magro", def:200, unit:'g', kcal:74.0, p:7.6, c:9.6, g:0.2 }, { n:"Mela (cotta)", def:150, unit:'g', kcal:78.0, p:0.4, c:20.7, g:0.3 }],
+      kcal:152, p:8.0, c:30.3, g:0.5 },
+    { id:'op-spuntinoPM-pane-marmellata-yogurt-mela', pastoId:'spuntinoPM', titolo:"Pane con marmellata, yogurt e mela cotta", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Pane bianco", def:40, unit:'g', kcal:108.0, p:3.4, c:22.0, g:0.6 }, { n:"Marmellata", def:20, unit:'g', kcal:48.0, p:0.1, c:11.8, g:0.0 }, { n:"Yogurt bianco magro", def:125, unit:'g', kcal:46.2, p:4.8, c:6.0, g:0.1 }, { n:"Mela (cotta)", def:120, unit:'g', kcal:62.4, p:0.4, c:16.6, g:0.2 }],
+      kcal:265, p:8.7, c:56.4, g:0.9 },
+    { id:'op-spuntinoPM-pane-marmellata-mela-yogurt-leggero', pastoId:'spuntinoPM', titolo:"Pane con marmellata, mela cotta e yogurt (porzione leggera)", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Pane bianco", def:30, unit:'g', kcal:81.0, p:2.5, c:16.5, g:0.4 }, { n:"Marmellata", def:15, unit:'g', kcal:36.0, p:0.0, c:8.8, g:0.0 }, { n:"Mela (cotta)", def:150, unit:'g', kcal:78.0, p:0.4, c:20.7, g:0.3 }, { n:"Yogurt bianco magro", def:125, unit:'g', kcal:46.2, p:4.8, c:6.0, g:0.1 }],
+      kcal:241, p:7.7, c:52.0, g:0.8 },
+    { id:'op-spuntinoPM-pane-prosciutto-mela', pastoId:'spuntinoPM', titolo:"Pane con prosciutto cotto e mela cotta", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Pane bianco", def:70, unit:'g', kcal:189.0, p:5.9, c:38.5, g:1.0 }, { n:"Prosciutto cotto magro", def:20, unit:'g', kcal:21.4, p:4.0, c:0.2, g:0.6 }, { n:"Mela (cotta)", def:170, unit:'g', kcal:88.4, p:0.5, c:23.5, g:0.3 }],
+      kcal:299, p:10.4, c:62.2, g:1.9 },
+  ],
+  cena: [
+    { id:'op-cena-riso-nasello-zucca', pastoId:'cena', titolo:"Riso con nasello, zucca e patate", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Riso", def:60, unit:'g', kcal:210.6, p:4.0, c:47.4, g:0.4 }, { n:"Nasello (anche surgelato)", def:200, unit:'g', kcal:142.0, p:34.0, c:0.0, g:0.6 }, { n:"Zucca", def:150, unit:'g', kcal:27.0, p:1.7, c:5.2, g:0.2 }, { n:"Patate", def:100, unit:'g', kcal:77.0, p:2.0, c:17.0, g:0.1 }, { n:"Olio extravergine di oliva", def:25, unit:'g', kcal:224.8, p:0.0, c:0.0, g:25.0 }],
+      kcal:681, p:41.7, c:69.6, g:26.3 },
+    { id:'op-cena-riso-tonno-zucchine', pastoId:'cena', titolo:"Riso con tonno, zucchine e patate", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Riso", def:60, unit:'g', kcal:210.6, p:4.0, c:47.4, g:0.4 }, { n:"Tonno al naturale (sgocciolato)", def:120, unit:'g', kcal:123.6, p:28.2, c:0.0, g:1.0 }, { n:"Zucchine", def:150, unit:'g', kcal:21.0, p:2.0, c:2.7, g:0.2 }, { n:"Patate", def:100, unit:'g', kcal:77.0, p:2.0, c:17.0, g:0.1 }, { n:"Olio extravergine di oliva", def:25, unit:'g', kcal:224.8, p:0.0, c:0.0, g:25.0 }],
+      kcal:657, p:36.2, c:67.1, g:26.7 },
+    { id:'op-cena-pastina-brodo-tacchino', pastoId:'cena', titolo:"Pastina in brodo con tacchino, patate e carote", letteraOrigine:'Sissa Chef',
+      ingredienti:[{ n:"Pastina", def:50, unit:'g', kcal:178.5, p:6.2, c:35.8, g:0.8 }, { n:"Fesa di tacchino", def:140, unit:'g', kcal:149.8, p:33.6, c:0.0, g:1.7 }, { n:"Patate", def:100, unit:'g', kcal:77.0, p:2.0, c:17.0, g:0.1 }, { n:"Carote", def:100, unit:'g', kcal:35.0, p:1.1, c:7.6, g:0.2 }, { n:"Olio extravergine di oliva", def:20, unit:'g', kcal:179.8, p:0.0, c:0.0, g:20.0 }],
+      kcal:620, p:42.9, c:60.4, g:22.8 },
+  ],
+};
+const ALIM_PREPARAZIONI = {
+ "Pane tostato con prosciutto cotto, yogurt e banana": [
+  "Tosta 60 g di pane nel tostapane o in una padella antiaderente, senza olio, e farcisci con 40 g di prosciutto cotto magro.",
+  "Taglia la banana (100 g) a rondelle e mettila in una ciotola con lo yogurt bianco magro (150 g).",
+  "Condisci lo yogurt con la marmellata (20 g).",
+  "Mangia il pane e la ciotola insieme."
+ ],
+ "Yogurt, banana e biscotti con cereali": [
+  "Taglia la banana (100 g) a rondelle e mettila in una ciotola con lo yogurt bianco magro (200 g).",
+  "Sbriciola sopra i biscotti secchi (30 g).",
+  "In una tazza a parte versa i cereali (40 g) e coprili con il latte d'avena (200 ml).",
+  "Mangia la ciotola e la tazza insieme."
+ ],
+ "Riso con tacchino, zucchine e patate": [
+  "Taglia le patate (100 g) a cubetti e le zucchine (150 g) a rondelle; lessale in acqua leggermente salata o cuocile a vapore per 10-12 minuti, finché sono morbide.",
+  "Cuoci la fesa di tacchino (130 g) in padella antiaderente con un goccio d'acqua o di brodo, a fuoco medio, 5-6 minuti per lato, finché non resta parte rosa.",
+  "Lessa il riso (70 g) in acqua salata per il tempo indicato sulla confezione e scolalo.",
+  "Unisci riso, verdure e tacchino a pezzetti e condisci con l'olio extravergine a crudo."
+ ],
+ "Pasta con crema di zucchine e straccetti di tacchino": [
+  "Metti a bollire l'acqua per la pasta.",
+  "Fai appassire lo scalogno tritato (se lo usi) in metà dell'olio, a fuoco basso, 2-3 minuti.",
+  "Aggiungi la zucchina (260 g) a rondelle e un pizzico di sale; cuoci 8-10 minuti a fuoco medio, con un goccio d'acqua, finché è morbida.",
+  "Frulla la zucchina con il basilico e un cucchiaio d'acqua di cottura, con un frullatore a immersione, fino a una crema liscia.",
+  "Taglia il tacchino (100 g) a striscioline e cuocilo in una padella antiaderente con un goccio d'acqua, a fuoco medio, 5-6 minuti, finché è ben cotto.",
+  "Cuoci la pasta (78 g) al dente e scolala conservando un mestolo di acqua di cottura.",
+  "Manteca la pasta con la crema a fuoco basso 1-2 minuti, allungando con acqua di cottura se è troppo densa. Aggiungi il tacchino, il resto dell'olio a crudo e pepe a piacere."
+ ],
+ "Pasta con pollo, patate e carote": [
+  "Taglia le patate (120 g) a cubetti e le carote (100 g) a rondelle; lessale 12-15 minuti, finché sono morbide.",
+  "Taglia il pollo (130 g) a striscioline e cuocilo in padella antiaderente con un goccio d'acqua o di brodo, con il coperchio, 8-10 minuti, finché è ben cotto.",
+  "Cuoci la pasta (70 g) al dente e scolala.",
+  "Mescola pasta, verdure e pollo e condisci con l'olio extravergine a crudo."
+ ],
+ "Yogurt con mela cotta": [
+  "Sbuccia la mela (150 g) e tagliala a pezzetti.",
+  "Cuocila in un pentolino con 2-3 cucchiai d'acqua, con il coperchio, a fuoco basso per 8-10 minuti, finché è morbida (oppure 3 minuti al microonde, coperta).",
+  "Lasciala intiepidire e servila con lo yogurt bianco magro (200 g)."
+ ],
+ "Pane con marmellata, yogurt e mela cotta": [
+  "Prepara la mela cotta (120 g) come nella ricetta dello yogurt con mela cotta.",
+  "Tosta il pane (40 g) e spalma la marmellata (20 g).",
+  "Servi con lo yogurt bianco magro (125 g) e la mela cotta."
+ ],
+ "Pane con marmellata, mela cotta e yogurt (porzione leggera)": [
+  "Prepara la mela cotta (150 g) come nella ricetta dello yogurt con mela cotta.",
+  "Spalma la marmellata (15 g) sul pane (30 g) e servi con lo yogurt bianco magro (125 g)."
+ ],
+ "Pane con prosciutto cotto e mela cotta": [
+  "Prepara la mela cotta (170 g) come nella ricetta dello yogurt con mela cotta.",
+  "Farcisci il pane (70 g) con il prosciutto cotto magro (20 g); se vuoi, tostalo prima.",
+  "Servi con la mela cotta."
+ ],
+ "Riso con nasello, zucca e patate": [
+  "Taglia la zucca (150 g) e le patate (100 g) a cubetti e cuocile a vapore o lessale 12-15 minuti, finché sono morbide.",
+  "Cuoci il nasello (200 g, anche surgelato) a vapore per 8-10 minuti, oppure in padella con il coperchio e 3 cucchiai d'acqua. Se è surgelato, aggiungi 3-4 minuti. Il pesce deve risultare bianco e si sfalda.",
+  "Lessa il riso (60 g) in acqua salata per il tempo indicato sulla confezione e scolalo.",
+  "Impiatta tutto insieme e condisci con l'olio extravergine a crudo."
+ ],
+ "Riso con tonno, zucchine e patate": [
+  "Taglia le patate (100 g) a cubetti e le zucchine (150 g) a rondelle; lessale 10-12 minuti, finché sono morbide.",
+  "Lessa il riso (60 g) in acqua salata per il tempo indicato sulla confezione e scolalo.",
+  "Scola bene il tonno (120 g).",
+  "Mescola riso, verdure e tonno e condisci con l'olio extravergine a crudo."
+ ],
+ "Pastina in brodo con tacchino, patate e carote": [
+  "Taglia le patate (100 g) e le carote (100 g) a pezzetti e falle bollire 15 minuti in circa mezzo litro d'acqua con un pizzico di sale: è il tuo brodo.",
+  "Aggiungi la pastina (50 g) e cuocila per il tempo indicato sulla confezione.",
+  "Nel frattempo cuoci il tacchino (140 g) a pezzetti in padella antiaderente con un goccio d'acqua, 8-10 minuti, finché è ben cotto.",
+  "Servi la pastina nel brodo con le verdure e il tacchino e aggiungi l'olio extravergine a crudo."
+ ],
+ "Pasta con Zucchine, Tonno e Pomodorini": [
+  "Metti sul fuoco una pentola con acqua salata per la pasta.",
+  "In una padella scalda l'olio a fuoco medio-basso e fai appassire lo scalogno tritato (se lo usi) 2-3 minuti, senza farlo colorare.",
+  "Aggiungi le zucchine a rondelle e cuoci 5-6 minuti, mescolando, finché sono morbide.",
+  "Unisci i pomodorini tagliati a metà e cuoci con il coperchio socchiuso 4-5 minuti, finché sono ben morbidi.",
+  "Aggiungi il tonno sgocciolato e sminuzzato, abbassa la fiamma, aggiusta di sale e pepe e lascia insaporire 2 minuti.",
+  "Cuoci la pasta e scolala conservando un mestolo di acqua di cottura.",
+  "Versa la pasta nella padella e manteca 1 minuto, aggiungendo un po' di acqua di cottura. Guarnisci con basilico."
+ ],
+ "Pasta con Pomodori e Mozzarella Proteica": [
+  "Cuoci la pasta in acqua salata.",
+  "Nel frattempo scalda l'olio in una padella e rosola i pomodorini tagliati a metà 4-5 minuti, finché sono ben morbidi.",
+  "Taglia la mozzarella proteica a cubetti.",
+  "Scola la pasta al dente conservando un mestolo di acqua di cottura e versala nella padella con i pomodorini.",
+  "Spegni il fuoco, aggiungi la mozzarella e mescola in fretta; se serve, unisci un goccio di acqua di cottura.",
+  "Impiatta e completa con il parmigiano, sale e pepe."
+ ],
+ "Frittata di zucchine e prosciutto, con pane (tua porzione)": [
+  "Pela le patate (80 g), tagliale a cubetti e lessale insieme alle zucchine a dadini (100 g) per 8-10 minuti, finché sono morbide. Scola bene e lascia intiepidire.",
+  "In una ciotola sbatti le 2 uova con il parmigiano, un pizzico di sale e pepe; unisci le verdure e il prosciutto cotto a dadini.",
+  "Scalda l'olio in una padella antiaderente piccola, versa il composto e cuoci con il coperchio, a fiamma bassa, circa 7-8 minuti.",
+  "Gira la frittata con un piatto o con un colpo secco e cuocila altri 3 minuti senza coperchio.",
+  "Servi con il pane leggermente tostato. Le quantità sono per una porzione: per due, raddoppia tutto."
+ ]
+};
+Object.keys(ALIM_OPZIONI_SISSA_CHEF_OTT26).forEach(pid=>{
+  if(!ALIM_OPZIONI_EXTRA_MANUALI[pid]) ALIM_OPZIONI_EXTRA_MANUALI[pid] = [];
+  ALIM_OPZIONI_SISSA_CHEF_OTT26[pid].forEach(op=> ALIM_OPZIONI_EXTRA_MANUALI[pid].push(op));
+});
 /* Costruisce una sola volta il "catalogo opzioni" per ciascun tipo di
    pasto, leggendo le 7 varianti (ALIM_GIORNI, dati invariati) e poi
    accodando ALIM_OPZIONI_EXTRA_MANUALI. Alcune ricette si ripetono
