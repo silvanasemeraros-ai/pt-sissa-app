@@ -4060,7 +4060,7 @@ const ALIM_GIORNI = [
      kiwi e arancia. La variante G (sabato) non ha la cena: e' la cena libera.
      Macro per ingrediente stimati da valori medi per 100 g (crudo) e
      ricontrollati sui totali giornalieri del documento (entro ~3%). */
-  {"id":"alim-sg-sab","lettera":"G","cardSub":"Senza gonfiore (sabato) · Cena: libera · Pranzo: Pasta con tonno e pomodorini","pasti":[
+  {"id":"alim-sg-sab","giornoSettimana":"sabato","lettera":"G","cardSub":"Senza gonfiore (sabato) · Cena: libera · Pranzo: Pasta con tonno e pomodorini","pasti":[
       {"id":"colazione","label":"Colazione","variante":"G","nome":"Pane tostato con prosciutto cotto, yogurt e banana","ingredienti":[
         {"n": "Pane senza glutine", "def": 60, "unit": "g", "kcal": 150.0, "p": 1.9, "c": 28.8, "g": 2.7},
         {"n": "Prosciutto cotto magro", "def": 45, "unit": "g", "kcal": 48.1, "p": 8.9, "c": 0.4, "g": 1.4},
@@ -4077,7 +4077,7 @@ const ALIM_GIORNI = [
         {"n": "Marmellata di fragole", "def": 20, "unit": "g", "kcal": 48.0, "p": 0.1, "c": 11.8, "g": 0.0},
         {"n": "Yogurt senza lattosio", "def": 125, "unit": "g", "kcal": 52.5, "p": 5.2, "c": 6.5, "g": 0.4},
         {"n": "Kiwi", "def": 130, "unit": "g", "kcal": 75.4, "p": 1.4, "c": 15.6, "g": 0.7}]}]},
-  {"id":"alim-sg-dom","lettera":"H","cardSub":"Senza gonfiore (domenica) · Cena: Frittata di zucchine e prosciutto cotto, con pane senza glutine · Pranzo: Riso con tacchino, pomodori e patate","pasti":[
+  {"id":"alim-sg-dom","giornoSettimana":"domenica","lettera":"H","cardSub":"Senza gonfiore (domenica) · Cena: Frittata di zucchine e prosciutto cotto, con pane senza glutine · Pranzo: Riso con tacchino, pomodori e patate","pasti":[
       {"id":"colazione","label":"Colazione","variante":"H","nome":"Yogurt, banana, biscotti e Coco Pops con latte","ingredienti":[
         {"n": "Yogurt senza lattosio", "def": 200, "unit": "g", "kcal": 84.0, "p": 8.4, "c": 10.4, "g": 0.6},
         {"n": "Banana", "def": 100, "unit": "g", "kcal": 95.2, "p": 1.2, "c": 21.7, "g": 0.4},
@@ -4101,7 +4101,7 @@ const ALIM_GIORNI = [
         {"n": "Prosciutto cotto", "def": 45, "unit": "g", "kcal": 65.4, "p": 9.1, "c": 0.5, "g": 3.0},
         {"n": "Olio EVO", "def": 5, "unit": "g", "kcal": 45.0, "p": 0.0, "c": 0.0, "g": 5.0},
         {"n": "Pane senza glutine", "def": 40, "unit": "g", "kcal": 100.0, "p": 1.3, "c": 19.2, "g": 1.8}]}]},
-  {"id":"alim-sg-lun","lettera":"I","cardSub":"Senza gonfiore (lunedì) · Cena: Riso con pollo, zucchine e patate · Pranzo: Pasta con pomodorini e mozzarella proteica","pasti":[
+  {"id":"alim-sg-lun","giornoSettimana":"lunedì","lettera":"I","cardSub":"Senza gonfiore (lunedì) · Cena: Riso con pollo, zucchine e patate · Pranzo: Pasta con pomodorini e mozzarella proteica","pasti":[
       {"id":"colazione","label":"Colazione","variante":"I","nome":"Pane tostato con prosciutto cotto, yogurt e banana","ingredienti":[
         {"n": "Pane senza glutine", "def": 60, "unit": "g", "kcal": 150.0, "p": 1.9, "c": 28.8, "g": 2.7},
         {"n": "Prosciutto cotto magro", "def": 45, "unit": "g", "kcal": 48.1, "p": 8.9, "c": 0.4, "g": 1.4},
@@ -4125,7 +4125,7 @@ const ALIM_GIORNI = [
         {"n": "Zucchine", "def": 100, "unit": "g", "kcal": 17.7, "p": 1.2, "c": 2.7, "g": 0.2},
         {"n": "Patate", "def": 90, "unit": "g", "kcal": 69.5, "p": 1.8, "c": 15.7, "g": 0.1},
         {"n": "Olio EVO", "def": 22, "unit": "g", "kcal": 197.8, "p": 0.0, "c": 0.0, "g": 22.0}]}]},
-  {"id":"alim-sg-mar","lettera":"J","cardSub":"Senza gonfiore (martedì) · Cena: Riso con nasello, carote e patate · Pranzo: Pasta con pomodori e straccetti di tacchino","pasti":[
+  {"id":"alim-sg-mar","giornoSettimana":"martedì","lettera":"J","cardSub":"Senza gonfiore (martedì) · Cena: Riso con nasello, carote e patate · Pranzo: Pasta con pomodori e straccetti di tacchino","pasti":[
       {"id":"colazione","label":"Colazione","variante":"J","nome":"Yogurt, banana, biscotti e Coco Pops con latte","ingredienti":[
         {"n": "Yogurt senza lattosio", "def": 200, "unit": "g", "kcal": 84.0, "p": 8.4, "c": 10.4, "g": 0.6},
         {"n": "Banana", "def": 100, "unit": "g", "kcal": 95.2, "p": 1.2, "c": 21.7, "g": 0.4},
@@ -4146,7 +4146,7 @@ const ALIM_GIORNI = [
         {"n": "Carote", "def": 100, "unit": "g", "kcal": 35.0, "p": 1.1, "c": 7.6, "g": 0.2},
         {"n": "Patate", "def": 100, "unit": "g", "kcal": 77.2, "p": 2.0, "c": 17.4, "g": 0.1},
         {"n": "Olio EVO", "def": 26, "unit": "g", "kcal": 233.7, "p": 0.0, "c": 0.0, "g": 26.0}]}]},
-  {"id":"alim-sg-mer","lettera":"K","cardSub":"Senza gonfiore (mercoledì) · Cena: Frittata di zucchine e prosciutto cotto, con pane senza glutine · Pranzo: Pasta con pollo, patate e pomodori","pasti":[
+  {"id":"alim-sg-mer","giornoSettimana":"mercoledì","lettera":"K","cardSub":"Senza gonfiore (mercoledì) · Cena: Frittata di zucchine e prosciutto cotto, con pane senza glutine · Pranzo: Pasta con pollo, patate e pomodori","pasti":[
       {"id":"colazione","label":"Colazione","variante":"K","nome":"Pane tostato con prosciutto cotto, yogurt e banana","ingredienti":[
         {"n": "Pane senza glutine", "def": 60, "unit": "g", "kcal": 150.0, "p": 1.9, "c": 28.8, "g": 2.7},
         {"n": "Prosciutto cotto magro", "def": 45, "unit": "g", "kcal": 48.1, "p": 8.9, "c": 0.4, "g": 1.4},
@@ -4172,7 +4172,7 @@ const ALIM_GIORNI = [
         {"n": "Prosciutto cotto", "def": 45, "unit": "g", "kcal": 65.4, "p": 9.1, "c": 0.5, "g": 3.0},
         {"n": "Olio EVO", "def": 5, "unit": "g", "kcal": 45.0, "p": 0.0, "c": 0.0, "g": 5.0},
         {"n": "Pane senza glutine", "def": 40, "unit": "g", "kcal": 100.0, "p": 1.3, "c": 19.2, "g": 1.8}]}]},
-  {"id":"alim-sg-gio","lettera":"L","cardSub":"Senza gonfiore (giovedì) · Cena: Riso con tacchino, patate e carote · Pranzo: Pasta con tonno e pomodorini","pasti":[
+  {"id":"alim-sg-gio","giornoSettimana":"giovedì","lettera":"L","cardSub":"Senza gonfiore (giovedì) · Cena: Riso con tacchino, patate e carote · Pranzo: Pasta con tonno e pomodorini","pasti":[
       {"id":"colazione","label":"Colazione","variante":"L","nome":"Yogurt, banana, biscotti e Coco Pops con latte","ingredienti":[
         {"n": "Yogurt senza lattosio", "def": 200, "unit": "g", "kcal": 84.0, "p": 8.4, "c": 10.4, "g": 0.6},
         {"n": "Banana", "def": 100, "unit": "g", "kcal": 95.2, "p": 1.2, "c": 21.7, "g": 0.4},
@@ -4193,7 +4193,7 @@ const ALIM_GIORNI = [
         {"n": "Patate", "def": 80, "unit": "g", "kcal": 61.8, "p": 1.6, "c": 13.9, "g": 0.1},
         {"n": "Carote", "def": 100, "unit": "g", "kcal": 35.0, "p": 1.1, "c": 7.6, "g": 0.2},
         {"n": "Olio EVO", "def": 22, "unit": "g", "kcal": 197.8, "p": 0.0, "c": 0.0, "g": 22.0}]}]},
-  {"id":"alim-sg-ven","lettera":"M","cardSub":"Senza gonfiore (venerdì) · Cena: Riso con nasello, carote e patate · Pranzo: Pasta con pomodorini e mozzarella proteica","pasti":[
+  {"id":"alim-sg-ven","giornoSettimana":"venerdì","lettera":"M","cardSub":"Senza gonfiore (venerdì) · Cena: Riso con nasello, carote e patate · Pranzo: Pasta con pomodorini e mozzarella proteica","pasti":[
       {"id":"colazione","label":"Colazione","variante":"M","nome":"Pane tostato con prosciutto cotto, yogurt e banana","ingredienti":[
         {"n": "Pane senza glutine", "def": 60, "unit": "g", "kcal": 150.0, "p": 1.9, "c": 28.8, "g": 2.7},
         {"n": "Prosciutto cotto magro", "def": 45, "unit": "g", "kcal": 48.1, "p": 8.9, "c": 0.4, "g": 1.4},
@@ -4394,12 +4394,7 @@ async function renderComponiSettimana(){
             <button class="picker-item" data-gid="">
               <span style="color:var(--text-faint);">Torna a "non assegnato"</span>
             </button>
-            ${ALIM_GIORNI.map(gi=>`
-              <button class="picker-item" data-gid="${gi.id}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;">
-                <span style="font-weight:700;color:var(--text);">Variante ${gi.lettera} — ${alimCenaName(gi)}</span>
-                <span style="font-size:11.5px;color:var(--text-faint);font-family:var(--mono);">Pranzo: ${alimPranzoName(gi)}</span>
-              </button>
-            `).join('')}
+            ${alimVariantiPickerHTML()}
           </div>
         </div>
       </div>
@@ -4661,6 +4656,23 @@ function alimPranzoName(giorno){
   const pranzo = giorno.pasti.find(p=>p.id==='pranzo');
   return pranzo ? pranzo.nome : '';
 }
+/* Elenco delle varianti nei selettori ("Cosa mangi stasera?", "Componi la
+   tua settimana", "Registra un giorno passato"). Dal 16 ottobre 2026 le
+   varianti del piano senza gonfiore (G-M, id 'alim-sg-*') stanno in un
+   gruppo a parte, in cima, con il giorno della settimana per cui sono
+   pensate; sotto restano le varianti A-F del piano precedente. */
+function alimVariantiPickerHTML(){
+  const btn = gi=>`
+              <button class="picker-item" data-gid="${gi.id}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;">
+                <span style="font-weight:700;color:var(--text);">Variante ${gi.lettera}${gi.giornoSettimana ? ' ('+gi.giornoSettimana+')' : ''} — ${alimCenaName(gi)}</span>
+                <span style="font-size:11.5px;color:var(--text-faint);font-family:var(--mono);">Pranzo: ${alimPranzoName(gi)}</span>
+              </button>`;
+  const sg = ALIM_GIORNI.filter(g=>g.id.startsWith('alim-sg-'));
+  const altre = ALIM_GIORNI.filter(g=>!g.id.startsWith('alim-sg-'));
+  if(!sg.length) return altre.map(btn).join('');
+  return `<div class="picker-group-label">Piano senza gonfiore</div>${sg.map(btn).join('')}`
+       + `<div class="picker-group-label" style="margin-top:10px;">Piano precedente</div>${altre.map(btn).join('')}`;
+}
 /* Costruisce la entry di un nuovo giorno a partire da una variante scelta
    come punto di partenza: precompila, per ogni pasto, l'opzione "di serie"
    di quella variante (cosi' chi non tocca nulla ottiene lo stesso risultato
@@ -4775,12 +4787,7 @@ async function renderAlimentazione(){
               <span style="font-weight:700;color:var(--accent);">🎯 Giorno libero</span>
               <span style="font-size:11.5px;color:var(--text-faint);">Nessuna variante di partenza: scegli tu ogni pasto dal paniere di tutte le opzioni</span>
             </button>
-            ${ALIM_GIORNI.map(gi=>`
-              <button class="picker-item" data-gid="${gi.id}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;">
-                <span style="font-weight:700;color:var(--text);">Variante ${gi.lettera} — ${alimCenaName(gi)}</span>
-                <span style="font-size:11.5px;color:var(--text-faint);font-family:var(--mono);">Pranzo: ${alimPranzoName(gi)}</span>
-              </button>
-            `).join('')}
+            ${alimVariantiPickerHTML()}
           </div>
         </div>
       </div>
@@ -7616,12 +7623,7 @@ async function renderStoricoAlimentazione(){
               <span style="font-weight:700;color:var(--accent);">🎯 Giorno libero</span>
               <span style="font-size:11.5px;color:var(--text-faint);">Nessuna variante di partenza: scegli tu ogni pasto dal paniere di tutte le opzioni</span>
             </button>
-            ${ALIM_GIORNI.map(gi=>`
-              <button class="picker-item" data-gid="${gi.id}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;">
-                <span style="font-weight:700;color:var(--text);">Variante ${gi.lettera} — ${alimCenaName(gi)}</span>
-                <span style="font-size:11.5px;color:var(--text-faint);font-family:var(--mono);">Pranzo: ${alimPranzoName(gi)}</span>
-              </button>
-            `).join('')}
+            ${alimVariantiPickerHTML()}
           </div>
         </div>
       </div>
