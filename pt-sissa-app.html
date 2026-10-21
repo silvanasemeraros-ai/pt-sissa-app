@@ -234,6 +234,13 @@ input{font-family:inherit;}
 .ing-row:last-child{border-bottom:none;}
 .ing-row .ing-main{flex:1;min-width:0;}
 .ing-row .ing-name{font-size:13px;font-weight:600;color:var(--text);}
+.ing-scambio-tag{font-size:9.5px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:5px;padding:0 4px;margin-left:4px;vertical-align:1px;text-transform:uppercase;letter-spacing:.04em;}
+.ing-scambio-btn{display:block;margin:-4px 0 8px;background:none;border:1px dashed var(--border);border-radius:8px;color:var(--accent);font-size:11px;font-weight:700;padding:5px 9px;cursor:pointer;}
+.ing-scambio-list{display:none;flex-direction:column;gap:6px;margin:0 0 10px;}
+.ing-scambio-list.open{display:flex;}
+.ing-scambio-opt{text-align:left;background:var(--bg-card);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:12px;font-weight:600;padding:8px 10px;cursor:pointer;line-height:1.35;}
+.ing-scambio-opt span{display:block;font-family:var(--mono);font-size:10.5px;font-weight:400;color:var(--text-faint);margin-top:2px;}
+.ing-scambio-opt.sel{border-color:var(--accent);color:var(--accent);}
 .ing-row .ing-macro{font-size:10.5px;color:var(--text-muted);font-family:var(--mono);margin-top:3px;}
 .ing-row .ing-qty-wrap{display:flex;align-items:center;gap:5px;flex-shrink:0;}
 .ing-row .ing-qty-wrap input{
@@ -4149,7 +4156,7 @@ const ALIM_GIORNI = [
         {"n": "Arancia", "def": 130, "unit": "g", "kcal": 58.5, "p": 1.2, "c": 12.3, "g": 0.3}]},
       {"id":"cena","label":"Cena","variante":"J","nome":"Riso con nasello, carote e patate","ingredienti":[
         {"n": "Riso (peso a crudo)", "def": 35, "unit": "g", "kcal": 122.8, "p": 2.3, "c": 27.6, "g": 0.2},
-        {"n": "Nasello (anche surgelato)", "def": 220, "unit": "g", "kcal": 156.2, "p": 37.4, "c": 0.0, "g": 0.7},
+        {"n": "Nasello (anche surgelato)", "def": 220, "unit": "g", "kcal": 156.2, "p": 35.2, "c": 0.0, "g": 1.8},
         {"n": "Carote", "def": 100, "unit": "g", "kcal": 35.0, "p": 1.1, "c": 7.6, "g": 0.2},
         {"n": "Patate", "def": 100, "unit": "g", "kcal": 77.2, "p": 2.0, "c": 17.4, "g": 0.1},
         {"n": "Olio EVO", "def": 26, "unit": "g", "kcal": 233.7, "p": 0.0, "c": 0.0, "g": 26.0}]}]},
@@ -4219,7 +4226,7 @@ const ALIM_GIORNI = [
         {"n": "Arancia", "def": 130, "unit": "g", "kcal": 58.5, "p": 1.2, "c": 12.3, "g": 0.3}]},
       {"id":"cena","label":"Cena","variante":"M","nome":"Riso con nasello, carote e patate","ingredienti":[
         {"n": "Riso (peso a crudo)", "def": 35, "unit": "g", "kcal": 122.8, "p": 2.3, "c": 27.6, "g": 0.2},
-        {"n": "Nasello (anche surgelato)", "def": 220, "unit": "g", "kcal": 156.2, "p": 37.4, "c": 0.0, "g": 0.7},
+        {"n": "Nasello (anche surgelato)", "def": 220, "unit": "g", "kcal": 156.2, "p": 35.2, "c": 0.0, "g": 1.8},
         {"n": "Carote", "def": 100, "unit": "g", "kcal": 35.0, "p": 1.1, "c": 7.6, "g": 0.2},
         {"n": "Patate", "def": 80, "unit": "g", "kcal": 61.8, "p": 1.6, "c": 13.9, "g": 0.1},
         {"n": "Olio EVO", "def": 24, "unit": "g", "kcal": 215.8, "p": 0.0, "c": 0.0, "g": 24.0}]}]},
@@ -4753,6 +4760,7 @@ function nuovaEntryDaGiorno(giorno){
     integratori: {},
     fattori: {},
     qtyOverride: {},
+    scambi: {},
     finalized: false,
   };
 }
@@ -6577,6 +6585,95 @@ function opzioneDefaultDiGiorno(giorno, pastoId){
    di porzione diverso da 1 (vedi adattaPortionaAlTarget piu' sotto): serve
    a scalare la quantita' — non solo a scegliere quale ricetta, ma anche
    "quanta" — per avvicinarsi meglio all'obiettivo del giorno. */
+/* ============== Ingredienti intercambiabili (21 ottobre 2026) ==============
+   Alcuni ingredienti si possono sostituire al momento con un prodotto
+   equivalente (es. lo yogurt del piano con lo yogurt greco senza lattosio
+   che hai davvero in frigo). I valori sono quelli delle etichette dei
+   prodotti comprati da Silvana, per 100 g. Lo scambio vale per QUEL pasto
+   di QUEL giorno (entry.scambi[pastoId][indiceIngrediente] = id variante):
+   i grammi restano quelli e kcal/macro si ricalcolano dai valori per 100 g.
+   Un gruppo vale per ogni ingrediente il cui nome corrisponde a "match",
+   in qualunque pasto. Per aggiungere un prodotto basta accodarlo qui. */
+const ALIM_SCAMBI = [
+  { id:'yogurt', label:'yogurt', match:/yogurt/i, varianti:[
+    { id:'yog-greco-sl-2', n:'Yogurt greco senza lattosio 2% grassi (Mevgal)', per100:{ kcal:74, p:9.0, c:4.9, g:2.0 } },
+    { id:'yog-greco-sl-0', n:'Yogurt greco senza lattosio 0% grassi (vasetto 150 g)', per100:{ kcal:55, p:10, c:3.8, g:0 } },
+  ]},
+  { id:'pasta', label:'pasta', match:/^pasta\b/i, varianti:[
+    { id:'pasta-mais-riso-lidl', n:'Fusilli di mais e riso senza glutine (Lidl) (peso a crudo)', per100:{ kcal:358, p:6.5, c:79.0, g:1.5 } },
+    { id:'pasta-semola-lidl', n:'Fusilli di semola di grano duro (Lidl) (peso a crudo)', per100:{ kcal:350, p:12.5, c:70.5, g:1.2 } },
+  ]},
+];
+function gruppoScambio(ing){
+  if(!ing || ing.unit!=='g') return null;
+  return ALIM_SCAMBI.find(gr=> gr.match.test(ing.n)) || null;
+}
+function scambioScelto(idx, pastoId, entry){
+  const sc = entry && entry.scambi && entry.scambi[pastoId];
+  return (sc && sc[idx]) || null;
+}
+/* L'ingrediente "come lo stai mangiando davvero": se per questo pasto hai
+   scelto una variante, stesso "def" ma nome e macro della variante
+   (scalati a def grammi), cosi' ingContribution continua a funzionare
+   identica per tutto il resto dell'app (totali, riepilogo, storico). */
+function ingEffettivo(ing, idx, pastoId, entry){
+  const vid = scambioScelto(idx, pastoId, entry);
+  if(!vid) return ing;
+  const gr = gruppoScambio(ing);
+  const v = gr && gr.varianti.find(x=>x.id===vid);
+  if(!v) return ing;
+  const k = (ing.def||0)/100;
+  return { ...ing, n:v.n, kcal:v.per100.kcal*k, p:v.per100.p*k, c:v.per100.c*k, g:v.per100.g*k, scambioId:v.id, nOriginale:ing.n };
+}
+function scegliScambio(pastoId, idx, vid, scope){
+  const entry = state.alimEntry;
+  if(!entry.scambi) entry.scambi = {};
+  if(!entry.scambi[pastoId]) entry.scambi[pastoId] = {};
+  if(vid) entry.scambi[pastoId][idx] = vid; else delete entry.scambi[pastoId][idx];
+  renderMealsInto();
+  /* il ridisegno chiude i pannelli: riapro quello dei grammi del pasto */
+  const det = document.getElementById('mealQtyDetail-'+pastoId);
+  const tog = document.querySelector(`[data-meal-qty-toggle="${pastoId}"]`);
+  if(det){ det.classList.add('open'); if(tog) tog.textContent = 'Nascondi quantità ▴'; }
+  if(scope==='picker'){
+    const sheet = document.getElementById('pickerSheetOpzione');
+    if(sheet && sheet.classList.contains('open')){
+      renderPickerOpzioneBody(pastoId);
+      const selId = entry.opzioni[pastoId];
+      const d2 = document.getElementById('opzDetail-'+selId);
+      if(d2) d2.classList.add('open');
+    }
+  }
+  queueAlimSave();
+}
+function scambioHTML(ing, idx, pastoId, scope){
+  const base = ing.nOriginale ? { ...ing, n:ing.nOriginale } : ing;
+  const gr = gruppoScambio(base);
+  if(!gr) return '';
+  const attuale = ing.scambioId || '';
+  const pfx = `${scope}Scambio-${pastoId}-${idx}`;
+  const opzioni = [{ id:'', n:`${base.n} (del piano)` }, ...gr.varianti];
+  return `
+    <button class="ing-scambio-btn" data-scambio-toggle="${pfx}">⇄ Cambia ${gr.label}</button>
+    <div class="ing-scambio-list" id="${pfx}">
+      ${opzioni.map(o=>`<button class="ing-scambio-opt${o.id===attuale?' sel':''}" data-scambio-pasto="${pastoId}" data-scambio-idx="${idx}" data-scambio-vid="${o.id}" data-scambio-scope="${scope}">${o.id===attuale?'✓ ':''}${o.n}${o.per100?` <span>${o.per100.kcal} kcal · P ${fmtMacro(o.per100.p)} · C ${fmtMacro(o.per100.c)} · G ${fmtMacro(o.per100.g)} per 100 g</span>`:''}</button>`).join('')}
+    </div>`;
+}
+function wireScambi(root){
+  (root||document).querySelectorAll('[data-scambio-toggle]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      const el = document.getElementById(btn.dataset.scambioToggle);
+      if(el) el.classList.toggle('open');
+    });
+  });
+  (root||document).querySelectorAll('[data-scambio-vid]').forEach(btn=>{
+    btn.addEventListener('click', (e)=>{
+      e.stopPropagation();
+      scegliScambio(btn.dataset.scambioPasto, parseInt(btn.dataset.scambioIdx,10), btn.dataset.scambioVid || null, btn.dataset.scambioScope);
+    });
+  });
+}
 /* Grammi effettivi di un ingrediente per un dato pasto: se hai modificato a
    mano quell'ingrediente (es. "solo 50g di yogurt") uso quel valore esatto;
    altrimenti uso la quantita' di piano scalata dal "fattore" di porzione
@@ -6596,7 +6693,7 @@ function pastoOpTotals(op, pastoId, entry){
   if(!op) return t;
   op.ingredienti.forEach((ing,idx)=>{
     const grammi = grammiIngrediente(ing, idx, pastoId, entry);
-    const c = ingContribution(ing, grammi);
+    const c = ingContribution(ingEffettivo(ing, idx, pastoId, entry), grammi);
     t.kcal+=c.kcal; t.p+=c.p; t.c+=c.c; t.g+=c.g;
   });
   return t;
@@ -6660,8 +6757,9 @@ function adattaPortionaAlTarget(pastoId){
   if(!op) return;
   const consigliato = kcalConsigliatoPasto(entry, pastoId);
   let fattore = 1;
-  if(consigliato!=null && op.kcal>0){
-    fattore = Math.max(0.2, Math.min(2.5, consigliato/op.kcal));
+  const kcalBase = op.ingredienti.reduce((s,ing,idx)=> s + (ingEffettivo(ing, idx, pastoId, entry).kcal||0), 0) || op.kcal;
+  if(consigliato!=null && kcalBase>0){
+    fattore = Math.max(0.2, Math.min(2.5, consigliato/kcalBase));
     fattore = Math.round(fattore*100)/100;
   }
   if(!entry.fattori) entry.fattori = {};
@@ -6683,7 +6781,7 @@ function ingRowEditableHTML(ing, idx, pastoId, grammi, scope){
   return `
     <div class="ing-row">
       <div class="ing-main">
-        <div class="ing-name">${ing.n}</div>
+        <div class="ing-name">${ing.n}${ing.scambioId?' <span class="ing-scambio-tag">sostituito</span>':''}</div>
         <div class="ing-suggested">
           <input type="number" class="ing-qty-input" inputmode="decimal" min="0" step="1"
             id="${pfx}-input" data-qty-pasto="${pastoId}" data-qty-idx="${idx}" data-qty-scope="${scope}" value="${grammi}"> ${ing.unit}
@@ -6694,6 +6792,7 @@ function ingRowEditableHTML(ing, idx, pastoId, grammi, scope){
       </div>
       <div class="ing-kcal" id="${pfx}-kcalBig">${fmtKcal(c.kcal)} kcal</div>
     </div>
+    ${scambioHTML(ing, idx, pastoId, scope)}
   `;
 }
 /* Ricalcola dal DOM (senza ridisegnare tutto, per non perdere lo stato
@@ -6703,8 +6802,9 @@ function ricalcolaTotaleDaInputQty(op, pastoId, scope){
   const t = { kcal:0, p:0, c:0, g:0 };
   document.querySelectorAll(`.ing-qty-input[data-qty-pasto="${pastoId}"][data-qty-scope="${scope}"]`).forEach(inp=>{
     const idx = parseInt(inp.dataset.qtyIdx, 10);
-    const ing = op.ingredienti[idx];
-    if(!ing) return;
+    const ing0 = op.ingredienti[idx];
+    if(!ing0) return;
+    const ing = ingEffettivo(ing0, idx, pastoId, state.alimEntry);
     const grammi = parseFloat(String(inp.value).replace(',','.')) || 0;
     const c = ingContribution(ing, grammi);
     t.kcal+=c.kcal; t.p+=c.p; t.c+=c.c; t.g+=c.g;
@@ -6726,9 +6826,10 @@ function wireIngQtyInputs(op, pastoId, scope, onChange){
     inp.classList.remove('dirty');
     if(btn) btn.disabled = true;
     const idx = parseInt(inp.dataset.qtyIdx, 10);
-    const ing = op.ingredienti[idx];
-    if(!ing) return;
     const entry = state.alimEntry;
+    const ing0 = op.ingredienti[idx];
+    if(!ing0) return;
+    const ing = ingEffettivo(ing0, idx, pastoId, entry);
     if(!entry.qtyOverride) entry.qtyOverride = {};
     if(!entry.qtyOverride[pastoId]) entry.qtyOverride[pastoId] = {};
     entry.qtyOverride[pastoId][idx] = grammi;
@@ -6884,7 +6985,7 @@ function mealRowHTML(pastoId, entry){
         <button class="meal-row-qty-toggle" data-meal-qty-toggle="${pastoId}">Quantità da mangiare — tocca i grammi per modificarli ▾</button>
         <div class="meal-row-qty-detail" id="mealQtyDetail-${pastoId}">
           <div class="ing-list" style="padding:0;">
-            ${op.ingredienti.map((ing,idx)=>ingRowEditableHTML(ing, idx, pastoId, grammiIngrediente(ing, idx, pastoId, entry), 'meal')).join('')}
+            ${op.ingredienti.map((ing,idx)=>ingRowEditableHTML(ingEffettivo(ing, idx, pastoId, entry), idx, pastoId, grammiIngrediente(ing, idx, pastoId, entry), 'meal')).join('')}
           </div>
         </div>
       ` : ''}
@@ -6960,6 +7061,7 @@ function wireMealsInputs(){
      modificabili: collega ciascuno al ricalcolo live del totale del pasto
      e del riepilogo giornaliero, senza ridisegnare tutta la schermata. */
   const entry = state.alimEntry;
+  wireScambi(document.getElementById('mealsBody'));
   ALIM_PASTI_ORDINE.forEach(pid=>{
     if(entry.pastiFatti[pid] && !entry.pastiViaExtra[pid]){
       const op = trovaOpzione(pid, entry.opzioni[pid]);
@@ -7047,7 +7149,7 @@ function renderPickerOpzioneBody(pastoId){
           <div class="opz-item-detail" id="opzDetail-${o.id}">
             <div class="ing-list" style="padding:0;">
               ${sel
-                ? o.ingredienti.map((ing,idx)=>ingRowEditableHTML(ing, idx, pastoId, grammiIngrediente(ing, idx, pastoId, entry), 'picker')).join('')
+                ? o.ingredienti.map((ing,idx)=>ingRowEditableHTML(ingEffettivo(ing, idx, pastoId, entry), idx, pastoId, grammiIngrediente(ing, idx, pastoId, entry), 'picker')).join('')
                 : o.ingredienti.map(ing=>ingRowReadOnlyHTML(ing)).join('')}
             </div>
           </div>
@@ -7063,6 +7165,8 @@ function renderPickerOpzioneBody(pastoId){
       state.alimEntry.fattori[pastoId] = 1; // nuova opzione scelta a mano: porzione intera finche' non si "adatta al target"
       if(!state.alimEntry.qtyOverride) state.alimEntry.qtyOverride = {};
       state.alimEntry.qtyOverride[pastoId] = {}; // niente correzioni manuali residue dall'opzione precedente
+      if(!state.alimEntry.scambi) state.alimEntry.scambi = {};
+      state.alimEntry.scambi[pastoId] = {}; // gli ingredienti sostituiti valevano per l'opzione precedente
       document.getElementById('pickerSheetOpzione').classList.remove('open');
       renderMealsInto();
       queueAlimSave();
@@ -7080,6 +7184,7 @@ function renderPickerOpzioneBody(pastoId){
         : (isSel ? 'Ingredienti e quantità — modificabili ▾' : 'Ingredienti e quantità ▾');
     });
   });
+  wireScambi(scroll);
   const selOp = opzioni.find(o=>o.id===selId);
   if(selOp){
     wireIngQtyInputs(selOp, pastoId, 'picker', ()=>{
@@ -7168,6 +7273,7 @@ async function renderGiornoAlimentare(giornoId, forDate){
   if(!state.alimEntry.integratori) state.alimEntry.integratori = {};
   if(!state.alimEntry.fattori) state.alimEntry.fattori = {};
   if(!state.alimEntry.qtyOverride) state.alimEntry.qtyOverride = {};
+  if(!state.alimEntry.scambi) state.alimEntry.scambi = {};
 
   const totals = entryTotals(state.alimEntry);
   app.innerHTML = `
