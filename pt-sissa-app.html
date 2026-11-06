@@ -415,6 +415,7 @@ input{font-family:inherit;}
 .ex-badge.rpe{color:var(--teal);background:var(--teal-dim);}
 .ex-badge.removed{color:var(--text-faint);background:var(--bg-elev);}
 .ex-note{font-size:11.5px;color:var(--text-faint);margin-top:5px;font-style:italic;}
+.ex-fonte-sug{font-size:11px;color:var(--text-faint);margin-top:6px;font-family:var(--mono);}
 .rec-row{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
   padding:9px 16px;background:var(--bg-elev);font-size:12px;color:var(--text-muted);
@@ -1999,12 +2000,37 @@ function blankLog(giorno, scelte){
    fuori da qui, quando si risolve una scelta in sospeso a metà allenamento
    (vedi resolvePendingChoice) e a quel punto va calcolato il suggerimento
    solo per l'esercizio appena scelto, non per tutto il log. */
-function suggestForSets(curSets, exId, pastLogs){
+/* Stesso esercizio in schede diverse (6 novembre 2026): ogni ciclo ha i
+   propri id (es. "nov26-hack-squat" a novembre, "hack-squat" a settembre),
+   ma per Silvana è lo stesso esercizio e vuole vedere i kg dell'ultima
+   volta anche quando cambia scheda. canonicoEsercizio toglie il prefisso
+   del ciclo ("nov26-", e in futuro "gen27-" ecc.) e il suffisso di giorno
+   per gli esercizi ripetuti in due giorni dello stesso ciclo (dead hang
+   "-g1"/"-g3", scapular pull-up "-a"/"-b"). Gli id restano diversi nello
+   storico: si usano solo per il suggerimento, mai per salvare. Le varianti
+   di attrezzatura (es. Hip Thrust guidato / a dischi) hanno id di base
+   diversi, quindi restano separate come sempre. */
+function canonicoEsercizio(id){
+  return String(id||'').replace(/^[a-z]{3}\d{2}-/, '').replace(/-(g\d+|a|b)$/, '');
+}
+function suggestForSets(curSets, exId, pastLogs, altriLogs){
   const logs = (pastLogs||[]).filter(l=>l && l.esercizi);
-  let prevEx = null;
+  let prevEx = null, prevLog = null;
   for(const log of logs){
     const cand = log.esercizi[exId];
-    if(cand && cand.sets && cand.sets.length){ prevEx = cand; break; }
+    if(cand && cand.sets && cand.sets.length){ prevEx = cand; prevLog = log; break; }
+  }
+  /* Nessuna volta precedente in questo giorno di scheda: cerco l'ultima volta
+     in cui ho fatto lo STESSO esercizio in qualunque altro giorno o scheda
+     (altriLogs, gia' ordinati dal piu' recente). */
+  let daAltraScheda = false;
+  if(!prevEx && altriLogs && altriLogs.length){
+    const can = canonicoEsercizio(exId);
+    for(const log of altriLogs){
+      if(!log || !log.esercizi) continue;
+      const k = Object.keys(log.esercizi).find(key=> canonicoEsercizio(key)===can && log.esercizi[key] && log.esercizi[key].sets && log.esercizi[key].sets.length && !log.esercizi[key].pending);
+      if(k){ prevEx = log.esercizi[k]; prevLog = log; daAltraScheda = true; break; }
+    }
   }
   if(!prevEx) return null;
   const hasLato = curSets.some(s=>s.lato);
@@ -2022,14 +2048,16 @@ function suggestForSets(curSets, exId, pastLogs){
     if(!hasVal) return null;
     return { kg: src.kg||'', reps: src.reps||'', rpe: src.rpe||'' };
   });
-  return arr.some(Boolean) ? arr : null;
+  if(!arr.some(Boolean)) return null;
+  if(daAltraScheda) arr.fonte = { date: prevLog.date || '', cicloId: prevLog.cicloId || '' };
+  return arr;
 }
-function buildSuggestions(newLog, pastLogs){
+function buildSuggestions(newLog, pastLogs, altriLogs){
   const sug = {};
   Object.keys(newLog.esercizi).forEach(exId=>{
     const entry = newLog.esercizi[exId];
     if(entry.pending) return; // scelta ancora da fare: nessun suggerimento finché non si sceglie (vedi resolvePendingChoice)
-    const arr = suggestForSets(entry.sets, exId, pastLogs);
+    const arr = suggestForSets(entry.sets, exId, pastLogs, altriLogs);
     if(arr) sug[exId] = arr;
   });
   return sug;
@@ -2082,6 +2110,26 @@ async function listSessionsDetailed(giornoId){
     });
     const items = results.filter(Boolean);
     items.sort((a,b)=> b.date.localeCompare(a.date) || b.sessionId.localeCompare(a.sessionId));
+    return items;
+  }catch(e){ return []; }
+}
+/* Tutte le sessioni di tutti i giorni di tutte le schede (una sola query),
+   dalla piu' recente: servono a suggestForSets per ritrovare l'ultima volta
+   di un esercizio anche se era in un'altra scheda. */
+async function listAllSessionsDetailed(){
+  try{
+    const prefix = 'log-v2-';
+    const res = await window.storage.list(prefix, false);
+    if(!res || !res.items) return [];
+    const items = res.items.map(it=>{
+      try{
+        if(!it.value) return null;
+        const log = JSON.parse(it.value);
+        if(!log || !log.esercizi) return null;
+        return { key: it.key, date: log.date || '', log };
+      }catch(e){ return null; }
+    }).filter(Boolean);
+    items.sort((a,b)=> b.date.localeCompare(a.date) || b.key.localeCompare(a.key));
     return items;
   }catch(e){ return []; }
 }
@@ -8334,8 +8382,11 @@ async function startNewWorkout(giornoId){
   const today = todayLocalISO();
   let todaySession = null;
   let pastLogs = [];
+  let altriLogs = [];
   try{
-    const sessions = await listSessionsDetailed(giornoId);
+    const [sessions, tutte] = await Promise.all([listSessionsDetailed(giornoId), listAllSessionsDetailed()]);
+    const prefGiorno = `log-v2-${giornoId}-`;
+    altriLogs = tutte.filter(s=> !s.key.startsWith(prefGiorno) && s.date!==today).map(s=>s.log);
     todaySession = sessions.find(s=>s.date===today) || null;
     // Tutte le sessioni passate (non di oggi) per questo giorno, dalla più
     // recente: servono a buildSuggestions per cercare, esercizio per
@@ -8347,7 +8398,7 @@ async function startNewWorkout(giornoId){
   // esercizi a scelta (es. Hip Thrust, Glute Press/Leg press): si parte
   // sempre diretti, e quegli slot restano "in sospeso" finché non si
   // sceglie durante l'allenamento stesso (vedi blankLog/renderPendingCard).
-  const proceed = ()=> beginBlankWorkout(giornoId, giorno, pastLogs, {});
+  const proceed = ()=> beginBlankWorkout(giornoId, giorno, pastLogs, {}, altriLogs);
   if(todaySession){
     showConfirm(
       'Hai già registrato un allenamento di questo tipo oggi. Sei sicura di voler ricominciare lo stesso allenamento nello stesso giorno?',
@@ -8372,14 +8423,15 @@ async function startNewWorkout(giornoId){
   }
   proceed();
 }
-function beginBlankWorkout(giornoId, giorno, pastLogs, scelte){
+function beginBlankWorkout(giornoId, giorno, pastLogs, scelte, altriLogs){
   state.giornoId = giornoId;
   state.cicloId = giorno.cicloId;
   state.sessionId = generateSessionId();
   state.returnTo = 'cicli';
   state.log = blankLog(giorno, scelte);
   state.pastLogs = pastLogs || [];
-  state.suggestions = buildSuggestions(state.log, pastLogs);
+  state.altriLogs = altriLogs || [];
+  state.suggestions = buildSuggestions(state.log, pastLogs, state.altriLogs);
   state.screen = 'workout';
   renderWorkout();
 }
@@ -8389,6 +8441,7 @@ async function openExistingSession(giornoId, sessionId){
   state.returnTo = 'cronologia';
   state.suggestions = {};
   state.pastLogs = []; // qui non si ricalcolano suggerimenti: vedi resolvePendingChoice
+  state.altriLogs = [];
   try{
     const res = await window.storage.get(logKey(giornoId, sessionId), false);
     state.log = (res && res.value) ? JSON.parse(res.value) : null;
@@ -8613,7 +8666,7 @@ function resolvePendingChoice(pendingId, chosenId){
     riordinato[k === pendingId ? chosenId : k] = k === pendingId ? nuovaVoce : state.log.esercizi[k];
   });
   state.log.esercizi = riordinato;
-  const sug = suggestForSets(nuovaVoce.sets, chosenId, state.pastLogs);
+  const sug = suggestForSets(nuovaVoce.sets, chosenId, state.pastLogs, state.altriLogs);
   if(sug) state.suggestions[chosenId] = sug;
   queueSave();
   renderWorkout();
@@ -8644,6 +8697,7 @@ function renderExercise(entry){
           </div>
         </div>
         ${ex && ex.note ? `<div class="ex-note">${ex.note}</div>` : ''}
+        ${fonteSugHTML(id)}
       </div>
       ${ex ? `
       <div class="rec-row">
@@ -8734,6 +8788,7 @@ function renderSupersetCard(entryA, entryB){
           </div>
         </div>
         <div class="ex-note">Superset: si alternano i due esercizi ad ogni giro (una serie dell'uno, poi una serie dell'altro), non prima uno per intero e poi l'altro.</div>
+        ${fonteSugHTML(idA) || fonteSugHTML(idB)}
       </div>
       <div class="rec-row">
         <span class="rlabel">Dopo ${exA.n}: <b>${exA.recLabel}</b>, poi ${exB.n}</span>
@@ -8776,6 +8831,14 @@ function renderSetRow(r, si, sug, exId){
 /* Ritorna il suggerimento kg/rip/RPE (se esiste) per la serie si-esima di un
    esercizio, calcolato una volta sola all'apertura della sessione da
    buildSuggestions() e salvato in state.suggestions. */
+function fonteSugHTML(exId){
+  const arr = state.suggestions && state.suggestions[exId];
+  const f = arr && arr.fonte;
+  if(!f) return '';
+  const c = (typeof CICLI!=='undefined') ? CICLI.find(x=>x.id===f.cicloId) : null;
+  const quando = f.date ? new Date(f.date+'T12:00:00').toLocaleDateString('it-IT',{day:'numeric',month:'short'}) : '';
+  return `<div class="ex-fonte-sug">↺ Valori di riferimento dall'ultima volta${quando?` (${quando}`:''}${c?` · ${c.nome||c.titolo||'scheda precedente'}`:(quando?' · scheda precedente':'')}${quando?')':''}</div>`;
+}
 function sugFor(exId, si){
   const arr = state.suggestions && state.suggestions[exId];
   return (arr && arr[si]) || null;
