@@ -4877,6 +4877,8 @@ async function renderAlimentazione(){
   const showResume = hasDraft && !!draftGiorno;
   const hasFinalizedToday = !!(draft && draft.finalized === true);
   const settimana = await loadAlimSettimana();
+  let nMieiAlimenti = null;
+  try{ nMieiAlimenti = (await caricaMieiAlimenti()).length; }catch(e){}
   const nome = displayNameOf(currentUser);
   app.innerHTML = `
     <button class="home-back-btn" id="btnBack">${ICO.back}</button>
@@ -4908,19 +4910,28 @@ async function renderAlimentazione(){
       ${showResume ? `
         <div class="section-label">Stai registrando oggi</div>
         <button class="cta-next" id="btnResumeAlim">
-          <div class="cta-next-eyebrow">${draftIsLibero ? 'Giorno libero' : `Variante ${draftGiorno.lettera} · cena: ${alimCenaName(draftGiorno)}`}</div>
+          <div class="cta-next-eyebrow">${draftIsLibero ? 'Diario libero' : `Variante ${draftGiorno.lettera} · cena: ${alimCenaName(draftGiorno)}`}</div>
           <div class="cta-next-title">Continua a registrare</div>
-          <div class="cta-next-sub">Tocca per completare i pasti di oggi</div>
+          <div class="cta-next-sub">${draftIsLibero ? 'Aggiungi gli alimenti dei pasti di oggi' : 'Tocca per completare i pasti di oggi'}</div>
           <div class="cta-next-arrow">${ICO.chev}</div>
         </button>
-        <button class="text-link-btn" id="btnRestartAlim">Non è la cena giusta? Ricomincia</button>
+        <button class="text-link-btn" id="btnRestartAlim">${draftIsLibero ? 'Vuoi ricominciare da capo? Ricomincia' : 'Non è la cena giusta? Ricomincia'}</button>
       ` : `
-        <button class="cta-next" id="btnPickCena">
-          <div class="cta-next-title">Cosa mangi stasera?</div>
-          <div class="cta-next-sub">Scegli la cena di oggi</div>
+        <button class="cta-next" id="btnDiarioOggi">
+          <div class="cta-next-title">${hasFinalizedToday ? 'Apri il diario di oggi' : 'Registra cosa mangi'}</div>
+          <div class="cta-next-sub">${hasFinalizedToday ? 'Rivedi o modifica quello che hai registrato' : 'Aggiungi gli alimenti pasto per pasto, con i grammi'}</div>
           <div class="cta-next-arrow">${ICO.chev}</div>
         </button>
+        <button class="text-link-btn" id="btnPickCena" style="padding-bottom:14px;">Preferisci partire da una variante del piano?</button>
       `}
+      <button class="home-card" id="btnMieiAlimenti" style="margin-bottom:14px;">
+        <div class="hc-ico" style="font-size:22px;">🥫</div>
+        <div class="hc-info">
+          <div class="hc-title">I miei alimenti</div>
+          <div class="hc-sub">Le tue tabelle nutrizionali${nMieiAlimenti!=null ? ' · '+nMieiAlimenti+' salvati' : ''}</div>
+        </div>
+        <div class="hc-arrow">${ICO.chev}</div>
+      </button>
       <div class="section-label">Componi la tua settimana</div>
       <button class="week-strip-card" id="btnComponiSettimana">
         <div class="week-strip">
@@ -4941,10 +4952,6 @@ async function renderAlimentazione(){
         <div class="picker-head"><h3>Cosa mangi stasera?</h3><button id="pickerCloseAlim">${ICO.close}</button></div>
         <div class="picker-scroll">
           <div class="picker-group">
-            <button class="picker-item" data-gid="${ALIM_LIBERO_ID}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;border-color:var(--accent);">
-              <span style="font-weight:700;color:var(--accent);">🎯 Giorno libero</span>
-              <span style="font-size:11.5px;color:var(--text-faint);">Nessuna variante di partenza: scegli tu ogni pasto dal paniere di tutte le opzioni</span>
-            </button>
             ${alimVariantiPickerHTML()}
           </div>
         </div>
@@ -4952,6 +4959,7 @@ async function renderAlimentazione(){
     </div>
   `;
   document.getElementById('btnBack').onclick = renderHome;
+  document.getElementById('btnMieiAlimenti').onclick = ()=>{ mieiAlimentiRitorno = null; renderMieiAlimenti(); };
   document.getElementById('btnProfiloAlim').onclick = renderProfiloAlimentazione;
   document.getElementById('btnStatsAlim').onclick = renderStatsAlimentazione;
   document.getElementById('btnMenuAlim').onclick = renderMenuAlimentazione;
@@ -4968,6 +4976,7 @@ async function renderAlimentazione(){
       }, 'Ricomincia', 'Annulla');
     };
   } else {
+    document.getElementById('btnDiarioOggi').onclick = ()=> hasFinalizedToday ? openAlimEntryForEdit(today) : renderDiarioLibero();
     document.getElementById('btnPickCena').onclick = ()=> document.getElementById('pickerSheetAlim').classList.add('open');
   }
   document.getElementById('pickerCloseAlim').onclick = ()=> document.getElementById('pickerSheetAlim').classList.remove('open');
@@ -7153,7 +7162,7 @@ function extraGroupsHTML(entry){
             <div class="ing-row">
               <div class="ing-main">
                 <div class="ing-name">${a.nome}${a.marca?` <span style="color:var(--text-faint);font-weight:400;">· ${a.marca}</span>`:''}</div>
-                <div class="ing-suggested">${a.grammi} g · P ${fmtMacro(a.prot)} · C ${fmtMacro(a.carb)} · G ${fmtMacro(a.grassi)}</div>
+                <div class="ing-suggested">${a.grammi} ${a.unita==='ml'?'ml':'g'} · P ${fmtMacro(a.prot)} · C ${fmtMacro(a.carb)} · G ${fmtMacro(a.grassi)}</div>
               </div>
               <div class="ing-kcal">${a.kcal} kcal</div>
               <button class="ing-check ing-check-del" data-extra-del="${a.id}" title="Elimina" style="border-color:var(--danger);color:var(--danger);flex-shrink:0;">${ICO.trash}</button>
@@ -7396,6 +7405,7 @@ async function renderGiornoAlimentare(giornoId, forDate){
   state.screen = 'alimGiorno';
   closeAllOverlays();
   setTimerBarVisible(false);
+  if(giornoId === ALIM_LIBERO_ID){ return renderDiarioLibero(forDate); }
   const giorno = giornoOrLibero(giornoId);
   if(!giorno){ renderAlimentazione(); return; }
   const isLibero = giorno.id === ALIM_LIBERO_ID;
@@ -7482,7 +7492,7 @@ async function renderGiornoAlimentare(giornoId, forDate){
   applyIntegratoriState();
   document.getElementById('pickerCloseOpzione').onclick = ()=> document.getElementById('pickerSheetOpzione').classList.remove('open');
   document.getElementById('pickerSheetOpzione').addEventListener('click',(e)=>{ if(e.target.id==='pickerSheetOpzione') e.currentTarget.classList.remove('open'); });
-  document.getElementById('btnCercaAlimento').onclick = ()=> renderCercaAlimentoExtra();
+  document.getElementById('btnCercaAlimento').onclick = ()=>{ ricercaAlimentoState.pastoPreset = null; renderCercaAlimentoExtra(); };
   document.getElementById('btnSaveAlim').onclick = async ()=>{
     clearTimeout(alimSaveTimeout);
     alimSaveTimeout = null;
@@ -7626,15 +7636,15 @@ function pastoSuggeritoOra(){
 function selezionaAlimentoRicerca(i){
   ricercaAlimentoState.selezionato = ricercaAlimentoState.risultati[i];
   ricercaAlimentoState.grammi = 100;
-  ricercaAlimentoState.pastoId = pastoSuggeritoOra();
+  ricercaAlimentoState.pastoId = ricercaAlimentoState.pastoPreset || pastoSuggeritoOra();
   renderCercaAlimentoExtra();
 }
 function selezionaAlimentoPersonalizzato(i){
   const p = (alimentiPersonalizzatiCache||[])[i];
   if(!p) return;
-  ricercaAlimentoState.selezionato = { nome:p.nome, marca:'personalizzato', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100 };
-  ricercaAlimentoState.grammi = 100;
-  ricercaAlimentoState.pastoId = pastoSuggeritoOra();
+  ricercaAlimentoState.selezionato = { id:p.id, unita:p.unita, nome:p.nome, marca:'personalizzato', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100 };
+  ricercaAlimentoState.grammi = p.ultimaQta || 100;
+  ricercaAlimentoState.pastoId = ricercaAlimentoState.pastoPreset || pastoSuggeritoOra();
   renderCercaAlimentoExtra();
 }
 function selezionaAlimentoRecente(i){
@@ -7642,7 +7652,7 @@ function selezionaAlimentoRecente(i){
   if(!p) return;
   ricercaAlimentoState.selezionato = p;
   ricercaAlimentoState.grammi = 100;
-  ricercaAlimentoState.pastoId = pastoSuggeritoOra();
+  ricercaAlimentoState.pastoId = ricercaAlimentoState.pastoPreset || pastoSuggeritoOra();
   renderCercaAlimentoExtra();
 }
 function sceglieCategoriaPastoExtra(pid){ ricercaAlimentoState.pastoId = pid; renderCercaAlimentoExtra(); }
@@ -7693,7 +7703,8 @@ async function renderCercaAlimentoExtra(){
       <div class="wrap">
         ${p.marca?`<p style="color:var(--text-faint);font-size:12.5px;margin:-6px 0 14px;">${p.marca}</p>`:''}
         <div class="field"><label>In quale pasto lo aggiungi?</label><div class="chip-row" id="pastoChips">${pastoChipsHtml}</div></div>
-        <div class="field"><label>Quantità (grammi)</label><input type="number" min="1" id="foodGrammiInput" value="${g}"></div>
+        <div class="field"><label>Quantità (${p.unita==='ml'?'millilitri':'grammi'})</label><input type="number" inputmode="decimal" min="1" id="foodGrammiInput" value="${g}"></div>
+        ${(p.marca!=='personalizzato' && !(alimentiPersonalizzatiCache||[]).some(x=>normTesto(x.nome)===normTesto(p.nome))) ? `<label style="display:flex;gap:8px;align-items:center;font-size:12.5px;color:var(--text-muted);margin:0 0 14px;"><input type="checkbox" id="foodSalvaDb" checked> Salva in "I miei alimenti" per ritrovarlo</label>` : ''}
         <div class="pasto-card" style="padding:14px 16px;margin-bottom:16px;">
           <div class="ing-row" style="border-bottom:none;">
             <div class="ing-main">
@@ -7782,7 +7793,7 @@ async function renderCercaAlimentoExtra(){
   document.querySelectorAll('[data-personalizzato]').forEach(el=> el.addEventListener('click', ()=> selezionaAlimentoPersonalizzato(parseInt(el.dataset.personalizzato))));
   document.querySelectorAll('[data-elimina-custom]').forEach(btn=> btn.addEventListener('click',(e)=>{ e.stopPropagation(); eliminaAlimentoPersonalizzato(btn.dataset.eliminaCustom); }));
   const btnCreaCustom = document.getElementById('btnCreaCustom');
-  if(btnCreaCustom) btnCreaCustom.onclick = ()=> renderCreaAlimentoCustom();
+  if(btnCreaCustom) btnCreaCustom.onclick = ()=> renderFormAlimento(null, ()=> renderCercaAlimentoExtra());
   const input = document.getElementById('foodSearchInput');
   if(input) setTimeout(()=>{ input.focus(); input.setSelectionRange(input.value.length, input.value.length); }, 50);
 }
@@ -7797,6 +7808,8 @@ async function confermaAggiungiAlimentoExtra(){
   const pastoId = ricercaAlimentoState.pastoId || 'colazione';
   const voce = {
     id: 'extra-'+Date.now(),
+    alimentoId: p.id||null, unita: p.unita==='ml'?'ml':'g',
+    k100:p.kcal100, p100:p.prot100, c100:p.carb100, g100:p.grassi100,
     nome: p.nome, marca: p.marca||'',
     grammi: g,
     kcal: Math.round(p.kcal100*fattore),
@@ -7815,6 +7828,17 @@ async function confermaAggiungiAlimentoExtra(){
     await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:false });
   }catch(e){ showToast('Errore salvataggio — riprova'); }
   await registraAlimentoRecente(p);
+  const chkDb = document.getElementById('foodSalvaDb');
+  if(chkDb && chkDb.checked){
+    try{
+      const lista = await caricaMieiAlimenti();
+      if(!lista.some(x=>normTesto(x.nome)===normTesto(p.nome))){
+        lista.push({ id:'custom-'+Date.now(), nome:p.nome, marca:p.marca||'', unita:'g', kcal100:p.kcal100, prot100:p.prot100, carb100:p.carb100, grassi100:p.grassi100, ultimaQta:g, ultimoUso:Date.now() });
+        alimentiPersonalizzatiCache = lista;
+        await saveAlimentiCustom(lista);
+      }
+    }catch(e){}
+  }
   ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoId:null };
   renderGiornoAlimentare(currentAlimGiorno.id, state.alimReturnTo==='storico'?state.alimDate:undefined);
 }
@@ -7901,6 +7925,525 @@ async function salvaAlimentoCustom(){
     btn.disabled = false; btn.textContent = 'Salva';
   }
 }
+/* ============== ALIMENTAZIONE — DIARIO LIBERO + I MIEI ALIMENTI (16 novembre 2026) ==============
+   Modo "libero" di registrare: nessun pasto e' pre-compilato dal piano.
+   Ogni pasto (colazione, pranzo, merenda, cena) parte vuoto e ci aggiungi
+   solo gli alimenti che mangi davvero, con i grammi (o i ml) effettivi: i
+   macro si calcolano da soli dalla tabella nutrizionale salvata in
+   "I miei alimenti" (valori per 100 g / 100 ml).
+   Riusa lo stesso formato dati delle registrazioni esistenti: la entry del
+   giorno ha giornoBaseId = ALIM_LIBERO_ID e gli alimenti stanno in
+   alimentiExtra (campo pasto = colazione/pranzo/spuntinoPM/cena), cosi'
+   entryTotals, Storico e Statistiche funzionano senza modifiche. Ogni voce
+   salva anche i valori per 100 (k100/p100/c100/g100) per poter correggere i
+   grammi dopo senza perdere precisione. */
+const ALIM_DIARIO_LABEL = { colazione:'Colazione', pranzo:'Pranzo', spuntinoPM:'Merenda', cena:'Cena' };
+const ALIM_SEED_KEY = 'alim2-alimenti-seed-v1';
+const ALIM_ALIMENTI_BASE = [
+  { nome:'Yogurt greco senza lattosio 2% (Mevgal)', unita:'g', kcal100:74, prot100:9, carb100:4.9, grassi100:2 },
+  { nome:'Yogurt greco senza lattosio 0% (vasetto)', unita:'g', kcal100:55, prot100:10, carb100:3.8, grassi100:0 },
+  { nome:'Nasello (Lidl)', unita:'g', kcal100:71, prot100:16, carb100:0, grassi100:0.8 },
+  { nome:'Fusilli di mais e riso senza glutine (Lidl) — a crudo', unita:'g', kcal100:358, prot100:6.5, carb100:79, grassi100:1.5 },
+  { nome:'Fusilli di semola (Lidl) — a crudo', unita:'g', kcal100:350, prot100:12.5, carb100:70.5, grassi100:1.2 },
+  { nome:'Marmellata di albicocche light (Hero)', unita:'g', kcal100:47, prot100:0.8, carb100:12.3, grassi100:0.2 },
+  { nome:'Pane bianco in cassetta (Jaus)', unita:'g', kcal100:252, prot100:8.1, carb100:47, grassi100:2.9 },
+  { nome:"Latte d'avena (Lidl, senza zuccheri)", unita:'ml', kcal100:41, prot100:0.6, carb100:6, grassi100:1.5 },
+  { nome:'Barretta Prozis Energy Choco Crunch', unita:'g', kcal100:434, prot100:12, carb100:58, grassi100:17 },
+  { nome:'Barretta Prozis Energy Crunch', unita:'g', kcal100:410, prot100:14, carb100:59, grassi100:13 },
+];
+/* Al primo avvio mette nel database i prodotti di cui avevi gia' mandato le
+   etichette (valori per 100 g/ml). Una volta sola: se poi li elimini non
+   tornano. */
+async function assicuraAlimentiBase(){
+  try{
+    const flag = await window.storage.get(ALIM_SEED_KEY, false);
+    if(flag && flag.value === 'ok') return;
+    const lista = await loadAlimentiCustom();
+    const chiavi = new Set(lista.map(a=>(a.nome||'').toLowerCase().trim()));
+    let n = 0;
+    ALIM_ALIMENTI_BASE.forEach((a,i)=>{
+      if(chiavi.has(a.nome.toLowerCase().trim())) return;
+      lista.push({ id:'custom-base-'+(Date.now()+i), ...a });
+      n++;
+    });
+    if(n) await saveAlimentiCustom(lista);
+    alimentiPersonalizzatiCache = lista;
+    await window.storage.set(ALIM_SEED_KEY, 'ok', false);
+  }catch(e){ /* best-effort */ }
+}
+async function caricaMieiAlimenti(){
+  await assicuraAlimentiBase();
+  if(alimentiPersonalizzatiCache===null) alimentiPersonalizzatiCache = await loadAlimentiCustom();
+  return alimentiPersonalizzatiCache;
+}
+function normTesto(s){ return String(s||'').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,''); }
+function escAttr(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
+function r1(x){ return Math.round(x*10)/10; }
+function macroDaQta(a, qta){
+  const f = (Number(qta)||0)/100;
+  return { kcal: Math.round(a.kcal100*f), prot: r1(a.prot100*f), carb: r1(a.carb100*f), grassi: r1(a.grassi100*f) };
+}
+function unitaDi(a){ return (a && a.unita==='ml') ? 'ml' : 'g'; }
+
+/* ---------- schermata "I miei alimenti" (il database personale) ---------- */
+let mieiAlimentiRitorno = null; // funzione per tornare indietro (home alimentazione o diario)
+async function renderMieiAlimenti(filtro){
+  state.screen = 'alimMieiAlimenti';
+  closeAllOverlays();
+  setTimerBarVisible(false);
+  const lista = (await caricaMieiAlimenti()).slice();
+  const q = normTesto(filtro||'');
+  const visibili = lista
+    .filter(a=> !q || normTesto(a.nome+' '+(a.marca||'')).includes(q))
+    .sort((a,b)=> a.nome.localeCompare(b.nome,'it'));
+  const righe = visibili.map(a=>`
+    <div class="week-day-row" style="cursor:default;">
+      <div class="wdr-info" data-edit-alimento="${escAttr(a.id)}" style="cursor:pointer;flex:1;">
+        <div class="wdr-variant" style="color:var(--text);">${a.nome}${a.marca?` <span style="color:var(--text-faint);font-weight:400;">· ${a.marca}</span>`:''}</div>
+        <div class="wdr-sub">per 100 ${unitaDi(a)}: ${a.kcal100} kcal · P ${fmtMacro(a.prot100)} · C ${fmtMacro(a.carb100)} · G ${fmtMacro(a.grassi100)}</div>
+      </div>
+      <button class="ing-check ing-check-del" data-del-alimento="${escAttr(a.id)}" title="Elimina" style="border-color:var(--danger);color:var(--danger);">${ICO.trash}</button>
+    </div>`).join('');
+  app.innerHTML = `
+    <div class="topbar"><button class="back" id="btnBack">${ICO.back}</button><div class="titles"><h1>I miei alimenti</h1><div class="eyebrow" style="margin-top:3px;">${lista.length} salvati · valori per 100 g / 100 ml</div></div></div>
+    <div class="wrap">
+      <p style="font-size:12px;color:var(--text-faint);margin:0 0 14px;line-height:1.55;">Qui tieni le tabelle nutrizionali di quello che mangi. Quando registri un pasto scegli l'alimento da qui e scrivi solo quanti grammi (o ml) hai mangiato.</p>
+      <button class="cta" id="btnNuovoAlimento" style="margin-bottom:14px;">+ Nuovo alimento</button>
+      <div class="field"><input type="search" id="maSearch" placeholder="Cerca tra i tuoi alimenti…" value="${escAttr(filtro||'')}" autocomplete="off"></div>
+      ${righe || `<div class="cron-empty">${lista.length ? 'Nessun alimento con questo nome.' : 'Nessun alimento salvato: aggiungine uno con il pulsante qui sopra.'}</div>`}
+    </div>`;
+  document.getElementById('btnBack').onclick = ()=> (mieiAlimentiRitorno || renderAlimentazione)();
+  document.getElementById('btnNuovoAlimento').onclick = ()=> renderFormAlimento(null, ()=> renderMieiAlimenti());
+  const inp = document.getElementById('maSearch');
+  inp.addEventListener('input', ()=>{
+    const pos = inp.selectionStart;
+    renderMieiAlimenti(inp.value).then(()=>{ const n = document.getElementById('maSearch'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch(e){} } });
+  });
+  app.querySelectorAll('[data-edit-alimento]').forEach(el=> el.addEventListener('click', ()=> renderFormAlimento(el.dataset.editAlimento, ()=> renderMieiAlimenti(filtro))));
+  app.querySelectorAll('[data-del-alimento]').forEach(btn=> btn.addEventListener('click', (e)=>{
+    e.stopPropagation();
+    showConfirm('Eliminare questo alimento dal tuo database? Le registrazioni già salvate restano com\'erano.', async ()=>{
+      try{
+        const nuova = (await caricaMieiAlimenti()).filter(a=>a.id!==btn.dataset.delAlimento);
+        alimentiPersonalizzatiCache = nuova;
+        await saveAlimentiCustom(nuova);
+        renderMieiAlimenti(filtro);
+      }catch(err){ showToast('Errore — riprova'); }
+    }, 'Elimina', 'Annulla');
+  }));
+}
+
+/* ---------- form crea/modifica alimento ---------- */
+let formAlimentoMod = 'per100';
+let formAlimentoUnita = 'g';
+async function renderFormAlimento(id, onDone){
+  state.screen = 'alimFormAlimento';
+  closeAllOverlays();
+  setTimerBarVisible(false);
+  const lista = await caricaMieiAlimenti();
+  const a = id ? lista.find(x=>x.id===id) : null;
+  if(id && !a){ onDone && onDone(); return; }
+  formAlimentoMod = 'per100';
+  formAlimentoUnita = a ? unitaDi(a) : 'g';
+  const v = (x)=> (a && x!=null) ? x : '';
+  app.innerHTML = `
+    <div class="topbar"><button class="back" id="btnBack">${ICO.back}</button><div class="titles"><h1>${a?'Modifica alimento':'Nuovo alimento'}</h1></div></div>
+    <div class="wrap">
+      <div class="field"><label>Nome</label><input type="text" id="faNome" placeholder="Es. Pasta integrale, Tonno al naturale…" value="${escAttr(a?a.nome:'')}"></div>
+      <div class="field"><label>Marca (facoltativa)</label><input type="text" id="faMarca" placeholder="Es. Rio Mare" value="${escAttr(a?(a.marca||''):'')}"></div>
+      <div class="field"><label>Lo pesi in</label>
+        <div class="chip-row" id="faUnitaChips" style="margin-bottom:0;">
+          <div class="chip${formAlimentoUnita==='g'?' active':''}" data-u="g">Grammi (g)</div>
+          <div class="chip${formAlimentoUnita==='ml'?' active':''}" data-u="ml">Millilitri (ml)</div>
+        </div>
+      </div>
+      ${a ? '' : `<div class="chip-row" id="faModChips">
+        <div class="chip active" data-m="per100">Valori per 100 <span id="faUnitaLbl">${formAlimentoUnita}</span></div>
+        <div class="chip" data-m="porzione">Valori per porzione intera</div>
+      </div>`}
+      <div id="faCampi"></div>
+      <p style="font-size:11.5px;color:var(--text-faint);margin:-4px 0 14px;line-height:1.5;">Copia i valori dalla tabella nutrizionale sulla confezione (la colonna "per 100 g" o "per 100 ml"). Se lasci le kcal vuote le calcolo io da proteine, carboidrati e grassi.</p>
+      <button class="cta" id="faSalva">${a?'Salva modifiche':'Salva alimento'}</button>
+    </div>`;
+  const campi = ()=>{
+    const box = document.getElementById('faCampi');
+    const lbl = formAlimentoMod==='porzione' ? 'totali' : `per 100 ${formAlimentoUnita}`;
+    box.innerHTML = `
+      ${formAlimentoMod==='porzione' ? `<div class="field"><label>Peso totale della porzione (${formAlimentoUnita})</label><input type="number" inputmode="decimal" min="1" id="faPeso"></div>` : ''}
+      <div class="field"><label>Kcal ${lbl}</label><input type="number" inputmode="decimal" min="0" id="faKcal" value="${formAlimentoMod==='per100'?v(a&&a.kcal100):''}"></div>
+      <div class="field"><label>Proteine ${lbl} (g)</label><input type="number" inputmode="decimal" min="0" step="0.1" id="faProt" value="${formAlimentoMod==='per100'?v(a&&a.prot100):''}"></div>
+      <div class="field"><label>Carboidrati ${lbl} (g)</label><input type="number" inputmode="decimal" min="0" step="0.1" id="faCarb" value="${formAlimentoMod==='per100'?v(a&&a.carb100):''}"></div>
+      <div class="field"><label>Grassi ${lbl} (g)</label><input type="number" inputmode="decimal" min="0" step="0.1" id="faGrassi" value="${formAlimentoMod==='per100'?v(a&&a.grassi100):''}"></div>`;
+  };
+  campi();
+  document.getElementById('btnBack').onclick = ()=> onDone && onDone();
+  document.querySelectorAll('#faUnitaChips .chip').forEach(ch=> ch.addEventListener('click', ()=>{
+    formAlimentoUnita = ch.dataset.u;
+    document.querySelectorAll('#faUnitaChips .chip').forEach(c=>c.classList.toggle('active', c===ch));
+    const l = document.getElementById('faUnitaLbl'); if(l) l.textContent = formAlimentoUnita;
+    const keep = ['faNome','faMarca'].map(i=>document.getElementById(i).value);
+    const vals = ['faPeso','faKcal','faProt','faCarb','faGrassi'].map(i=>{ const e=document.getElementById(i); return e?e.value:''; });
+    campi();
+    ['faPeso','faKcal','faProt','faCarb','faGrassi'].forEach((i,k)=>{ const e=document.getElementById(i); if(e) e.value=vals[k]; });
+  }));
+  document.querySelectorAll('#faModChips .chip').forEach(ch=> ch.addEventListener('click', ()=>{
+    formAlimentoMod = ch.dataset.m;
+    document.querySelectorAll('#faModChips .chip').forEach(c=>c.classList.toggle('active', c===ch));
+    campi();
+  }));
+  document.getElementById('faSalva').onclick = async ()=>{
+    const nome = document.getElementById('faNome').value.trim();
+    const marca = document.getElementById('faMarca').value.trim();
+    const num = (id)=>{ const e=document.getElementById(id); if(!e || e.value==='') return null; return Number(e.value); };
+    let kcal = num('faKcal'), prot = num('faProt'), carb = num('faCarb'), grassi = num('faGrassi');
+    if(!nome){ showToast('Dai un nome all\'alimento'); return; }
+    if(prot==null) prot = 0; if(carb==null) carb = 0; if(grassi==null) grassi = 0;
+    if([prot,carb,grassi].some(x=>isNaN(x)||x<0) || (kcal!=null && (isNaN(kcal)||kcal<0))){ showToast('Controlla i valori numerici'); return; }
+    if(kcal==null) kcal = Math.round(prot*4 + carb*4 + grassi*9);
+    let k100=kcal, p100=prot, c100=carb, g100=grassi;
+    if(formAlimentoMod==='porzione'){
+      const peso = num('faPeso');
+      if(!peso || peso<=0){ showToast('Inserisci il peso totale della porzione'); return; }
+      const f = 100/peso;
+      k100 = Math.round(kcal*f); p100 = r1(prot*f); c100 = r1(carb*f); g100 = r1(grassi*f);
+    }
+    const lista = await caricaMieiAlimenti();
+    const doppione = lista.find(x=> x.id!==(a&&a.id) && normTesto(x.nome)===normTesto(nome) && normTesto(x.marca)===normTesto(marca));
+    if(doppione){ showToast('Hai già un alimento con questo nome'); return; }
+    const btn = document.getElementById('faSalva'); btn.disabled = true;
+    try{
+      let salvato;
+      if(a){
+        Object.assign(a, { nome, marca, unita:formAlimentoUnita, kcal100:k100, prot100:p100, carb100:c100, grassi100:g100 });
+        salvato = a;
+      } else {
+        salvato = { id:'custom-'+Date.now(), nome, marca, unita:formAlimentoUnita, kcal100:k100, prot100:p100, carb100:c100, grassi100:g100 };
+        lista.push(salvato);
+      }
+      alimentiPersonalizzatiCache = lista;
+      await saveAlimentiCustom(lista);
+      showToast(a?'Alimento aggiornato ✓':'Alimento salvato ✓');
+      onDone && onDone(salvato);
+    }catch(e){ showToast('Errore: '+e.message); btn.disabled = false; }
+  };
+}
+
+/* ---------- diario libero: schermata del giorno ---------- */
+let diarioPicker = null;       // { pid, query, step:'lista'|'qta', sel, qta }
+let diarioDopoCreazione = null; // { pid, id } per riaprire il selettore dopo "Nuovo alimento"
+function diarioPastoTotali(entry, pid){
+  const t = { kcal:0, p:0, c:0, g:0 };
+  (entry.alimentiExtra||[]).filter(a=>a.pasto===pid).forEach(a=>{ t.kcal+=a.kcal; t.p+=a.prot; t.c+=a.carb; t.g+=a.grassi; });
+  const op = (entry.pastiFatti[pid] && !entry.pastiViaExtra[pid]) ? trovaOpzione(pid, entry.opzioni && entry.opzioni[pid]) : null;
+  if(op){ const pt = pastoOpTotals(op, pid, entry); t.kcal+=pt.kcal; t.p+=pt.p; t.c+=pt.c; t.g+=pt.g; }
+  return t;
+}
+function diarioRigaVoceHTML(a){
+  const u = a.unita==='ml' ? 'ml' : 'g';
+  return `
+    <div class="ing-row" data-voce="${escAttr(a.id)}">
+      <div class="ing-main">
+        <div class="ing-name">${a.nome}${a.marca&&a.marca!=='personalizzato'?` <span style="color:var(--text-faint);font-weight:400;">· ${a.marca}</span>`:''}</div>
+        <div class="ing-suggested" data-voce-macro>P ${fmtMacro(a.prot)} · C ${fmtMacro(a.carb)} · G ${fmtMacro(a.grassi)}</div>
+      </div>
+      <div class="ing-qty-wrap"><input type="number" inputmode="decimal" min="0" step="1" value="${a.grammi}" data-voce-qta="${escAttr(a.id)}"><span class="ing-unit" style="width:auto;">${u}</span></div>
+      <div class="ing-kcal" data-voce-kcal style="width:auto;min-width:48px;">${fmtKcal(a.kcal)} kcal</div>
+      <button class="ing-check ing-check-del" data-voce-del="${escAttr(a.id)}" title="Elimina" style="border-color:var(--danger);color:var(--danger);flex-shrink:0;">${ICO.trash}</button>
+    </div>`;
+}
+function diarioPastoHTML(pid, entry){
+  const voci = (entry.alimentiExtra||[]).filter(a=>a.pasto===pid);
+  const op = (entry.pastiFatti[pid] && !entry.pastiViaExtra[pid]) ? trovaOpzione(pid, entry.opzioni && entry.opzioni[pid]) : null;
+  const t = diarioPastoTotali(entry, pid);
+  const vuoto = !voci.length && !op;
+  return `
+    <div class="pasto-card" data-diario-pasto="${pid}" style="margin-bottom:12px;">
+      <div class="pasto-head" style="display:flex;justify-content:space-between;align-items:center;">
+        <div class="pasto-title" style="text-transform:none;font-size:14px;color:var(--text);font-weight:700;">${ALIM_PASTI_ICONA[pid]} ${ALIM_DIARIO_LABEL[pid]}</div>
+        <div style="font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:700;" data-pasto-sub="${pid}">${vuoto?'':fmtKcal(t.kcal)+' kcal'}</div>
+      </div>
+      ${vuoto ? '' : `<div style="font-family:var(--mono);font-size:10.5px;color:var(--text-muted);padding:0 16px 4px;" data-pasto-macro="${pid}">P ${fmtMacro(t.p)} · C ${fmtMacro(t.c)} · G ${fmtMacro(t.g)}</div>`}
+      <div class="ing-list" style="padding:0 16px;">
+        ${op ? `<div class="ing-row"><div class="ing-main"><div class="ing-name">${op.titolo}</div><div class="ing-suggested">dal piano (registrato prima)</div></div><div class="ing-kcal" style="width:auto;">${fmtKcal(pastoOpTotals(op,pid,entry).kcal)} kcal</div><button class="ing-check ing-check-del" data-piano-del="${pid}" title="Rimuovi" style="border-color:var(--danger);color:var(--danger);flex-shrink:0;">${ICO.trash}</button></div>` : ''}
+        ${voci.map(diarioRigaVoceHTML).join('')}
+      </div>
+      <div style="padding:6px 16px 14px;"><button class="text-link-btn" style="padding:6px 0 0;text-decoration:none;color:var(--accent);font-weight:700;font-size:13px;" data-add-pasto="${pid}">+ Aggiungi alimento</button></div>
+    </div>`;
+}
+function renderDiarioInto(){
+  const entry = state.alimEntry;
+  const s = document.getElementById('macroSummary');
+  if(s) s.innerHTML = macroSummaryHTML(entryTotals(entry));
+  const body = document.getElementById('diarioBody');
+  if(body){ body.innerHTML = ALIM_PASTI_ORDINE.map(pid=>diarioPastoHTML(pid, entry)).join(''); wireDiario(); }
+}
+function aggiornaTotaliDiarioLive(pid){
+  const entry = state.alimEntry;
+  const s = document.getElementById('macroSummary');
+  if(s) s.innerHTML = macroSummaryHTML(entryTotals(entry));
+  const t = diarioPastoTotali(entry, pid);
+  const sub = document.querySelector(`[data-pasto-sub="${pid}"]`); if(sub) sub.textContent = fmtKcal(t.kcal)+' kcal';
+  const mac = document.querySelector(`[data-pasto-macro="${pid}"]`); if(mac) mac.textContent = `P ${fmtMacro(t.p)} · C ${fmtMacro(t.c)} · G ${fmtMacro(t.g)}`;
+}
+/* Ricalcola una voce al cambiare i grammi. Se la voce non ha i valori per
+   100 (registrata prima di questa versione) li ricava dalla proporzione. */
+function ricalcolaVoceQta(v, g){
+  if(v.k100==null && v.grammi>0){
+    v.k100 = v.kcal*100/v.grammi; v.p100 = v.prot*100/v.grammi; v.c100 = v.carb*100/v.grammi; v.g100 = v.grassi*100/v.grammi;
+  }
+  if(v.k100!=null){
+    const f = g/100;
+    v.kcal = Math.round(v.k100*f); v.prot = r1(v.p100*f); v.carb = r1(v.c100*f); v.grassi = r1(v.g100*f);
+  }
+  v.grammi = g;
+}
+function wireDiario(){
+  app.querySelectorAll('[data-add-pasto]').forEach(b=> b.addEventListener('click', ()=> apriSelettoreAlimento(b.dataset.addPasto)));
+  app.querySelectorAll('[data-voce-qta]').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const v = (state.alimEntry.alimentiExtra||[]).find(a=>a.id===inp.dataset.voceQta);
+      if(!v) return;
+      const g = Math.max(0, Number(inp.value)||0);
+      ricalcolaVoceQta(v, g);
+      const row = inp.closest('.ing-row');
+      row.querySelector('[data-voce-kcal]').textContent = fmtKcal(v.kcal)+' kcal';
+      row.querySelector('[data-voce-macro]').textContent = `P ${fmtMacro(v.prot)} · C ${fmtMacro(v.carb)} · G ${fmtMacro(v.grassi)}`;
+      aggiornaTotaliDiarioLive(v.pasto);
+      queueAlimSave();
+    });
+  });
+  app.querySelectorAll('[data-voce-del]').forEach(b=> b.addEventListener('click', ()=> rimuoviAlimentoExtra_diario(b.dataset.voceDel)));
+  app.querySelectorAll('[data-piano-del]').forEach(b=> b.addEventListener('click', ()=>{
+    const pid = b.dataset.pianoDel;
+    state.alimEntry.pastiFatti[pid] = false; state.alimEntry.pastiViaExtra[pid] = false;
+    if(state.alimEntry.qtyOverride) state.alimEntry.qtyOverride[pid] = {};
+    renderDiarioInto(); queueAlimSave();
+  }));
+}
+function rimuoviAlimentoExtra_diario(id){
+  const entry = state.alimEntry;
+  const voce = (entry.alimentiExtra||[]).find(a=>a.id===id);
+  entry.alimentiExtra = (entry.alimentiExtra||[]).filter(a=>a.id!==id);
+  if(voce && voce.pasto!=null){
+    const rimasti = entry.alimentiExtra.filter(a=>a.pasto===voce.pasto);
+    if(!rimasti.length && entry.pastiViaExtra[voce.pasto]){ entry.pastiFatti[voce.pasto] = false; entry.pastiViaExtra[voce.pasto] = false; }
+  }
+  renderDiarioInto();
+  queueAlimSave();
+}
+async function renderDiarioLibero(forDate){
+  state.screen = 'alimGiorno';
+  closeAllOverlays();
+  setTimerBarVisible(false);
+  const useDate = forDate || todayLocalISO();
+  const esistente = await loadAlimEntry(useDate);
+  if(esistente && esistente.giornoBaseId !== ALIM_LIBERO_ID){
+    const g = giornoOrLibero(esistente.giornoBaseId);
+    if(g){ renderGiornoAlimentare(g.id, forDate || undefined); return; }
+  }
+  state.alimDate = useDate;
+  state.alimReturnTo = forDate ? 'storico' : 'alimentazione';
+  currentAlimGiorno = ALIM_GIORNO_LIBERO;
+  const goBack = async ()=>{
+    await flushAlimSaveNow();
+    state.alimReturnTo === 'storico' ? renderStoricoAlimentazione() : renderAlimentazione();
+  };
+  state.alimEntry = esistente || nuovaEntryDaGiorno(ALIM_GIORNO_LIBERO);
+  const e = state.alimEntry;
+  if(!e.pastiFatti) e.pastiFatti = {};
+  if(!e.pastiViaExtra) e.pastiViaExtra = {};
+  if(!e.alimentiExtra) e.alimentiExtra = [];
+  if(!e.integratori) e.integratori = {};
+  if(!e.fattori) e.fattori = {};
+  if(!e.qtyOverride) e.qtyOverride = {};
+  if(!e.scambi) e.scambi = {};
+  if(!e.opzioni) e.opzioni = {};
+  await caricaMieiAlimenti();
+  app.innerHTML = `
+    <div class="topbar">
+      <button class="back" id="btnBack">${ICO.back}</button>
+      <div class="titles"><div class="eyebrow">DIARIO LIBERO</div><h1>Cosa hai mangiato</h1></div>
+    </div>
+    <div class="wrap">
+      <div class="date-bar">
+        <div><label>Data</label><input type="date" id="alimDateInput" value="${useDate}"></div>
+        <span class="save-pill" id="alimSavePill">salvato</span>
+      </div>
+      <div class="warmup-note">${ICO.info}<span>Nessun pasto è già impostato: per ognuno aggiungi solo ciò che mangi, scrivendo i grammi o i ml. I macro si calcolano da soli.</span></div>
+      <div class="section-label">Rispetto al target</div>
+      <div class="macro-summary" id="macroSummary">${macroSummaryHTML(entryTotals(e))}</div>
+      <div class="section-label">Pasti</div>
+      <div id="diarioBody">${ALIM_PASTI_ORDINE.map(pid=>diarioPastoHTML(pid, e)).join('')}</div>
+      <button class="text-link-btn" id="btnGestisciAlimenti" style="padding-bottom:14px;">🥫 Gestisci i miei alimenti</button>
+      <div class="section-label">Integratori — uguali ogni giorno, non dimenticarli</div>
+      ${integratoriCardHTML()}
+      <button class="cta" id="btnSaveAlim">Salva registrazione</button>
+    </div>
+    <div class="picker-sheet" id="pickerSheetAddFood"><div class="picker-sheet-inner" id="addFoodInner"></div></div>
+  `;
+  document.getElementById('btnBack').onclick = goBack;
+  document.getElementById('alimDateInput').onchange = async (ev)=>{
+    const nuovaData = ev.target.value;
+    const prec = state.alimDate;
+    if(!nuovaData || nuovaData === prec) return;
+    let altrove = null;
+    try{ altrove = await loadAlimEntry(nuovaData); }catch(err){}
+    if(altrove){
+      showConfirm(`Il ${fmtDate(nuovaData)} ha già una registrazione salvata. Spostando questa qui la sostituisci: i dati che c'erano andrebbero persi. Continuare?`,
+        ()=>{ state.alimDate = nuovaData; queueAlimSave(); }, 'Sostituisci', 'Annulla', ()=>{ ev.target.value = prec; });
+      return;
+    }
+    state.alimDate = nuovaData;
+    queueAlimSave();
+  };
+  wireDiario();
+  wireIntegratoriInputs();
+  applyIntegratoriState();
+  document.getElementById('btnGestisciAlimenti').onclick = async ()=>{
+    await flushAlimSaveNow();
+    mieiAlimentiRitorno = ()=> renderDiarioLibero(state.alimReturnTo==='storico' ? state.alimDate : undefined);
+    renderMieiAlimenti();
+  };
+  const sheet = document.getElementById('pickerSheetAddFood');
+  sheet.addEventListener('click', (ev)=>{ if(ev.target.id==='pickerSheetAddFood') chiudiSelettoreAlimento(); });
+  document.getElementById('btnSaveAlim').onclick = async ()=>{
+    clearTimeout(alimSaveTimeout); alimSaveTimeout = null; alimSavePending = false;
+    try{ await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:true }); }
+    catch(err){ showToast('Errore salvataggio — riprova'); return; }
+    showToast('Registrazione salvata ✓');
+    goBack();
+  };
+  if(diarioDopoCreazione){
+    const d = diarioDopoCreazione; diarioDopoCreazione = null;
+    const a = (alimentiPersonalizzatiCache||[]).find(x=>x.id===d.id);
+    if(a){ apriSelettoreAlimento(d.pid); diarioPicker.sel = a; diarioPicker.step = 'qta'; diarioPicker.qta = a.ultimaQta || 100; renderSelettoreAlimento(); }
+  }
+}
+
+/* ---------- selettore alimento (bottom sheet) ---------- */
+function apriSelettoreAlimento(pid){
+  diarioPicker = { pid, query:'', step:'lista', sel:null, qta:100 };
+  document.getElementById('pickerSheetAddFood').classList.add('open');
+  renderSelettoreAlimento();
+}
+function chiudiSelettoreAlimento(){
+  const s = document.getElementById('pickerSheetAddFood');
+  if(s) s.classList.remove('open');
+  diarioPicker = null;
+}
+function renderSelettoreAlimento(){
+  const box = document.getElementById('addFoodInner');
+  const p = diarioPicker;
+  if(!box || !p) return;
+  const titolo = `Aggiungi a ${ALIM_DIARIO_LABEL[p.pid]}`;
+  if(p.step === 'qta'){
+    const a = p.sel; const u = unitaDi(a);
+    const m = macroDaQta(a, p.qta);
+    box.innerHTML = `
+      <div class="picker-head"><h3>${titolo}</h3><button id="dpClose">${ICO.close}</button></div>
+      <div class="picker-scroll" style="padding:14px 16px 24px;">
+        <div style="font-weight:700;color:var(--text);font-size:15px;margin-bottom:2px;">${a.nome}</div>
+        <div style="font-size:11.5px;color:var(--text-faint);margin-bottom:14px;font-family:var(--mono);">per 100 ${u}: ${a.kcal100} kcal · P ${fmtMacro(a.prot100)} · C ${fmtMacro(a.carb100)} · G ${fmtMacro(a.grassi100)}</div>
+        <div class="field"><label>Quanti ${u==='ml'?'ml':'grammi'} hai mangiato?</label><input type="number" inputmode="decimal" min="0" step="1" id="dpQta" value="${p.qta}"></div>
+        <div class="pasto-card" style="padding:12px 16px;margin-bottom:14px;">
+          <div class="ing-row" style="border-bottom:none;">
+            <div class="ing-main"><div class="ing-suggested">P <b id="dpP" style="color:var(--text);">${fmtMacro(m.prot)}g</b> · C <b id="dpC" style="color:var(--text);">${fmtMacro(m.carb)}g</b> · G <b id="dpG" style="color:var(--text);">${fmtMacro(m.grassi)}g</b></div></div>
+            <div class="ing-kcal" id="dpK" style="width:auto;">${m.kcal} kcal</div>
+          </div>
+        </div>
+        <button class="cta" id="dpAggiungi">Aggiungi a ${ALIM_DIARIO_LABEL[p.pid]}</button>
+        <button class="text-link-btn" id="dpIndietro" style="padding-bottom:4px;">← Scegli un altro alimento</button>
+      </div>`;
+    document.getElementById('dpClose').onclick = chiudiSelettoreAlimento;
+    document.getElementById('dpIndietro').onclick = ()=>{ p.step='lista'; p.sel=null; renderSelettoreAlimento(); };
+    const q = document.getElementById('dpQta');
+    q.addEventListener('input', ()=>{
+      p.qta = Math.max(0, Number(q.value)||0);
+      const mm = macroDaQta(a, p.qta);
+      document.getElementById('dpP').textContent = fmtMacro(mm.prot)+'g';
+      document.getElementById('dpC').textContent = fmtMacro(mm.carb)+'g';
+      document.getElementById('dpG').textContent = fmtMacro(mm.grassi)+'g';
+      document.getElementById('dpK').textContent = mm.kcal+' kcal';
+    });
+    q.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter') confermaAggiuntaDiario(); });
+    document.getElementById('dpAggiungi').onclick = confermaAggiuntaDiario;
+    setTimeout(()=>{ q.focus(); q.select(); }, 60);
+    return;
+  }
+  const lista = (alimentiPersonalizzatiCache||[]).slice();
+  const q = normTesto(p.query);
+  let visibili = lista.filter(a=> !q || normTesto(a.nome+' '+(a.marca||'')).includes(q));
+  visibili.sort((a,b)=> q ? a.nome.localeCompare(b.nome,'it') : ((b.ultimoUso||0)-(a.ultimoUso||0)) || a.nome.localeCompare(b.nome,'it'));
+  const righe = visibili.map(a=>`
+    <button class="picker-item" data-pick-alimento="${escAttr(a.id)}" style="flex-direction:column;align-items:flex-start;gap:2px;">
+      <span style="font-weight:700;color:var(--text);">${a.nome}${a.marca?` <span style="color:var(--text-faint);font-weight:400;">· ${a.marca}</span>`:''}</span>
+      <span style="font-size:11.5px;color:var(--text-faint);font-family:var(--mono);">per 100 ${unitaDi(a)}: ${a.kcal100} kcal · P ${fmtMacro(a.prot100)} · C ${fmtMacro(a.carb100)} · G ${fmtMacro(a.grassi100)}</span>
+    </button>`).join('');
+  box.innerHTML = `
+    <div class="picker-head"><h3>${titolo}</h3><button id="dpClose">${ICO.close}</button></div>
+    <div class="picker-scroll" style="padding:12px 12px 20px;">
+      <div class="field" style="margin-bottom:8px;"><input type="search" id="dpSearch" placeholder="Cerca tra i tuoi alimenti…" value="${escAttr(p.query)}" autocomplete="off"></div>
+      <button class="picker-item" id="dpNuovo" style="color:var(--accent);font-weight:700;">+ Nuovo alimento (con tabella nutrizionale)</button>
+      ${righe ? `<div class="picker-group-label">${q?'Risultati':'I tuoi alimenti — usati di recente in cima'}</div>${righe}` : `<div class="cron-empty" style="margin:10px 4px;">${lista.length?'Nessun alimento con questo nome.':'Il tuo database è vuoto: crea il primo alimento.'}</div>`}
+      <button class="picker-item" id="dpOnline" style="color:var(--text-muted);margin-top:6px;">🔎 Cerca online (Open Food Facts, USDA)</button>
+    </div>`;
+  document.getElementById('dpClose').onclick = chiudiSelettoreAlimento;
+  const s = document.getElementById('dpSearch');
+  s.addEventListener('input', ()=>{
+    p.query = s.value;
+    const pos = s.selectionStart;
+    renderSelettoreAlimento();
+    const n = document.getElementById('dpSearch'); if(n){ n.focus(); try{ n.setSelectionRange(pos,pos); }catch(e){} }
+  });
+  box.querySelectorAll('[data-pick-alimento]').forEach(b=> b.addEventListener('click', ()=>{
+    const a = lista.find(x=>x.id===b.dataset.pickAlimento); if(!a) return;
+    p.sel = a; p.step = 'qta'; p.qta = a.ultimaQta || 100; renderSelettoreAlimento();
+  }));
+  document.getElementById('dpNuovo').onclick = async ()=>{
+    const pid = p.pid;
+    await flushAlimSaveNow();
+    renderFormAlimento(null, (salvato)=>{
+      if(salvato) diarioDopoCreazione = { pid, id:salvato.id };
+      renderDiarioLibero(state.alimReturnTo==='storico' ? state.alimDate : undefined);
+    });
+  };
+  document.getElementById('dpOnline').onclick = async ()=>{
+    const pid = p.pid;
+    await flushAlimSaveNow();
+    ricercaAlimentoState = { query:'', loading:false, risultati:[], errore:null, selezionato:null, grammi:100, pastoId:null, pastoPreset:pid };
+    renderCercaAlimentoExtra();
+  };
+}
+async function confermaAggiuntaDiario(){
+  const p = diarioPicker; if(!p || !p.sel) return;
+  const a = p.sel; const g = Number(p.qta)||0;
+  if(g<=0){ showToast('Scrivi quanti grammi hai mangiato'); return; }
+  const m = macroDaQta(a, g);
+  const voce = {
+    id: 'extra-'+Date.now()+'-'+Math.floor(Math.random()*1000),
+    alimentoId: a.id, nome: a.nome, marca: a.marca||'', unita: unitaDi(a),
+    grammi: g, kcal: m.kcal, prot: m.prot, carb: m.carb, grassi: m.grassi,
+    k100: a.kcal100, p100: a.prot100, c100: a.carb100, g100: a.grassi100,
+    pasto: p.pid,
+  };
+  if(!state.alimEntry.alimentiExtra) state.alimEntry.alimentiExtra = [];
+  state.alimEntry.alimentiExtra.push(voce);
+  segnaPastoFattoDaExtra(p.pid);
+  /* ricordo l'ultima quantita' usata e l'uso recente, per precompilare la
+     prossima volta e mettere gli alimenti piu' usati in cima */
+  try{
+    a.ultimaQta = g; a.ultimoUso = Date.now();
+    await saveAlimentiCustom(alimentiPersonalizzatiCache);
+  }catch(e){}
+  chiudiSelettoreAlimento();
+  renderDiarioInto();
+  try{
+    clearTimeout(alimSaveTimeout); alimSaveTimeout = null; alimSavePending = false;
+    await saveAlimEntry(state.alimDate, { ...state.alimEntry, finalized:false });
+    flashAlimSavePill();
+  }catch(e){ showToast('Errore salvataggio — riprova'); }
+}
+
 /* ============== ALIMENTAZIONE — storico ============== */
 async function renderStoricoAlimentazione(){
   state.screen = 'alimStorico';
@@ -7930,8 +8473,8 @@ async function renderStoricoAlimentazione(){
           </div>
           <div class="picker-group" id="pastDayVariantGroup">
             <button class="picker-item" data-gid="${ALIM_LIBERO_ID}" style="flex-direction:column;align-items:flex-start;gap:3px;padding:14px 12px;border-color:var(--accent);">
-              <span style="font-weight:700;color:var(--accent);">🎯 Giorno libero</span>
-              <span style="font-size:11.5px;color:var(--text-faint);">Nessuna variante di partenza: scegli tu ogni pasto dal paniere di tutte le opzioni</span>
+              <span style="font-weight:700;color:var(--accent);">📓 Diario libero</span>
+              <span style="font-size:11.5px;color:var(--text-faint);">Aggiungi tu gli alimenti di ogni pasto, con i grammi</span>
             </button>
             ${alimVariantiPickerHTML()}
           </div>
@@ -7959,7 +8502,7 @@ async function renderStoricoAlimentazione(){
           'Annulla'
         );
       } else {
-        startAlimVariant(gid, chosenDate);
+        if(gid === ALIM_LIBERO_ID) renderDiarioLibero(chosenDate); else startAlimVariant(gid, chosenDate);
       }
     });
   });
@@ -8000,7 +8543,7 @@ async function refreshAlimStorico(){
               <div class="sr-left">
                 <div class="sr-date">${d.getDate()}</div>
                 <div class="sr-info">
-                  <div class="sr-giorno">${giorno ? (giorno.id===ALIM_LIBERO_ID ? 'Giorno libero' : 'Variante '+giorno.lettera) : 'Variante sconosciuta'} · ${fmtKcal(totals.kcal)} kcal</div>
+                  <div class="sr-giorno">${giorno ? (giorno.id===ALIM_LIBERO_ID ? 'Diario libero' : 'Variante '+giorno.lettera) : 'Variante sconosciuta'} · ${fmtKcal(totals.kcal)} kcal</div>
                   <div class="sr-meta">${fmtDate(e.date)} · P ${fmtMacro(totals.p)} · C ${fmtMacro(totals.c)} · G ${fmtMacro(totals.g)} · ${nPastiFatti}/5 pasti${nExtra?` · ${nExtra} extra`:''} · Integratori ${integCount}/${INTEGRATORI_GIORNALIERI.length}</div>
                 </div>
               </div>
